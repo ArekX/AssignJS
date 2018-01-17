@@ -85,7 +85,11 @@ function(parser) {
 		}
 
 		function renderContainer() {
-			item.render();
+			var events = item.events;
+
+			events.beforeRender && events.beforeRender.trigger();
+			item.hooks.onRender && item.hooks.onRender();
+			events.afterRender && events.afterRender.trigger();
 		}
 	}
 
@@ -151,7 +155,7 @@ function(parser) {
 		}
 
 		function renderContainer(container) {
-
+			container.render();
 		}
 	}
 

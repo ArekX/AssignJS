@@ -73,12 +73,11 @@ function(parser, container, assignments, html) {
 
 			parentContainer.registerPropertyResolver(propertyName, resolveProperty);
 			parentContainer.events.afterRender.register(trackerName, resolveProperty);
-
+			
 			resolveProperty.apply(parentContainer.payload);
 		}
 
 		function hookOnUnlink() {
-			console.log("unlink!");
 			getParentContainer().events.beforeRender.unregister(trackerName);
 		}
 

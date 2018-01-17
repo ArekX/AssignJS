@@ -68,6 +68,8 @@ function(parser, containerManager, assignments, createEvent, html) {
 		events.afterLink = createEvent(component);
 		events.beforeUnlink = createEvent(component);
 		events.afterUnlink = createEvent(component);
+		events.beforeInitialize = createEvent(component);
+		events.afterInitialize = createEvent(component);
 
 		component.__proto__ = main.mergeConfig(false, {
 			props: props,
@@ -169,7 +171,9 @@ function(parser, containerManager, assignments, createEvent, html) {
 				scope[scopeName] = container.scope[scopeName].payload;
 			}
 
+			events.beforeInitialize.trigger(scope, events);
 			component.initialize && component.initialize(scope, events);
+			events.afterInitialize.trigger(scope, events);
 		}
 
 		function hookOnUnlink() {
