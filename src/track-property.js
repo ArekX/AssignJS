@@ -71,14 +71,16 @@ function(parser, container, assignments, html) {
 				});
 			}
 
-			parentContainer.registerPropertyResolver(propertyName, resolveProperty);
+			parentContainer.propertyResolver.register(propertyName, resolveProperty);
 			parentContainer.events.afterRender.register(trackerName, resolveProperty);
-			
+
 			resolveProperty.apply(parentContainer.payload);
 		}
 
 		function hookOnUnlink() {
-			getParentContainer().events.beforeRender.unregister(trackerName);
+			var parent = getParentContainer();
+			parent.propertyResolver.unregister(propertyName, resolveProperty);
+			parent.events.afterRender.unregister(trackerName);
 		}
 
 		function getParentContainer() {

@@ -91,15 +91,18 @@ coreLib.as("core.component")
 	})
 	.add("app.hello", function(props) {
 		props.item = 1;
+		var itemCtrl = null;
 		this.template = `
 		  Okay man. Lets check this <span data-assign="@item"></span>.
 		`;
 
 		this.destroy = function() {
-			console.log("I was destroyed today!");
+			console.log("I was destroyed today!", itemCtrl);
+			itemCtrl.resetCounter();
 		};
 
 		this.initialize = (scope) => {
+			itemCtrl = scope.itemCtrl;
 		}
 	})
 	.add("app.test", function() {
@@ -112,10 +115,13 @@ coreLib.as("core.component")
 		};
 	})
 	.add("app.multiItems", function(props) {
-		this.initialize = (scope, events) => {
-			var counter = 0;
+		var html = coreLib.as("core.html");
 
-			var html = coreLib.as("core.html");
+		var counter = 0;
+		var spanTemplate = html.createTemplate('span', "<span data-assign=\"itemCtrl@getCount()\"></span>: I am a new span! <span data-assign=\"app.hello <- itemCtrl\"></span> Click on me to delete me<br>");
+
+		this.initialize = (scope, events) => {
+			
 			props.getCount = () => {
 				console.log('call!', counter);
 				return counter++;
@@ -125,7 +131,7 @@ coreLib.as("core.component")
 
 			scope.add.onclick = () => {
 				var self = this;
-				var span = html.create("span", "<span data-assign=\"itemCtrl@getCount()\"></span>: I am a new span! <span data-assign=\"app.hello <- itemCtrl\"></span> Click on me to delete me<br>");
+				var span = spanTemplate();
 
 				// span doesnt have a container, this makes problems when unlinking.
 
@@ -140,6 +146,11 @@ coreLib.as("core.component")
 
 				this.reloadProperty("items");
 			};
+		};
+
+		this.resetCounter = () => {
+			counter = 0;
+			this.reloadProperty('getCount');
 		};
 	});
 

@@ -34,9 +34,13 @@ function(containerManager) {
 		return element;
 	}
 
-	function createTemplate(tagName) {
-		var element = create(tagName);
+	function createTemplate(tagName, baseContents, baseOptions) {
 		var func = function(contents, options) {
+			options = main.mergeConfig(baseOptions || {}, options || {});
+			contents = contents || baseContents;
+
+			var element = create(tagName, contents, options);
+
 			if (!options && typeof contents === "object") {
 				options = contents;
 				contents = "";

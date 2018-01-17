@@ -37,12 +37,14 @@ function(parser) {
 
 		var item = {
 			trackId: trackCounter++,
+			isUnlinking: false,
+			isUnlinked: false,
 			element: element,
 			parent: parent,
 			scope: scope,
+			render: renderContainer,
 			unlink: unlinkContainer,
 			link: linkContainer,
-			render: renderContainer,
 			hooks: {
 				onLink: null,
 				onUnlink: null,
@@ -69,11 +71,19 @@ function(parser) {
 		return item;
 
 		function unlinkContainer() {
+			if (item.isUnlinking) {
+				return;
+			}
+
 			var events = item.events;
+
+			item.isUnlinking = true;
 
 			events.beforeUnlink && events.beforeUnlink.trigger();
 			item.hooks.onUnlink && item.hooks.onUnlink();
 			events.afterUnlink && events.afterUnlink.trigger();
+
+			item.isUnlinked = true;
 		}
 
 		function linkContainer() {

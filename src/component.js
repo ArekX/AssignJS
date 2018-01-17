@@ -85,7 +85,10 @@ function(parser, containerManager, assignments, createEvent, html) {
 		}, component.__proto__);
 
 		container.payload = component;
-		container.registerPropertyResolver = registerPropertyResolver;
+		container.propertyResolver = {
+			register: registerPropertyResolver,
+			unregister: unregisterPropertyResolver
+		};
 
 		if (referenceAs) {
 			parentContainer.scope[referenceAs] = container;
@@ -106,6 +109,14 @@ function(parser, containerManager, assignments, createEvent, html) {
 			}
 
 			mappedProperties[propertyName].push(resolver);
+		}
+
+		function unregisterPropertyResolver(propertyName, resolver) {
+			var mapped = mappedProperties[propertyName] || [];
+
+			if (mapped.indexOf(resolver) !== -1) {
+				mapped.splice(mapped.indexOf(resolver), 1);
+			}
 		}
 
 		function reloadProperty(propertyName) {
