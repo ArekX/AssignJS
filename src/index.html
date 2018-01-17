@@ -54,6 +54,7 @@ Adding items:
 <!-- Test components -->
 <script src="test-component.js"></script>
 <script>
+	var counterC = 0;
 // Since its data-name-as="coreLib", it is imported in window.coreLib
 coreLib.as("core.component")
 	.add("app.inputCtrl", function() {
@@ -90,7 +91,7 @@ coreLib.as("core.component")
 		};
 	})
 	.add("app.hello", function(props) {
-		props.item = 1;
+		props.item = counterC++;
 		var itemCtrl = null;
 		this.template = `
 		  Okay man. Lets check this <span data-assign="@item"></span>.
