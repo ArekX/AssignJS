@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html data-assign=":html">
+<head>
+	<title data-assign=":title">App</title>
+</head>
+<body data-assign=":body"> <!-- Assign reference to body element -->
+<pre>
+Assign JS tests. See source for more info.
+
+Initialize app.my-app component, name it as app, and add "ctrl" component into it. This component has a template.
+<my-app data-assign="app.templateTest:app <- ctrl"></my-app>
+
+Templateless component (see test-component.js):
+<div data-assign="app.controllerComponent:ctrl <- sibling, app">
+	Two-way data bound input
+	<input data-assign="app.inputCtrl:input"><br>
+	<strong>Result:</strong> <span data-assign="@property"></span>
+
+	Tracked properties from other components:
+	<strong>Property Result:</strong> <span data-assign="sibling@property"></span>
+	<strong>Function Result:</strong> <span data-assign="sibling@dateString()"></span>
+
+	<button data-assign=":button">Reset databound property</button>
+</div>
+
+Same component can be initialized again:
+<div data-assign="app.templateTest:app <- ctrl"></div>
+
+Tracking data bound property again from outside the component: <span data-assign="ctrl@property"></span>
+
+<app-sibling data-assign="app.test:sibling <- body, title"></app-sibling>
+
+
+Adding items:
+<div data-assign="app.multiItems:itemCtrl">
+	<div data-assign="@items"></div>
+	<div>
+		Lets add some items.
+		<button data-assign=":add">Add item</button>
+	</div>
+</div>
+</pre>
+<script src="index.js" data-name-as="coreLib"></script>
+<script src="parser.js"></script>
+<script src="container.js"></script>
+<script src="assignments.js"></script>
+<script src="property.js"></script>
+<script src="component.js"></script>
+<script src="track-property.js"></script>
+<script src="event-emitter.js"></script>
+<script src="object.js"></script>
+<script src="html.js"></script>
+
+<!-- Test components -->
+<script src="test-component.js"></script>
+<script>
+// Since its data-name-as="coreLib", it is imported in window.coreLib
+coreLib.as("core.component")
+	.add("app.inputCtrl", function() {
+
+		var createEvent = coreLib.as("core.events.emitter");
+
+		this.onValueChange = createEvent(this);
+
+
+		this.setValue = function(val) {
+			this.element.value = val;
+		};
+
+		this.initialize = function() {
+			var self = this;
+			this.element.oninput = function() {
+				self.onValueChange.trigger(self.element.value);
+			};
+		}
+
+
+	})
+	.add("app.templateTest", function() {
+		this.template = `
+			<div class="test">
+				I am a template part from app.templateTest <br>
+				Here is a counter using track property: <span data-assign="@counter"></span>
+			</div>
+		`;
+		
+		this.initialize = () => {
+			this.props.counter = 0;
+		};
+	})
+	.add("app.hello", function(props, scope) {
+		console.log(scope);
+		props.item = 1;
+		this.template = `
+		  Okay man. Lets check this <span data-assign="@item"></span>.
+		`;
+
+		this.destroy = function() {
+			console.log("I was destroyed today!");
+		};
+
+		this.initialize = (scope) => {
+			console.log("track id!", this.container.trackId);
+		}
+	})
+	.add("app.test", function() {
+		this.initialize = (scope) => {
+			scope.title.innerHTML = "heeeeey hooo!";
+			this.props.property = "I am a static property!";
+			this.props.dateString = function() {
+				return new Date();
+			};
+		};
+	})
+	.add("app.multiItems", function(props) {
+		this.initialize = (scope, events) => {
+			var counter = 0;
+			events.beforeRender.register(() => {
+				counter = 0;
+				console.log('reset');
+			});
+
+			var html = coreLib.as("core.html");
+			props.getCount = () => {
+				return counter++;
+			};
+
+			props.items = [];
+
+			scope.add.onclick = () => {
+				var self = this;
+				var span = html.create("span", "<span data-assign=\"itemCtrl@getCount()\"></span>: I am a new span! <span data-assign=\"app.hello <- itemCtrl\"></span> Click on me to delete me<br>");
+
+				// span doesnt have a container, this makes problems when unlinking.
+
+				span.onclick = function() {
+						var h = this;
+						props.items = props.items.filter((t) => {
+							return t !== span;
+						});
+						self.reloadProperty("items");
+				};
+				props.items.push(span);
+
+				this.reloadProperty("items");
+			};
+		};
+	});
+
+coreLib.run();
+</script>
+</body>
+</html>
