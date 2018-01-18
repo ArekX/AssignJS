@@ -12,7 +12,7 @@ function(containerManager) {
 	};
 
 	function create(tagName, contents, options) {
-		if (!options && typeof contents === "object") {
+		if (!options && !Array.isArray(contents) && typeof contents === "object" && !(contents instanceof HTMLElement)) {
 			options = contents;
 			contents = "";
 		}
@@ -29,7 +29,7 @@ function(containerManager) {
 			element.setAttribute(option, options[option]);
 		}
 
-		setElementContents(element, contents)
+		setElementContents(element, contents);
 
 		return element;
 	}

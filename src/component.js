@@ -9,8 +9,7 @@ function(parser, containerManager, assignments, createEvent, html) {
 	parser.add("core.make.component", componentRegex, handleMakeComponent);
 
 	var module = {
-		add: addComponent,
-		as: getComponent
+		add: addComponent
 	};
 
 	return module;
