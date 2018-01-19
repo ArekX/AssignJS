@@ -39,7 +39,7 @@ function(assignments, containerManager) {
 		item.payload = element;
 
 		item.hooks.onLink = function() {
-			assignments.assign(item, parentContainer.scope, assignOperations);
+			assignments.assign(item, parentContainer, assignOperations);
 		};
 
 		containerManager.relink(item);

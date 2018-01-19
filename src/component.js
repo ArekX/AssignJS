@@ -3,16 +3,24 @@ document.querySelector('script[data-assign-js]').$main.set(
 	["core.parser", "core.container", "core.parser.assignments", "core.events.emitter", "core.html"], 
 function(parser, containerManager, assignments, createEvent, html) {
 	var main = this.main;
-	var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([a-zA-Z0-9_:\ ,<>-]+)?$/;
+	var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([@a-zA-Z0-9_:\ ,<>-]+)?$/;
 	var registeredComponents = {};
 
 	parser.add("core.make.component", componentRegex, handleMakeComponent);
 
 	var module = {
-		add: addComponent
+		add: addComponent,
+		create: createComponent
 	};
 
 	return module;
+
+	function createComponent(componentNamespace, element, parent) {
+		element.$parentContainer = parent.container;
+		element.setAttribute("data-assign", componentNamespace, element);
+		parser.parseItem(element);
+		return element.$container.payload;
+	}
 
 	function addComponent(componentNamespace, component) {
 		main.assertValidNamespace(componentNamespace);
@@ -51,8 +59,12 @@ function(parser, containerManager, assignments, createEvent, html) {
 		var referenceAs = parts[3] ? parts[3] : null;
 		var assignOperations = parts[4] ? assignments.parse(parts[4]) : [];
 
-		var parent = containerManager.findParentElement(element);
-		var parentContainer = containerManager.ensure(parent);
+		var parentContainer = element.$parentContainer;
+
+		if (!parentContainer) {
+			parentContainer = containerManager.ensure(containerManager.findParentElement(element));
+		}
+
 		var container = containerManager.ensure(element, parent);
 
 		var props = {};
@@ -169,7 +181,7 @@ function(parser, containerManager, assignments, createEvent, html) {
 		}
 
 		function hookOnLink() {
-			assignments.assign(container, parentContainer.scope, assignOperations);
+			assignments.assign(container, parentContainer, assignOperations);
 			component.afterLink && component.afterLink.trigger();
 
 			var scope = {};

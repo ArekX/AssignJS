@@ -26,7 +26,11 @@ function(containerManager) {
 				continue;
 			}
 
-			element.setAttribute(option, options[option]);
+			if (!(option in element)) {
+				element.setAttribute(option, options[option]);
+			} else {
+				element[option] = options[option];
+			}
 		}
 
 		setElementContents(element, contents);
@@ -35,34 +39,17 @@ function(containerManager) {
 	}
 
 	function createTemplate(tagName, baseContents, baseOptions) {
+		if (!baseOptions && !Array.isArray(baseContents) && typeof baseContents === "object" && !(baseContents instanceof HTMLElement)) {
+			baseOptions = baseContents;
+			baseContents = "";
+		}
+		
 		var func = function(contents, options) {
 			options = main.mergeConfig(baseOptions || {}, options || {});
 			contents = contents || baseContents;
 
-			var element = create(tagName, contents, options);
-
-			if (!options && typeof contents === "object") {
-				options = contents;
-				contents = "";
-			}
-
-			contents = contents || "";
-			options = options || {};
-
-			for (var option in options) {
-				if (!(option in options)) {
-					continue;
-				}
-
-				element.setAttribute(option, options[option]);
-			}
-
-			setElementContents(element, contents);
-
-			return element;
+			return create(tagName, contents, options);
 		};
-
-		func.tag = tagName;
 
 		return func;
 	}

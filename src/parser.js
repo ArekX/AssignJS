@@ -19,6 +19,7 @@ function(createEvent) {
 		add: addParser,
 		as: getParser,
 		parse: parse,
+		parseItem: parseItem,
 		events: {
 			afterParse: afterParseEvent
 		}
@@ -62,46 +63,52 @@ function(createEvent) {
 
 		for(var i = 0; i < assignItems.length; i++) {
 			var item = assignItems[i];
-
-			if (item.$parsed) {
-				continue;
-			}
-
-			var assignLines = item.dataset.assign.split(';');
-
-			for (var j = 0; j < assignLines.length; j++) {
-				var line = assignLines[j].trim();
-
-				var parsed = false;
-
-				for(var parserName in parsers) {
-					if (!parsers.hasOwnProperty(parserName)) {
-						continue;
-					}
-
-					var parser = parsers[parserName];
-					var isMatch = typeof parser.check === "function" ? parser.check(line, item) : line.match(parser.check);
-
-					if (isMatch) {
-						item.$parsed = true;
-						parser.handler(line, item);
-						parsed = true;
-						break;
-					}
-				}
-
-				if (parsed || !options.strict) {
-					continue;
-				}
-
-				main.throwError("Cannot parse assigment!", {
-					assignment: line,
-					assignmentList: assignLines,
-					element: item
-				});
-			}
+			parseItem(item, options.strict);
 		}
 
 		afterParseEvent.trigger(parent, options);
+	}
+
+	function parseItem(item, strict) {
+		strict = strict || false;
+
+		if (item.$parsed) {
+			return;
+		}
+
+		var assignLines = item.dataset.assign.split(';');
+
+		for (var j = 0; j < assignLines.length; j++) {
+			var line = assignLines[j].trim();
+
+			var parsed = false;
+
+			for(var parserName in parsers) {
+				if (!parsers.hasOwnProperty(parserName)) {
+					return;
+				}
+
+				var parser = parsers[parserName];
+
+				var isMatch = typeof parser.check === "function" ? parser.check(line, item) : line.match(parser.check);
+
+				if (isMatch) {
+					item.$parsed = true;
+					parser.handler(line, item);
+					parsed = true;
+					break;
+				}
+			}
+
+			if (parsed || !strict) {
+				return;
+			}
+
+			main.throwError("Cannot parse assigment!", {
+				assignment: line,
+				assignmentList: assignLines,
+				element: item
+			});
+		}
 	}
 });

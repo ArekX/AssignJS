@@ -2,8 +2,8 @@ document.querySelector('script[data-assign-js]').$main.set(
 	"core.parser.assignments", 
 	["core.object"], 
 function(object) {
-	var regex = /^\s*(<-|->|<->)?\s*?([a-zA-Z_][a-zA-Z0-9\.]*)(:([a-zA-Z_][a-zA-Z0-9]*))?$/;
-	var propertyRegex = /^[a-zA-Z_](\.[a-zA-Z0-9]+|[a-zA-Z0-9]+)*$/;
+	var regex = /^\s*(<-|->|<->)?\s*?([a-zA-Z_@][a-zA-Z0-9\.]*)(:([a-zA-Z_][a-zA-Z0-9]*))?$/;
+	var propertyRegex = /^[@a-zA-Z_](\.[a-zA-Z0-9]+|[a-zA-Z0-9]+)*$/;
 
 	var main = this.main;
 
@@ -76,15 +76,16 @@ function(object) {
 		return operations;
 	}
 
-	function assignToScope(container, parentScope, assignOperations) {
+	function assignToScope(container, parentContainer, assignOperations) {
+		
+		var parentScope = parentContainer.scope;
+
 		for(var i = 0; i < assignOperations.length; i++) {
 			var op = assignOperations[i];
 
 			var item = object.getVar(parentScope, op.item, null);
 
-			if (item === null) {
-				console.log(parentScope);
-				window.hert = parentScope;
+			if (item === null && op.item !== '@') {
 				main.throwError("Cannot find assignment in parent scope.", {
 					item: op.item,
 					assignOperations: assignOperations,
@@ -105,7 +106,7 @@ function(object) {
 			}
 
 			if (op.useAssignFrom) {
-				container.scope[op.referenceAs] = parentScope[op.item];
+				container.scope[op.referenceAs] = op.item !== '@' ? parentScope[op.item] : parentContainer;
 			}
 		}
 	}

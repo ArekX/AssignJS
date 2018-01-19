@@ -170,6 +170,7 @@ function(parser) {
 	}
 
 	function checkTrackedContainers() {
+		var existingContainers = 0;
 		for(var trackId in trackedItems) {
 			if (!trackedItems.hasOwnProperty(trackId)) {
 				continue;
@@ -189,6 +190,8 @@ function(parser) {
 
 			if (parent === null && element !== document.body.parentElement) {
 				unlinkElement(element);
+			} else {
+				existingContainers++;
 			}
 		}
 	}
