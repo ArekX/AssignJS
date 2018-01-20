@@ -100,8 +100,6 @@
 					element: element
 				});
 			}
-
-			this.events.afterParse.trigger();
 		}
 	}
 })(document.querySelector('script[data-assign-js-core]').$main);
