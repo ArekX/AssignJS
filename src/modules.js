@@ -17,6 +17,7 @@
 	Modules.prototype._initializeAllModules = initializeAllModules;
 
 	var modules = new Modules();
+	var assert = core.assert;
 
 	core.modules = modules;
 	core.addRunnable(function() {
@@ -26,8 +27,8 @@
 	return;
 
 	function defineModule(namespace, dependencies, initializer) {
-		core.assert.validNamespace(namespace);
-		core.assert.canSetKey(namespace, this._definitions);
+		assert.namespaceValid(namespace);
+		assert.keyNotSet(namespace, this._definitions);
 
 		if (!initializer) {
 			initializer = dependencies;
@@ -48,8 +49,8 @@
 	}
 
 	function defineRunnable(namespace, initializer) {
-		core.assert.validNamespace(namespace);
-		core.assert.canSetKey(namespace, this._runnables);
+		assert.namespaceValid(namespace);
+		assert.keyNotSet(namespace, this._runnables);
 		this._runnables[namespace] = initializer;
 	}
 

@@ -188,7 +188,6 @@
 
     function forceInt(value, failValue, radix) {
     	radix = this.defaultValue(radix, 10);
-
     	var value = parseInt(value, radix);
     	return !isNaN(value) ? value : failValue;
     }
