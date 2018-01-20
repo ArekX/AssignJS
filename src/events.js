@@ -12,7 +12,7 @@
 
 		Events.prototype.create = createEvent;
 		Events.prototype.getType = getType;
-		Events.prototype.registerType = registerEventType;
+		Events.prototype.define = defineType;
 
 		return new Events();
 
@@ -21,7 +21,7 @@
 			return new event(context, options);
 		}
 
-		function registerEventType(type, initializer) {
+		function defineType(type, initializer) {
 			assert.keyNotSet(type, this.types, 'This event type is already defined.');
 			this.types[type] = initializer;
 		}

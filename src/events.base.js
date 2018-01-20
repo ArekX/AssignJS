@@ -3,7 +3,7 @@
 
 	function EventExtender() {
 		var module = this.module;
-		this.module.registerType("base", EventEmitter);
+		this.module.define("base", EventEmitter);
 	}
 
 	function EventEmitter(context) {
