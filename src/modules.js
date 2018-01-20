@@ -76,12 +76,13 @@
 	}
 
 	function runRunnables() {
-		for(var namespace in this.runnables) {
-			if (!this.runnables.hasOwnProperty(namespace)) {
+		for(var namespace in this._runnables) {
+			if (!this._runnables.hasOwnProperty(namespace)) {
 				continue;
 			}
 
-			this.runnables[namespace]();
+
+			this._runnables[namespace]();
 		}
 	}
 
