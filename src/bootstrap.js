@@ -9,6 +9,7 @@
 				selector: "[data-assign]"
 			};
 			this.events = {
+				beforeBootstrap: events.create("base", this),
 				afterBootstrap: events.create("base", this)
 			};
 		}
@@ -23,8 +24,10 @@
 		return bootstrap;
 
 		function runBootstrap() {
-			var assignItems = document.querySelectorAll(this.config.selector);
-			parser.parseAll(assignItems);
+			if (!this.events.beforeBootstrap.trigger()) {
+				return;
+			}
+			parser.parseAll(document.querySelectorAll(this.config.selector));
 			this.events.afterBootstrap.trigger();
 		}
 	}

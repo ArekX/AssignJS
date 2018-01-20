@@ -13,6 +13,7 @@
 				assignmentLinesGetter: null
 			};
 			this.events = {
+				beforeParseAll: events.create("base", this),
 				afterParseAll: events.create("base", this)
 			};
 		}
@@ -52,6 +53,10 @@
 		}
 
 		function parseAll(list) {
+			if (!this.events.beforeParseAll.trigger()) {
+				return;
+			}
+
 			for(var i = 0; i < list.length; i++) {
 				this.parse(list[i]);
 			}
