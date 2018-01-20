@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>AssignJS App Test</title>
+</head>
+<body>
+
+<h1>AssignJS App</h1>
+
+<nav data-assign="app.menu <- mainApp"></nav>
+
+<div data-assign="app.main:mainApp">
+
+</div>
+
+<!-- Core -->
+<script src="core/index.js"></script>
+<script src="core/parser.js"></script>
+<script src="core/container.js"></script>
+<script src="core/assignments.js"></script>
+<script src="core/property.js"></script>
+<script src="core/component.js"></script>
+<script src="core/track-property.js"></script>
+<script src="core/event-emitter.js"></script>
+<script src="core/object.js"></script>
+<script src="core/html.js"></script>
+
+<!-- App -->
+<script src="app.main.js"></script>
+<script src="app.menu.js"></script>
+<script src="app.home.js"></script>
+<script src="app.about.js"></script>
+<script>AssignJS.run();</script>
+</body>
+</html>
