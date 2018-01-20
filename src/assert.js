@@ -5,6 +5,7 @@
 
 	Assert.prototype.namespaceValid = assertNamespaceValid; 
 	Assert.prototype.keyNotSet = assertKeyNotSet;
+	Assert.prototype.keySet = assertKeySet;
 	Assert.prototype.equals = assertEquals;
 	Assert.prototype.notEquals = assertNotEquals;
 	Assert.prototype.identical = assertIdentical;
@@ -12,21 +13,29 @@
 	Assert.prototype.isTrue = assertIsTrue;
 	Assert.prototype.isFalse = assertIsFalse;
 
-
 	core.assert = new Assert();
 	return;
 
-	function assertNamespaceValid(namespace) {
-		if (namespace.match(this._namespaceRegex) !== null) {
-			core.throwError('Namespace is not valid.', {
+	function assertNamespaceValid(namespace, message) {
+		if (namespace.match(this._namespaceRegex) === null) {
+			core.throwError(message || 'Namespace is not valid.', {
 				namespace: namespace
 			});
 		}
 	}
 
-	function assertKeyNotSet(key, object) {
+	function assertKeyNotSet(key, object, message) {
+		if (key in object) {
+			core.throwError(message || 'Key is already set in object.', {
+				key: key,
+				object: object
+			});
+		}
+	}
+
+	function assertKeySet(key, object, message) {
 		if (!(key in object)) {
-			core.throwError('Key is already set in object.', {
+			core.throwError(message || 'Key is not set in object.', {
 				key: key,
 				object: object
 			});
@@ -45,40 +54,40 @@
 		return true;
 	}
 
-	function assertEquals() {
-		if (!isEqual(arguments, false)) {
-			core.throwError('Values are not equal.', {values: arguments});
+	function assertEquals(valueA, valueB, message) {
+		if (!isEqual([valueA, valueB], false)) {
+			core.throwError(message || 'Values are not equal.', {values: arguments});
 		}
 	}
 
-	function assertNotEquals() {
-		if (isEqual(arguments, false)) {
-			core.throwError('Values are equal.', {values: arguments});
+	function assertNotEquals(valueA, valueB, message) {
+		if (isEqual([valueA, valueB], false)) {
+			core.throwError(message || 'Values are equal.', {values: arguments});
 		}
 	}
 
 
-	function assertIdentical() {
-		if (!isEqual(arguments, true)) {
-			core.throwError('Values are not identical.', {values: arguments});
+	function assertIdentical(valueA, valueB, message) {
+		if (!isEqual([valueA, valueB], true)) {
+			core.throwError(message || 'Values are not identical.', {values: arguments});
 		}
 	}
 
-	function assertNotIdentical() {
-		if (isEqual(arguments, true)) {
-			core.throwError('Values are identical.', {values: arguments});
+	function assertNotIdentical(valueA, valueB, message) {
+		if (isEqual([valueA, valueB], true)) {
+			core.throwError(message || 'Values are identical.', {values: arguments});
 		}
 	}
 
-	function assertIsTrue(value) {
+	function assertIsTrue(value, message) {
 		if (value !== true) {
-			core.throwError('Values is not true.', {value: value});
+			core.throwError(message || 'Value is not true.', {value: value});
 		}
 	}
 
-	function assertIsFalse(value) {
+	function assertIsFalse(value, message) {
 		if (value !== false) {
-			core.throwError('Values is not false.', {value: value});
+			core.throwError(message || 'Value is not false.', {value: value});
 		}
 	}
 

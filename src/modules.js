@@ -3,7 +3,7 @@
 		this._modules = {};
 		this._definitions = {};
 		this._runnables = {};
-		this._extensions = [];
+		this._extensions = {};
 		this.initialized = false;
 	}
 
@@ -12,6 +12,8 @@
 	Modules.prototype.defineRunnable = defineRunnable;
 	Modules.prototype.as = asModule;
 	Modules.prototype._initializeModule = initializeModule;
+	Modules.prototype._initializeExtensions = initializeExtensions;
+	Modules.prototype._getModules = getModules;
 	Modules.prototype._runAll = runAll;
 	Modules.prototype._runRunnables = runRunnables;
 	Modules.prototype._initializeAllModules = initializeAllModules;
@@ -28,7 +30,7 @@
 
 	function defineModule(namespace, dependencies, initializer) {
 		assert.namespaceValid(namespace);
-		assert.keyNotSet(namespace, this._definitions);
+		assert.keyNotSet(namespace, this._definitions, 'This module is already defined.');
 
 		if (!initializer) {
 			initializer = dependencies;
@@ -39,22 +41,28 @@
 
 	}
 
-	function extendModule(namespace, extender) {
-		if (!extender) {
-			extender = namespace;
+	function extendModule(namespace, dependencies, extender) {
+		if (!(namespace in this._extensions)) {
+			this._extensions[namespace] = [];
 		}
 
-		extender.namespace = extender.namespace || namespace;
-		this._extensions.push(extender);
+		if (!extender) {
+			extender = dependencies;
+		}
+
+		extender.deps = extender.deps || dependencies; 
+
+		this._extensions[namespace].push(extender);
 	}
 
 	function defineRunnable(namespace, initializer) {
 		assert.namespaceValid(namespace);
-		assert.keyNotSet(namespace, this._runnables);
+		assert.keyNotSet(namespace, this._runnables, 'This runnable is already defined.');
 		this._runnables[namespace] = initializer;
 	}
 
 	function runAll() {
+		this.initialized = true;
 		this._initializeAllModules();
 		this._runRunnables();
 	}
@@ -62,7 +70,7 @@
 	function initializeAllModules() {
 		for(var namespace in this._definitions) {
 			if (this._definitions.hasOwnProperty(namespace)) {
-				modules.as(namespace);
+				this.as(namespace);
 			}
 		}
 	}
@@ -83,13 +91,15 @@
 		}
 
 		if (namespace in this._modules) {
-			return modules[namespace];
+			return this._modules[namespace];
 		}
 
-		return modules[namespace] = this._initializeModule(namespace);
+		return this._initializeModule(namespace);
 	}
 
 	function initializeModule(namespace) {
+		assert.keySet(namespace, this._definitions, 'Module is not defined.');
+
 		var initializer = this._definitions[namespace];
 
 		var context = {
@@ -98,13 +108,34 @@
 			deps: initializer.deps
 		};
 
-		var asModules = [];
+		var dependencies = this._getModules(initializer.deps);
+		context.module = this._modules[namespace] = initializer.apply(context, dependencies);
 
-		for (var i = 0; i < initializer.deps.length; i++) {
-			asModules.push(modules.as(initializer.deps[i]));
+		this._initializeExtensions(namespace, context);
+
+		return context.module;
+	}
+
+	function initializeExtensions(namespace, context) {
+
+		if (!(namespace in this._extensions)) {
+			return;
 		}
 
-		return initializer.apply(context, asModules);
+		for(var i = 0; i < this._extensions[namespace].length; i++) {
+			var extender = this._extensions[namespace][i];
+			extender.apply(context, this._getModules(extender.deps));
+		}
+	}
+
+	function getModules(namespaces) {
+		var asModules = [];
+
+		for (var i = 0; i < namespaces.length; i++) {
+			asModules.push(this.as(namespaces[i]));
+		}
+
+		return asModules;
 	}
 
 })(document.querySelector('script[data-assign-js-core]').$main);
