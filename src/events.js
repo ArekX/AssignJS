@@ -11,7 +11,7 @@
 		}
 
 		Events.prototype.create = createEvent;
-		Events.prototype.getType = createEvent;
+		Events.prototype.getType = getType;
 		Events.prototype.registerType = registerEventType;
 
 		return new Events();
@@ -27,7 +27,7 @@
 		}
 
 
-		function getType(namespace) {
+		function getType(type) {
 			assert.keySet(type, this.types, 'This event type is not defined.');
 			return this.types[type];
 		}
