@@ -1,8 +1,6 @@
 (function(core) {
 	core.modules.extend("core.events", EventExtender);
 
-	EventExtender.deps = [];
-
 	function EventExtender() {
 		var module = this.module;
 		this.module.registerType("base", EventEmitter);
@@ -35,18 +33,15 @@
 	}
 
 	function registerNamedEvent(eventNamespace, callback) {
-		main.assertValidNamespace(eventNamespace);
-
-		if (eventNamespace in this.namedListeners) {
-			main.throwError("Event namespace is already defined.", {eventNamespace: eventNamespace, callback: callback});
-		}
+		core.assert.namespaceValid(eventNamespace);
+		core.assert.keyNotSet(eventNamespace, this.namedListeners, "Event namespace is already defined.");
 
 		this.namedListeners[eventNamespace] = callback;
 	}
 
 	function unregisterEvent(event) {
 		var unnamedIndex = this.unnamedListeners.indexOf(event);
-		if (typeof event === "function" && unnamedIndex !== -1) {
+		if (core.vars.isFunction(event) && unnamedIndex !== -1) {
 			this.unnamedListeners.splice(unnamedIndex, 1);
 			return;
 		}
