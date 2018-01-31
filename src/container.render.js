@@ -6,9 +6,9 @@
 	function ContainerManagerExtender() {
 		var module = this.module;
 
-		var base = this.module.get("base");
+		var base = this.module.get("core.base");
 
-		this.module.define("rendered", RenderedContainer);
+		this.module.define("core.rendered", RenderedContainer);
 
 		function RenderedContainer(trackId, payload, parentScope) {
 			this.__proto__ = new base(trackId, payload, parentScope);

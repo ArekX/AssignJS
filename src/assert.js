@@ -76,26 +76,26 @@
 
 	function assertEquals(valueA, valueB, message) {
 		if (!isEqual([valueA, valueB], false)) {
-			core.throwError(message || 'Values are not equal.', {values: arguments});
+			core.throwError(message || 'Values are not equal.', {checkA: valueA, checkB: valueB});
 		}
 	}
 
 	function assertNotEquals(valueA, valueB, message) {
 		if (isEqual([valueA, valueB], false)) {
-			core.throwError(message || 'Values are equal.', {values: arguments});
+			core.throwError(message || 'Values are equal.', {checkA: valueA, checkB: valueB});
 		}
 	}
 
 
 	function assertIdentical(valueA, valueB, message) {
 		if (!isEqual([valueA, valueB], true)) {
-			core.throwError(message || 'Values are not identical.', {values: arguments});
+			core.throwError(message || 'Values are not identical.', {checkA: valueA, checkB: valueB});
 		}
 	}
 
 	function assertNotIdentical(valueA, valueB, message) {
 		if (isEqual([valueA, valueB], true)) {
-			core.throwError(message || 'Values are identical.', {values: arguments});
+			core.throwError(message || 'Values are identical.', {checkA: valueA, checkB: valueB});
 		}
 	}
 

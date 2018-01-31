@@ -4,7 +4,7 @@
 	ContainerManagerExtender.deps = ["core.scope"];
 
 	function ContainerManagerExtender(makeScope) {
-		this.module.define("base", BaseContainer);
+		this.module.define("core.base", BaseContainer);
 	
 		function BaseContainer(trackId, payload, parentScope) {
 			this.payload = payload;
@@ -18,6 +18,7 @@
 			this.scope = makeScope(parentScope);
 		}
 
+		BaseContainer.prototype.owner = null;
 		BaseContainer.prototype.link = linkContainer;
 		BaseContainer.prototype.unlink = unlinkContainer;
 		BaseContainer.prototype.triggerEvent = triggerEvent;

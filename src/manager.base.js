@@ -17,6 +17,7 @@
 		};
 
 		function defineType(type, factory) {
+			core.assert.namespaceValid(type);
 			core.assert.keyNotSet(type, this.types, 'This type is already defined.');
 			this.types[type] = factory;
 		}

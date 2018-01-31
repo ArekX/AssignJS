@@ -27,6 +27,7 @@
 			if (!this.events.beforeBootstrap.trigger()) {
 				return;
 			}
+			
 			parser.parseAll(document.querySelectorAll(this.config.selector));
 			this.events.afterBootstrap.trigger();
 		}

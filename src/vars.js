@@ -13,6 +13,7 @@
 	Vars.prototype.isString = isString;
 	Vars.prototype.isDefined = isDefined;
 	Vars.prototype.isBoolean = isBoolean;
+	Vars.prototype.isFunction = isFunction;
 	Vars.prototype.forceInt = forceInt;
 	Vars.prototype.forceFloat = forceFloat;
 

@@ -28,7 +28,7 @@
 		return new Parser();
 
 		function defineParser(namespace, checker, parser) {
-			assert.validateNamepsace(namespace);
+			assert.namespaceValid(namespace);
 			assert.keyNotSet(namespace, this._parsers, 'This parser is already defined.');
 
 			if (!parser) {
@@ -50,7 +50,7 @@
 				return this.config.assignmentLinesGetter(element);
 			}
 
-			return (element.dataset[dataKey] || "").split(';');
+			return (element.dataset[this.config.dataKey] || "").split(';');
 		}
 
 		function parseAll(list) {
@@ -76,17 +76,16 @@
 				var line = assignLines[i].trim();
 
 				for(var parserName in this._parsers) {
-					if (!parsers.hasOwnProperty(parserName)) {
+					if (!this._parsers.hasOwnProperty(parserName)) {
 						return;
 					}
 
-					var parser = this._parsers[parserName];
-
-					var isMatch = core.vars.isFunction(parser.check) ? parser.check(line, element) : line.match(parser.check);
+					var parse = this._parsers[parserName];
+					var isMatch = core.vars.isFunction(parse.checker) ? parse.checker(line, element) : line.match(parse.checker);
 
 					if (isMatch) {
 						element.$parsed = true;
-						parser.handler(line, element);
+						parse(line, element);
 						break;
 					}
 				}

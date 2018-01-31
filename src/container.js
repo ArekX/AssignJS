@@ -15,6 +15,8 @@
 		}
 
 		ContainerManager.prototype = managerMaker();
+		ContainerManager.prototype.findParentContainer = findParentContainer;
+		ContainerManager.prototype.wrapElement = wrapElement;
 		ContainerManager.prototype.create = createContainer;
 		ContainerManager.prototype._getNewTrackId = getNewTrackId;
 
@@ -28,8 +30,33 @@
 			return this.containers[trackId] = instance;
 		}
 
+		function wrapElement(element, type, payload) {
+			 var parentElement = findParentContainer(element);
+			 var parentScope = parentElement ? parentElement.$container.scope : null;
+
+			 var container = this.create(type, payload, parentScope);
+			 
+			 container.owner = element;
+
+			 return container;
+		}
+
 		function getNewTrackId() {
 			return this.trackId++;
+		}
+
+		function findParentContainer(element) {
+			var parent = element.parentElement;
+
+			while(parent !== null) {
+				if (parent.$container) {
+					return parent;
+				}
+
+				parent = parent.parentElement;
+			}
+
+			return null;
 		}
 	}
 })(document.querySelector('script[data-assign-js-core]').$main);

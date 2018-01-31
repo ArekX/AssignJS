@@ -26,7 +26,7 @@
 		}
 
 		function registerEvent(eventNamespace, callback) {
-			if (typeof callback === "function") {
+			if (core.vars.isFunction(callback)) {
 				this.registerNamed(eventNamespace, callback);
 				return;
 			}
@@ -73,6 +73,8 @@
 			}
 
 			this.afterTriggerCallback && this.afterTriggerCallback.apply(this, arguments);
+
+			return true;
 		}
 	}
 })(document.querySelector('script[data-assign-js-core]').$main);
