@@ -15,47 +15,46 @@
 	Assert.prototype.isTrue = assertIsTrue;
 	Assert.prototype.isFalse = assertIsFalse;
 
+	var vars = core.vars;
 	core.assert = new Assert();
 	return;
 
-	function assertNamespaceValid(namespace, message) {
+	function assertNamespaceValid(namespace, message, data) {
 		if (namespace.match(this._namespaceRegex) === null) {
-			core.throwError(message || 'Namespace is not valid.', {
-				namespace: namespace
-			});
+			throwError(message, 'Namespace is not valid.', data, {namespace: namespace });
 		}
 	}
 
-	function assertKeyNotSet(key, object, message) {
+	function assertKeyNotSet(key, object, message, data) {
 		if (key in object) {
-			core.throwError(message || 'Key is already set in object.', {
+			throwError(message, 'Key is already set in object.', data, {
 				key: key,
 				object: object
 			});
 		}
 	}
 
-	function assertKeySet(key, object, message) {
+	function assertKeySet(key, object, message, data) {
 		if (!(key in object)) {
-			core.throwError(message || 'Key is not set in object.', {
+			throwError(message, 'Key is not set in object.', data, {
 				key: key,
 				object: object
 			});
 		}
 	}
 
-	function assertOwnKeyNotSet(key, object, message) {
+	function assertOwnKeyNotSet(key, object, message, data) {
 		if (object.hasOwnProperty(key)) {
-			core.throwError(message || 'Key is already set in object.', {
+			throwError(message, 'Key is already set in object.', data, {
 				key: key,
 				object: object
 			});
 		}
 	}
 
-	function assertOwnKeySet(key, object, message) {
+	function assertOwnKeySet(key, object, message, data) {
 		if (!object.hasOwnProperty(key)) {
-			core.throwError(message || 'Key is not set in object.', {
+			throwError(message, 'Key is not set in object.', data, {
 				key: key,
 				object: object
 			});
@@ -74,41 +73,44 @@
 		return true;
 	}
 
-	function assertEquals(valueA, valueB, message) {
+	function assertEquals(valueA, valueB, message, data) {
 		if (!isEqual([valueA, valueB], false)) {
-			core.throwError(message || 'Values are not equal.', {checkA: valueA, checkB: valueB});
+			throwError(message, 'Values are not equal.', data, {checkA: valueA, checkB: valueB});
 		}
 	}
 
-	function assertNotEquals(valueA, valueB, message) {
+	function assertNotEquals(valueA, valueB, message, data) {
 		if (isEqual([valueA, valueB], false)) {
-			core.throwError(message || 'Values are equal.', {checkA: valueA, checkB: valueB});
+			throwError(message, 'Values are equal.', data, {checkA: valueA, checkB: valueB});
 		}
 	}
 
-
-	function assertIdentical(valueA, valueB, message) {
+	function assertIdentical(valueA, valueB, message, data) {
 		if (!isEqual([valueA, valueB], true)) {
-			core.throwError(message || 'Values are not identical.', {checkA: valueA, checkB: valueB});
+			throwError(message, 'Values are not identical.', data, {checkA: valueA, checkB: valueB});
 		}
 	}
 
-	function assertNotIdentical(valueA, valueB, message) {
+	function assertNotIdentical(valueA, valueB, message, data) {
 		if (isEqual([valueA, valueB], true)) {
-			core.throwError(message || 'Values are identical.', {checkA: valueA, checkB: valueB});
+			throwError(message, 'Values are identical.', data, {checkA: valueA, checkB: valueB});
 		}
 	}
 
-	function assertIsTrue(value, message) {
+	function assertIsTrue(value, message, data) {
 		if (value !== true) {
-			core.throwError(message || 'Value is not true.', {value: value});
+			throwError(message, 'Value is not true.', data, {value: value});
 		}
 	}
 
-	function assertIsFalse(value, message) {
+	function assertIsFalse(value, message, data) {
 		if (value !== false) {
-			core.throwError(message || 'Value is not false.', {value: value});
+			throwError(message, 'Value is not false.', data, {value: value});
 		}
+	}
+
+	function throwError(message, defaultMessage, data, defaultData) {
+		core.throwError(message || defaultMessage, data || defaultData);
 	}
 
 })(document.querySelector('script[data-assign-js-core]').$main);
