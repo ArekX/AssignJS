@@ -1,20 +1,21 @@
 (function(core) {
 	core.modules.define("core.parser", ParserModule);
 
-	ParserModule.deps = ["core.events"];
+	ParserModule.deps = ["core.event"];
 
-	function ParserModule(events) {
+	function ParserModule(makeEventEmitter) {
 		var assert = core.assert;
 
 		function Parser() {
 			this._parsers = {};
 			this.config = {
 				strict: true,
+				dataKey: 'assign',
 				assignmentLinesGetter: null
 			};
 			this.events = {
-				beforeParseAll: events.create("base", this),
-				afterParseAll: events.create("base", this)
+				beforeParseAll: makeEventEmitter(this),
+				afterParseAll: makeEventEmitter(this)
 			};
 		}
 
@@ -49,7 +50,7 @@
 				return this.config.assignmentLinesGetter(element);
 			}
 
-			return element.dataset.assign.split(';');
+			return (element.dataset[dataKey] || "").split(';');
 		}
 
 		function parseAll(list) {

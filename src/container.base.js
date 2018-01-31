@@ -1,27 +1,42 @@
 (function(core) {
 	core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-	ContainerManagerExtender.deps = ["core.events"];
+	ContainerManagerExtender.deps = ["core.scope"];
 
-	function ContainerManagerExtender(events) {
-		var module = this.module;
-		this.module.define("base", ContainerBase);
-	}
+	function ContainerManagerExtender(makeScope) {
+		this.module.define("base", BaseContainer);
+	
+		function BaseContainer(trackId, payload, parentScope) {
+			this.payload = payload;
+			this.trackId = trackId;
+			this.events = {
+				beforeLink: null,
+				afterLink: null,
+				afterUnlink: null
+			};
 
-	function ContainerBase(trackId, payload) {
-		this.payload = payload;
-		this.trackId = trackId;
-	}
+			this.scope = makeScope(parentScope);
+		}
 
-	ContainerBase.prototype.onLink = handleOnLink;
-	ContainerBase.prototype.onUnlink = handleOnUnlink;
+		BaseContainer.prototype.link = linkContainer;
+		BaseContainer.prototype.unlink = unlinkContainer;
+		BaseContainer.prototype.triggerEvent = triggerEvent;
 
-	function handleOnLink() {
+		function linkContainer(linkItems) {
+			this.triggerEvent('beforeLink', linkItems);
+			this.scope.assignMultiple(linkItems);
+			this.triggerEvent('afterLink');
+		}
 
-	}
+		function unlinkContainer() {
+			this.triggerEvent('afterUnlink');
+		}
 
-	function handleOnUnlink() {
-
+		function triggerEvent(name, data) {
+			if (this.events[name]) {
+				this.events[name].trigger(data);
+			}
+		}
 	}
 
 })(document.querySelector('script[data-assign-js-core]').$main);

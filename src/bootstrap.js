@@ -1,16 +1,16 @@
 (function(core) {
 	core.modules.define("core.bootstrap", BootstrapModule);
 
-	BootstrapModule.deps = ["core.parser", "core.events"];
+	BootstrapModule.deps = ["core.parser", "core.event"];
 
-	function BootstrapModule(parser, events) {
+	function BootstrapModule(parser, makeEventEmitter) {
 		function Bootstrap() {
 			this.config = {
 				selector: "[data-assign]"
 			};
 			this.events = {
-				beforeBootstrap: events.create("base", this),
-				afterBootstrap: events.create("base", this)
+				beforeBootstrap: makeEventEmitter(this),
+				afterBootstrap: makeEventEmitter(this)
 			};
 		}
 

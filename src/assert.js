@@ -6,6 +6,8 @@
 	Assert.prototype.namespaceValid = assertNamespaceValid; 
 	Assert.prototype.keyNotSet = assertKeyNotSet;
 	Assert.prototype.keySet = assertKeySet;
+	Assert.prototype.ownKeySet = assertOwnKeySet;
+	Assert.prototype.ownKeyNotSet = assertOwnKeyNotSet;
 	Assert.prototype.equals = assertEquals;
 	Assert.prototype.notEquals = assertNotEquals;
 	Assert.prototype.identical = assertIdentical;
@@ -35,6 +37,24 @@
 
 	function assertKeySet(key, object, message) {
 		if (!(key in object)) {
+			core.throwError(message || 'Key is not set in object.', {
+				key: key,
+				object: object
+			});
+		}
+	}
+
+	function assertOwnKeyNotSet(key, object, message) {
+		if (object.hasOwnProperty(key)) {
+			core.throwError(message || 'Key is already set in object.', {
+				key: key,
+				object: object
+			});
+		}
+	}
+
+	function assertOwnKeySet(key, object, message) {
+		if (!object.hasOwnProperty(key)) {
 			core.throwError(message || 'Key is not set in object.', {
 				key: key,
 				object: object
