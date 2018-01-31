@@ -5,12 +5,11 @@
 
 	function ContainerManagerModule(parser, managerMaker) {
 		parser.events.afterParseAll.register("core.container.manager", function() {
-
+			// TODO: Process tracked elements
 		});
 
 		function ContainerManager() {
-			this.trackId = 0;
-			this.types = {};
+			this.trackId = 1;
 			this.containers = {};
 		}
 
@@ -60,8 +59,10 @@
 			var parent = element.parentElement;
 
 			while(parent !== null) {
-				if (parent.$container) {
-					return parent;
+				var container = this.getContainer(element);
+
+				if (container) {
+					return container;
 				}
 
 				parent = parent.parentElement;

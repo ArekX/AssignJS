@@ -5,19 +5,26 @@
 
 	function ComponentModule(containerManager, makeManager, parser, makeEventEmitter) {
 
-		var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([a-zA-Z0-9_:\ ,<>-]+)?$/;
 		var main = this;
+		var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([a-zA-Z0-9_:\ ,<>-]+)?$/;
 		
 		function ComponentManager() {
+			this.config = {
+				container: "core.rendered"
+			};
 		}
 
 		ComponentManager.prototype = makeManager();
-		
-		parser.define("core.component", componentRegex, makeComponent);
+		ComponentManager.prototype.parseDefinition = parseDefinition;
+		ComponentManager.prototype.makeComponent = makeComponent;
 
-		return new ComponentManager();
+		var manager = new ComponentManager();
 
-		function parseLine(line) {
+		parser.define("core.component", componentRegex, manager.makeComponent.bind(manager));
+
+		return manager;
+
+		function parseDefinition(line) {
 			var parts = line.split(componentRegex);
 
 			if (parts.length !== 6) {
@@ -36,9 +43,9 @@
 		}
 
 
-		function makeComponent(line, element) {
-			var data = parseLine(line);
-			var container = containerManager.wrapElement(element, "core.rendered", {});
+		function makeComponent(definition, element) {
+			var data = this.parseDefinition(definition);
+			var container = containerManager.wrapElement(element, this.config.container, {});
 
 			console.log(data, container);
 		}
