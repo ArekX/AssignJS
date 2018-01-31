@@ -9,15 +9,18 @@
 		function BaseContainer(trackId, payload, parentScope) {
 			this.payload = payload;
 			this.trackId = trackId;
+			this._parentContainer = null;
 			this.events = {
 				beforeLink: null,
 				afterLink: null,
 				afterUnlink: null
 			};
 
-			this.scope = makeScope(parentScope);
+			this.scope = makeScope();
 		}
 
+		BaseContainer.prototype.setParent = setParentContainer;
+		BaseContainer.prototype.getParent = getParentContainer;
 		BaseContainer.prototype.owner = null;
 		BaseContainer.prototype.link = linkContainer;
 		BaseContainer.prototype.unlink = unlinkContainer;
@@ -31,6 +34,20 @@
 
 		function unlinkContainer() {
 			this.triggerEvent('afterUnlink');
+		}
+
+		function setParentContainer(container) {
+			this._parentContainer = container;
+
+			if (container) {
+				this.scope.setParent(container.scope);
+			} else {
+				this.scope.setParent(null);
+			}
+		}
+
+		function getParentContainer() {
+			return this._parentContainer;
 		}
 
 		function triggerEvent(name, data) {

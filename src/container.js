@@ -15,7 +15,8 @@
 		}
 
 		ContainerManager.prototype = managerMaker();
-		ContainerManager.prototype.findParentContainer = findParentContainer;
+		ContainerManager.prototype.getContainer = getContainer;
+		ContainerManager.prototype.getParentContainer = getParentContainer;
 		ContainerManager.prototype.wrapElement = wrapElement;
 		ContainerManager.prototype.create = createContainer;
 		ContainerManager.prototype._getNewTrackId = getNewTrackId;
@@ -30,12 +31,16 @@
 			return this.containers[trackId] = instance;
 		}
 
-		function wrapElement(element, type, payload) {
-			 var parentElement = findParentContainer(element);
-			 var parentScope = parentElement ? parentElement.$container.scope : null;
+		function getContainer(element) {
+			return element.$container || null;
+		}
 
-			 var container = this.create(type, payload, parentScope);
-			 
+		function wrapElement(element, type, payload) {
+			 var parentContainer = this.getParentContainer(element);
+
+			 var container = this.create(type, payload);
+
+			 container.setParent(parentContainer);
 			 container.owner = element;
 
 			 return container;
@@ -45,7 +50,13 @@
 			return this.trackId++;
 		}
 
-		function findParentContainer(element) {
+		function getParentContainer(element) {
+			var elementContainer = this.getContainer(element);
+
+			if (elementContainer) {
+				return elementContainer.getParent();
+			}
+
 			var parent = element.parentElement;
 
 			while(parent !== null) {

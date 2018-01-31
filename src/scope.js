@@ -6,23 +6,19 @@
 	function ScopeModule() {
 		var scopeTrackId = 1;
 
-		function Scope(parentScope) {
+		function Scope() {
 			this._trackId = scopeTrackId++;
 			this._items = {};
 			this._children = {};
 			this._isDestroyed = false;
-			this._parentScope = parentScope;
-
-			if (parentScope) {
-				this._items.__proto__ = parentScope._items;
-				parentScope._registerChild(this);
-			}
+			this._parentScope = null;
 		}
 
 		Scope.prototype.set = setItemToScope;
 		Scope.prototype.assign = assignItemToScope;
 		Scope.prototype.assignMultiple = assignMultipleItemsToScope;
 		Scope.prototype.get = getItemFromScope;
+		Scope.prototype.setParent = setParentScope;
 		Scope.prototype.getParent = getParentScope;
 		Scope.prototype.getChildren = getChildrenScopes;
 		Scope.prototype.exists = existsInScope;
@@ -44,12 +40,26 @@
 
 		function destroyScope() {
 			this._assertNotDestroyed();
-			
+
 			if (this._parentScope) {
 				this._parentScope._unregisterChild(this);
 			}
 
 			this._isDestroyed = true;
+		}
+
+		function setParentScope(scope) {
+			if (this._parentScope) {
+				this._parentScope._unregisterChild(this);
+				this._items.__proto__ = {};
+			}
+
+			if (scope) {
+				this._items.__proto__ = scope._items;
+				scope._registerChild(this);
+			}
+
+			this._parentScope = scope;
 		}
 
 		function getParentScope() {
