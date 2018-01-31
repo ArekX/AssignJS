@@ -1,9 +1,9 @@
 (function(core) {
 	core.modules.define("core.components", ComponentModule);
 
-	ComponentModule.deps = ["core.container.manager", "core.manager.base", "core.parser", "core.event"];
+	ComponentModule.deps = ["core.container.manager", "core.manager.base", "core.parser", "core.event", "core.assignments"];
 
-	function ComponentModule(containerManager, makeManager, parser, makeEventEmitter) {
+	function ComponentModule(containerManager, makeManager, parser, makeEventEmitter, assignments) {
 		var assert = core.assert;
 		var main = this;
 		var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([a-zA-Z0-9_:\ ,<>-]+)?$/;
@@ -35,7 +35,7 @@
 			return {
 				type: parts[1],
 				referenceAs: parts[3] ? parts[3] : null,
-				assignments: parts[4] || null
+				assignments: parts[4] ? assignments.parse(parts[4]) : null
 			};
 		}
 

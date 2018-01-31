@@ -9,7 +9,7 @@ Assign JS tests. See source for more info.
 
 Initialize app.my-app component, name it as app, and add "ctrl" component into it. This component has a template.
 <div></div>
-<div data-assign="app.test"></div>
+<div data-assign="app.test:app <- body"></div>
 
 </pre>
 <script src="index.js" data-name-as="coreLib"></script>
@@ -26,6 +26,7 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="scope.js"></script>
 <script src="parser.js"></script>
 <script src="component.js"></script>
+<script src="assignments.js"></script>
 
 <script>
 coreLib.modules.extend("core.components", function() {
