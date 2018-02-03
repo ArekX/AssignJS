@@ -6,7 +6,7 @@
 	function ComponentModule(containerManager, makeManager, parser, makeEventEmitter, assignments) {
 		var assert = core.assert;
 		var main = this;
-		var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?([a-zA-Z0-9_:\ ,<>-]+)?$/;
+		var componentRegex = /^([a-zA-Z0-9_\.-]+)(:([a-zA-Z_][a-zA-Z0-9]+))?(\s*(\<\-.*?))?$/;
 		
 		function ComponentManager() {
 			this.config = {
@@ -27,9 +27,10 @@
 		function parseDefinition(line, element) {
 			var parts = line.split(componentRegex);
 
-			assert.identical(parts.length, 6, "Cannot parse component assignment. Invalid property syntax.", {
+			assert.identical(parts.length, 7, "Cannot parse component assignment. Invalid property syntax.", {
 				line: line,
-				element: element
+				element: element,
+				parts: parts
 			});
 			
 			return {

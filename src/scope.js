@@ -24,8 +24,8 @@
 		Scope.prototype.exists = existsInScope;
 		Scope.prototype.isOwnerOf = isInOwnScope;
 		Scope.prototype.destroy = destroyScope;
-		Scope.prototype._registerChild = registerChildScope;
-		Scope.prototype._unregisterChild = unregisterChildScope;
+		Scope.prototype._setChild = registerChildScope;
+		Scope.prototype._unsetChild = unregisterChildScope;
 		Scope.prototype._assertNotDestroyed = assertNotDestroyed;
 
 		return function(parentScope) {
@@ -42,7 +42,7 @@
 			this._assertNotDestroyed();
 
 			if (this._parentScope) {
-				this._parentScope._unregisterChild(this);
+				this._parentScope._unsetChild(this);
 			}
 
 			this._isDestroyed = true;
@@ -50,13 +50,13 @@
 
 		function setParentScope(scope) {
 			if (this._parentScope) {
-				this._parentScope._unregisterChild(this);
+				this._parentScope._unsetChild(this);
 				this._items.__proto__ = {};
 			}
 
 			if (scope) {
 				this._items.__proto__ = scope._items;
-				scope._registerChild(this);
+				scope._setChild(this);
 			}
 
 			this._parentScope = scope;
