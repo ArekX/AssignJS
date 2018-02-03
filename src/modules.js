@@ -1,4 +1,6 @@
 (function(core) {
+    "use strict";
+    
     function Modules() {
         this._modules = {};
         this._definitions = {};

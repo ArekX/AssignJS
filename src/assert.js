@@ -1,4 +1,5 @@
 (function(core) {
+    "use strict";
     function Assert() {
         this._namespaceRegex = /^([a-zA-Z0-9-]+)(\.([a-zA-Z0-9-]+))+$/;
     }

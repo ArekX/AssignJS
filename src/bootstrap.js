@@ -1,4 +1,5 @@
 (function(core) {
+    "use strict";
     core.modules.define("core.bootstrap", BootstrapModule);
 
     BootstrapModule.deps = ["core.parser", "core.event"];

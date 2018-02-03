@@ -1,16 +1,15 @@
 (function(core) {
+    "use strict";
+    
     core.modules.define("core.container.manager", ContainerManagerModule);
 
     ContainerManagerModule.deps = ["core.parser", "core.manager.base"];
 
     function ContainerManagerModule(parser, managerMaker) {
-        parser.events.afterParseAll.register("core.container.manager", function() {
-            // TODO: Process tracked elements
-        });
-
         function ContainerManager() {
             this.trackId = 1;
             this.containers = {};
+            this.pendingContainers = [];
         }
 
         ContainerManager.prototype = managerMaker();
@@ -19,13 +18,24 @@
         ContainerManager.prototype.wrapElement = wrapElement;
         ContainerManager.prototype.create = createContainer;
         ContainerManager.prototype._getNewTrackId = getNewTrackId;
+        ContainerManager.prototype._initPendingContainers = initPendingContainers;
 
-        return new ContainerManager();
+        var manager = new ContainerManager();
+
+        parser.events.afterParseAll.register("core.container.manager", function() {
+            // TODO: Process tracked elements
+
+            manager._initPendingContainers();
+        });
+
+        return manager;
 
         function createContainer(type, payload, parentScope) {
             var type = this.get(type);
             var trackId = this._getNewTrackId();
             var instance = new type(trackId, payload, parentScope);
+
+            this.pendingContainers.push(instance);
 
             return this.containers[trackId] = instance;
         }
@@ -41,8 +51,16 @@
 
              container.setParent(parentContainer);
              container.owner = element;
+             element.$container = container;
 
              return container;
+        }
+
+        function initPendingContainers() {
+            while(this.pendingContainers.length > 0) {
+                var container = this.pendingContainers.pop();
+                container.link();
+            }
         }
 
         function getNewTrackId() {
@@ -59,7 +77,7 @@
             var parent = element.parentElement;
 
             while(parent !== null) {
-                var container = this.getContainer(element);
+                var container = this.getContainer(parent);
 
                 if (container) {
                     return container;

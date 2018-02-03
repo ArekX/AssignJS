@@ -1,4 +1,6 @@
 (function(core) {
+    "use strict";
+    
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
     ContainerManagerExtender.deps = [];

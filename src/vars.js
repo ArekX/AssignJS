@@ -1,4 +1,5 @@
 (function(core) {
+    "use strict";
 
     function Vars() {}
 

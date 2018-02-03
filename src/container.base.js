@@ -1,4 +1,6 @@
 (function(core) {
+    "use strict";
+    
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
     ContainerManagerExtender.deps = ["core.scope"];
@@ -12,6 +14,7 @@
             this._children = {};
             this._isUnlinked = false;
             this._parentContainer = null;
+            this._assignments = null;
             this.events = {
                 beforeLink: null,
                 afterLink: null,
@@ -25,6 +28,7 @@
         BaseContainer.prototype.owner = null;
         BaseContainer.prototype.getId = getId;
         BaseContainer.prototype.isUnlinked = getIsUnlinked;
+        BaseContainer.prototype.setupAssignments = setupAssignments;
         BaseContainer.prototype.setParent = setParentContainer;
         BaseContainer.prototype.getParent = getParentContainer;
         BaseContainer.prototype._setChild = setChildContainer;
@@ -37,12 +41,26 @@
             return this._trackId;
         }
 
-        function linkContainer(linkItems) {
-            this.triggerEvent('beforeLink', linkItems);
-            this.scope.assignMultiple(linkItems);
+        function linkContainer() {
+            this.triggerEvent('beforeLink', this._assignments);
+
+            for(var i = 0; i < this._assignments.length; i++) {
+                var assignment = this._assignments[i];
+                var value = assignment.type === "literal" ? assignment.value : this.scope.get(assignment.value);
+                this.scope.set(assignment.name, value);
+            }
+
+
+            console.log(this.scope._items);
+
+            // this.scope.assignMultiple(linkItems);
             // todo: You need to track every place this is linked to,
             // because on unlink that needs to be removed.
             this.triggerEvent('afterLink');
+        }
+
+        function setupAssignments(assignments) {
+            this._assignments = assignments;
         }
 
         function getIsUnlinked() {

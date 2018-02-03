@@ -1,4 +1,6 @@
 (function(core) {
+    "use strict";
+    
     core.modules.define("core.scope", ScopeModule);
 
     ScopeModule.deps = [];
@@ -95,7 +97,7 @@
         function setItemToScope(name, item) {
             this._assertNotDestroyed();
 
-            core.assert.ownKeyNotSet(this.items, name, 'This item is already defined in scope.');
+            core.assert.ownKeyNotSet(name, this._items, 'This item is already defined in scope.');
             this._items[name] = item;
         }
 
@@ -128,7 +130,7 @@
         function getItemFromScope(name) {
             this._assertNotDestroyed();
 
-            core.assert.keySet(this.items, name, 'This item is not defined in scope.');
+            core.assert.keySet(name, this._items, 'This item is not defined in scope.');
             return this._items[name];
         }
 

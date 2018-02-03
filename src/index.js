@@ -1,4 +1,6 @@
 (function(script) {
+    "use strict";
+    
     var coreName = script.dataset.nameAs || 'AssignJS';
     var runners = [];
 

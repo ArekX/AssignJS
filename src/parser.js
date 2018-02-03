@@ -1,4 +1,6 @@
 (function(core) {
+    "use strict";
+    
     core.modules.define("core.parser", ParserModule);
 
     ParserModule.deps = ["core.event"];

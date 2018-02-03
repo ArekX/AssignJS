@@ -1,4 +1,5 @@
 (function(core) {
+    "use strict";
     core.modules.define("core.components", ComponentModule);
 
     ComponentModule.deps = ["core.container.manager", "core.manager.base", "core.parser", "core.event", "core.assignments"];
@@ -42,10 +43,20 @@
 
 
         function makeComponent(definition, element) {
-            var data = this.parseDefinition(definition, element);
+            var defintion = this.parseDefinition(definition, element);
             var container = containerManager.wrapElement(element, this.config.container, {});
+            
+            container.setupAssignments(defintion.assignments);
 
-            console.log(data, container);
+            if (defintion.referenceAs) {
+                var parent = container.scope.getParent();
+
+                if (parent) {
+                    parent.set(defintion.referenceAs, container);
+                }
+
+                container.scope.set(defintion.referenceAs, container);
+            }
         }
 
     }

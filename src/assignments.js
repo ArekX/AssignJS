@@ -1,4 +1,5 @@
 (function(core) {
+    "use strict";
     core.modules.define("core.assignments", AssignmentsModule);
 
     AssignmentsModule.deps = [];
@@ -6,7 +7,7 @@
     function AssignmentsModule() {
         var assert = core.assert;
         
-        var regex = /^\s*(<-|->|<->)?\s*?([a-zA-Z_@][a-zA-Z0-9\.]*|\(.*?\))(:([a-zA-Z_][a-zA-Z0-9]*))?$/;
+        var regex = /^\s*(\<\-)?\s*([a-zA-Z_@][a-zA-Z0-9\.]*|\(.*?\))(:([a-zA-Z_][a-zA-Z0-9]*))?$/;
         var propertyRegex = /^[@a-zA-Z_](\.[a-zA-Z0-9]+|[a-zA-Z0-9]+)*$/;
         var literalRegex = /^\((.*?)\)$/;
 
@@ -63,7 +64,7 @@
             assignmentLine = assignmentLine.replace(/\,(\s*\,)+/g, ',').trim();
 
             return assignmentItems.concat(assignmentLine.split(',')).filter(function(item) {
-                return item.length > 0;
+                return item.length > 0 && item.trim() !== "<-";
             });
         }
 
