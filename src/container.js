@@ -1,6 +1,6 @@
 (function(core) {
     "use strict";
-    
+
     core.modules.define("core.container.manager", ContainerManagerModule);
 
     ContainerManagerModule.deps = ["core.parser", "core.manager.base"];
@@ -58,7 +58,7 @@
 
         function initPendingContainers() {
             while(this.pendingContainers.length > 0) {
-                var container = this.pendingContainers.pop();
+                var container = this.pendingContainers.shift();
                 container.link();
             }
         }

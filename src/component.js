@@ -42,21 +42,26 @@
         }
 
 
-        function makeComponent(definition, element) {
-            var defintion = this.parseDefinition(definition, element);
-            var container = containerManager.wrapElement(element, this.config.container, {});
-            
-            container.setupAssignments(defintion.assignments);
+        function makeComponent(definitionString, element) {
+            var def = this.parseDefinition(definitionString, element);
 
-            if (defintion.referenceAs) {
+            var componentClass = this.get(def.type);
+            var instance = new componentClass();
+            var container = containerManager.wrapElement(element, this.config.container, instance);
+            
+            container.setupAssignments(def.assignments);
+
+            if (def.referenceAs) {
                 var parent = container.scope.getParent();
 
                 if (parent) {
-                    parent.set(defintion.referenceAs, container);
+                    parent.set(def.referenceAs, container);
                 }
 
-                container.scope.set(defintion.referenceAs, container);
+                container.scope.set(def.referenceAs, container);
             }
+
+            console.log(instance, container.scope);
         }
 
     }

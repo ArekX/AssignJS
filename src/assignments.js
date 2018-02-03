@@ -14,15 +14,24 @@
         function Assignments() {}
 
         Assignments.prototype.parse = parse;
+        Assignments.prototype.assignToScope = assignToScope;
         Assignments.prototype._parseAssignmentItems = parseAssignmentItems;
         Assignments.prototype._parsePartsAsLiteral = parsePartsAsLiteral;
         Assignments.prototype._parsePartsAsItem = parsePartsAsItem;
 
         return new Assignments();
 
-        function parse(assignments) {
+        function assignToScope(assignments, scope) {
+            for(var i = 0; i < assignments.length; i++) {
+                var assignment = assignments[i];
+                var value = assignment.type === "literal" ? assignment.value : scope.get(assignment.value);
+                scope.set(assignment.name, value);
+            }
+        }
+
+        function parse(assignmentString) {
             
-            var assignmentItems = this._parseAssignmentItems(assignments);
+            var assignmentItems = this._parseAssignmentItems(assignmentString);
             var operations = [];
 
             for(var i = 0; i < assignmentItems.length; i++) {
@@ -31,7 +40,7 @@
                 var parts = item.split(regex);
 
                 assert.identical(parts.length, 6, "Cannot parse assignment part. Invalid syntax.", {
-                    assignments: assignments,
+                    assignments: assignmentString,
                     parts: parts
                 });
 
@@ -39,7 +48,7 @@
                 var literalResult = parts[2].match(literalRegex);
 
                 assert.notIdentical(propertyResult, literalResult, "Invalid property.", {
-                    assignments: assignments,
+                    assignments: assignmentString,
                     parts: parts,
                     property: parts[2]
                 });

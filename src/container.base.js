@@ -1,11 +1,11 @@
 (function(core) {
     "use strict";
-    
+
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-    ContainerManagerExtender.deps = ["core.scope"];
+    ContainerManagerExtender.deps = ["core.scope", "core.assignments"];
 
-    function ContainerManagerExtender(makeScope) {
+    function ContainerManagerExtender(makeScope, assignments) {
         this.module.define("core.base", BaseContainer);
     
         function BaseContainer(trackId, payload, parentScope) {
@@ -44,16 +44,8 @@
         function linkContainer() {
             this.triggerEvent('beforeLink', this._assignments);
 
-            for(var i = 0; i < this._assignments.length; i++) {
-                var assignment = this._assignments[i];
-                var value = assignment.type === "literal" ? assignment.value : this.scope.get(assignment.value);
-                this.scope.set(assignment.name, value);
-            }
+            assignments.assignToScope(this._assignments, this.scope);
 
-
-            console.log(this.scope._items);
-
-            // this.scope.assignMultiple(linkItems);
             // todo: You need to track every place this is linked to,
             // because on unlink that needs to be removed.
             this.triggerEvent('afterLink');

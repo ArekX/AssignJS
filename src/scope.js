@@ -1,6 +1,6 @@
 (function(core) {
     "use strict";
-    
+
     core.modules.define("core.scope", ScopeModule);
 
     ScopeModule.deps = [];
@@ -25,6 +25,7 @@
         Scope.prototype.getChildren = getChildrenScopes;
         Scope.prototype.exists = existsInScope;
         Scope.prototype.isOwnerOf = isInOwnScope;
+        Scope.prototype.isRoot = isRootScope;
         Scope.prototype.destroy = destroyScope;
         Scope.prototype._setChild = registerChildScope;
         Scope.prototype._unsetChild = unregisterChildScope;
@@ -138,6 +139,10 @@
             this._assertNotDestroyed();
 
             return this._items.hasOwnProperty(name);
+        }
+
+        function isRootScope() {
+            return this.getParent() === null;
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);
