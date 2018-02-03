@@ -1,27 +1,27 @@
 (function(core) {
-	core.modules.extend("core.container.manager", ContainerManagerExtender);
+    core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-	ContainerManagerExtender.deps = [];
+    ContainerManagerExtender.deps = [];
 
-	function ContainerManagerExtender() {
-		var module = this.module;
+    function ContainerManagerExtender() {
+        var module = this.module;
 
-		var base = this.module.get("core.base");
+        var base = this.module.get("core.base");
 
-		this.module.define("core.rendered", RenderedContainer);
+        this.module.define("core.rendered", RenderedContainer);
 
-		function RenderedContainer(trackId, payload, parentScope) {
-			this.__proto__ = new base(trackId, payload, parentScope);
+        function RenderedContainer(trackId, payload, parentScope) {
+            this.__proto__ = new base(trackId, payload, parentScope);
 
-			this.events = {
-				beforeInit: null,
-				afterInit: null,
-				beforeRender: null,
-				afterRender: null,
-				beforeLink: null,
-				afterLink: null,
-				afterDestroy: null,
-			};
-		}
-	}
+            this.events = {
+                beforeInit: null,
+                afterInit: null,
+                beforeRender: null,
+                afterRender: null,
+                beforeLink: null,
+                afterLink: null,
+                afterDestroy: null,
+            };
+        }
+    }
 })(document.querySelector('script[data-assign-js-core]').$main);
