@@ -12,8 +12,8 @@
 
         this.module.define("core.rendered", RenderedContainer);
 
-        function RenderedContainer(trackId, payload, parentScope) {
-            this.__proto__ = new base(trackId, payload, parentScope);
+        function RenderedContainer(trackId) {
+            this.__proto__ = new base(trackId);
 
             this.events = {
                 beforeInit: null,

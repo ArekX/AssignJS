@@ -41,27 +41,48 @@
             };
         }
 
-
         function makeComponent(definitionString, element) {
             var def = this.parseDefinition(definitionString, element);
 
-            var componentClass = this.get(def.type);
-            var instance = new componentClass();
-            var container = containerManager.wrapElement(element, this.config.container, instance);
+            var container = containerManager.wrapElement(element, this.config.container);
+            var scope = container.scope;
             
+            var instance = new (this.get(def.type))(container);
+
+            // TODO: Components should have a base instance
+            // That instance will be used here to pass events on unlink,link,render,etc...
+            // Need component architecture here.
+            // Also need tests for unlinking
+
+            container.payload = instance;
+
             container.setupAssignments(def.assignments);
 
             if (def.referenceAs) {
-                var parent = container.scope.getParent();
+                var parent = scope.getParent();
 
                 if (parent) {
                     parent.set(def.referenceAs, container);
                 }
 
-                container.scope.set(def.referenceAs, container);
+                scope.set(def.referenceAs, container);
             }
 
-            console.log(instance, container.scope);
+            container.registerEvent('beforeUnlink', unsetComponent);
+
+            console.log(container, instance);
+
+            function unsetComponent() {
+                if (!def.referenceAs) {
+                    return;
+                }
+
+                var parent = scope.getParent();
+
+                if (parent) {
+                    parent.unset(def.referenceAs);
+                }
+            }
         }
 
     }

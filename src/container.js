@@ -30,10 +30,9 @@
 
         return manager;
 
-        function createContainer(type, payload, parentScope) {
-            var type = this.get(type);
+        function createContainer(type) {
             var trackId = this._getNewTrackId();
-            var instance = new type(trackId, payload, parentScope);
+            var instance = new (this.get(type))(trackId);
 
             this.pendingContainers.push(instance);
 
@@ -44,10 +43,10 @@
             return element.$container || null;
         }
 
-        function wrapElement(element, type, payload) {
+        function wrapElement(element, type) {
              var parentContainer = this.getParentContainer(element);
 
-             var container = this.create(type, payload);
+             var container = this.create(type);
 
              container.setParent(parentContainer);
              container.owner = element;

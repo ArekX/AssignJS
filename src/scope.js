@@ -17,6 +17,7 @@
         }
 
         Scope.prototype.set = setItemToScope;
+        Scope.prototype.unset = unsetItemFromScope;
         Scope.prototype.assign = assignItemToScope;
         Scope.prototype.assignMultiple = assignMultipleItemsToScope;
         Scope.prototype.get = getItemFromScope;
@@ -100,6 +101,12 @@
 
             core.assert.ownKeyNotSet(name, this._items, 'This item is already defined in scope.');
             this._items[name] = item;
+        }
+
+        function unsetItemFromScope(name) {
+            this._assertNotDestroyed();
+            core.assert.keySet(this._items, name, 'This item is not defined in scope.');
+            delete this._items[name];
         }
 
         function assignItemToScope(name, item) {

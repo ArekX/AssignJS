@@ -3,19 +3,18 @@
 
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-    ContainerManagerExtender.deps = ["core.scope", "core.assignments"];
+    ContainerManagerExtender.deps = ["core.scope", "core.assignments", "core.event"];
 
-    function ContainerManagerExtender(makeScope, assignments) {
+    function ContainerManagerExtender(makeScope, assignments, makeEventEmitter) {
         this.module.define("core.base", BaseContainer);
     
-        function BaseContainer(trackId, payload, parentScope) {
-            this.payload = payload;
+        function BaseContainer(trackId) {
             this._trackId = trackId;
             this._children = {};
             this._isUnlinked = false;
             this._parentContainer = null;
             this._assignments = null;
-            this.events = {
+            this._events = {
                 beforeLink: null,
                 afterLink: null,
                 beforeUnlink: null,
@@ -25,11 +24,14 @@
             this.scope = makeScope();
         }
 
+        BaseContainer.prototype.payload = null;
         BaseContainer.prototype.owner = null;
         BaseContainer.prototype.getId = getId;
         BaseContainer.prototype.isUnlinked = getIsUnlinked;
         BaseContainer.prototype.setupAssignments = setupAssignments;
         BaseContainer.prototype.setParent = setParentContainer;
+        BaseContainer.prototype.registerEvent = registerEvent;
+        BaseContainer.prototype.unregisterEvent = unregisterEvent;
         BaseContainer.prototype.getParent = getParentContainer;
         BaseContainer.prototype._setChild = setChildContainer;
         BaseContainer.prototype._unsetChild = unsetChildContainer;
@@ -43,11 +45,7 @@
 
         function linkContainer() {
             this.triggerEvent('beforeLink', this._assignments);
-
             assignments.assignToScope(this._assignments, this.scope);
-
-            // todo: You need to track every place this is linked to,
-            // because on unlink that needs to be removed.
             this.triggerEvent('afterLink');
         }
 
@@ -61,10 +59,12 @@
 
         function unlinkContainer() {
             this.triggerEvent('beforeUnlink');
-            // todo: remove all linked things.
+            
             this.setParentContainer(null);
-            this.triggerEvent('afterUnlink');
+            this.scope.destroy();
             this._isUnlinked = true;
+            
+            this.triggerEvent('afterUnlink');
         }
 
         function setParentContainer(container) {
@@ -101,9 +101,25 @@
         }
 
         function triggerEvent(name, data) {
-            if (this.events[name]) {
-                this.events[name].trigger(data);
+            if (this._events[name]) {
+                this._events[name].trigger(data);
             }
+        }
+
+        function registerEvent(eventName, namespace, callback) {
+            if (!this._events[eventName]) {
+                this._events[eventName] = makeEventEmitter(this);
+            }
+
+            this._events[eventName].register(namespace, callback);
+        }
+
+        function unregisterEvent(eventName, namespace, callback) {
+            if (!this._events[eventName]) {
+                return;
+            }
+
+            this._events[eventName].unregister(namespace, callback);
         }
     }
 
