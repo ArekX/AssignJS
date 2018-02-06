@@ -24,9 +24,12 @@
             this.scope = makeScope();
         }
 
-        BaseContainer.prototype.payload = null;
+        BaseContainer.prototype._payload = null;
         BaseContainer.prototype.owner = null;
+        BaseContainer.prototype.process = null;
         BaseContainer.prototype.getId = getId;
+        BaseContainer.prototype.setPayload = setPayload;
+        BaseContainer.prototype.getPayload = getPayload;
         BaseContainer.prototype.isUnlinked = getIsUnlinked;
         BaseContainer.prototype.setupAssignments = setupAssignments;
         BaseContainer.prototype.setParent = setParentContainer;
@@ -41,6 +44,14 @@
 
         function getId() {
             return this._trackId;
+        }
+
+        function setPayload(payload) {
+            this._payload = payload;
+        }
+
+        function getPayload() {
+            return this._payload;
         }
 
         function linkContainer() {

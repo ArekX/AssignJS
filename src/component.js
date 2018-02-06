@@ -11,13 +11,16 @@
         
         function ComponentManager() {
             this.config = {
-                container: "core.rendered"
+                container: "core.rendered",
+                baseComponent: "core.component.base"
             };
         }
 
-        ComponentManager.prototype = makeManager();
-        ComponentManager.prototype.parseDefinition = parseDefinition;
-        ComponentManager.prototype.makeComponent = makeComponent;
+        ComponentManager.prototype = core.vars.extendPrototype(makeManager(), {
+            define: defineType,
+            parseStringDef: parseStringDef,
+            makeComponent: makeComponent
+        });
 
         var manager = new ComponentManager();
 
@@ -25,12 +28,11 @@
 
         return manager;
 
-        function parseDefinition(line, element) {
+        function parseStringDef(line) {
             var parts = line.split(componentRegex);
 
             assert.identical(parts.length, 7, "Cannot parse component assignment. Invalid property syntax.", {
                 line: line,
-                element: element,
                 parts: parts
             });
             
@@ -41,21 +43,31 @@
             };
         }
 
+        function defineType(type, factory, extendsFactory) {
+            if (extendsFactory !== null) {
+                var baseComponentName = core.vars.defaultValue(extendsFactory, this.config.baseComponent);
+                factory.prototype = core.vars.extendPrototype(this.get(baseComponentName).prototype, factory.prototype);
+            }
+
+            this.super.define.call(this, type, factory);
+        }
+
         function makeComponent(definitionString, element) {
-            var def = this.parseDefinition(definitionString, element);
+            var def = this.parseStringDef(definitionString);
 
             var container = containerManager.wrapElement(element, this.config.container);
             var scope = container.scope;
-            
-            var instance = new (this.get(def.type))(container);
+            var factory = this.get(def.type);
 
-            // TODO: Components should have a base instance
-            // That instance will be used here to pass events on unlink,link,render,etc...
-            // Need component architecture here.
+            var instance = new factory();
+
+            instance._props = {};
+            instance.container = container;
+            instance.scope = scope;
+
             // Also need tests for unlinking
 
-            container.payload = instance;
-
+            container.setPayload(instance);
             container.setupAssignments(def.assignments);
 
             if (def.referenceAs) {
@@ -68,9 +80,12 @@
                 scope.set(def.referenceAs, container);
             }
 
+            container.registerEvent('afterLink', initializeComponent);
             container.registerEvent('beforeUnlink', unsetComponent);
 
-            console.log(container, instance);
+            function initializeComponent() {
+                instance.initialize && instance.initialize();
+            }
 
             function unsetComponent() {
                 if (!def.referenceAs) {

@@ -27,15 +27,23 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="scope.js"></script>
 <script src="parser.js"></script>
 <script src="component.js"></script>
+<script src="component.base.js"></script>
 <script src="assignments.js"></script>
 
 <script>
 coreLib.modules.extend("core.components", function() {
     var module = this.module;
 
-    module.define("app.test", function AppTest() {
+    function AppTest() {
+    }
 
-    });
+    AppTest.prototype.initialize = function() {
+    	console.log('called from here');
+	}
+
+	AppTest.prototype.template = "Oho!";
+
+    module.define("app.test", AppTest);
 });
 coreLib.run();
 </script>

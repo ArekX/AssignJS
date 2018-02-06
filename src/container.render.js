@@ -13,17 +13,43 @@
         this.module.define("core.rendered", RenderedContainer);
 
         function RenderedContainer(trackId) {
-            this.__proto__ = new base(trackId);
+            this.super.constructor.call(this, trackId);
 
-            this.events = {
-                beforeInit: null,
-                afterInit: null,
+            this.events = core.vars.merge(this.events, {
                 beforeRender: null,
                 afterRender: null,
-                beforeLink: null,
-                afterLink: null,
-                afterDestroy: null,
-            };
+            });
+
+            this.processable = true;
+        }
+
+        RenderedContainer.prototype = core.vars.extendPrototype(base.prototype, {
+            constructor: RenderedContainer,
+            _isInvalidated: true,
+            _render: renderContainer,
+            process: processContainer,
+            invalidate: invalidateContainer
+        });
+     
+        function renderContainer() {
+            var payload = this.getPayload();
+            this.triggerEvent('beforeRender');
+            payload._render && payload._render(this.owner, this);
+            this.triggerEvent('afterRender');
+            this._isInvalidated = false;
+        }
+
+        function processContainer() {
+            if (!this._isInvalidated) {
+                return;
+            }
+
+            this._render();
+        }
+
+        function invalidateContainer() {
+            this._isInvalidated = true;
+            module.processContainers();
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

@@ -17,6 +17,7 @@
     Vars.prototype.isFunction = isFunction;
     Vars.prototype.forceInt = forceInt;
     Vars.prototype.forceFloat = forceFloat;
+    Vars.prototype.extendPrototype = extendPrototype;
 
     core.vars = new Vars();
     return;
@@ -197,6 +198,23 @@
     function forceFloat(value, failValue) {
         var value = parseFloat(value);
         return !isNaN(value) ? value : failValue;
+    }
+
+    function extendPrototype(prototype, extensions, properties) {
+        var result = Object.create(prototype, properties);
+        result.super = {};
+
+        for(var extension in extensions) {
+            if (extensions.hasOwnProperty(extension)) {
+                if (extension in result) {
+                    result.super[extension] = result[extension];
+                }
+
+                result[extension] = extensions[extension];
+            }
+        }
+
+        return result;
     }
 
 })(document.querySelector('script[data-assign-js-core]').$main);

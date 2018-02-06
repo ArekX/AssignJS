@@ -3,13 +3,17 @@
 
     core.modules.define("core.container.manager", ContainerManagerModule);
 
-    ContainerManagerModule.deps = ["core.parser", "core.manager.base"];
+    ContainerManagerModule.deps = ["core.parser", "core.manager.base", "core.event"];
 
-    function ContainerManagerModule(parser, managerMaker) {
+    function ContainerManagerModule(parser, managerMaker, makeEventEmitter) {
         function ContainerManager() {
             this.trackId = 1;
             this.containers = {};
+            this.processableContainers = [];
             this.pendingContainers = [];
+            this.events = {
+                afterInitPending: makeEventEmitter(this)
+            };
         }
 
         ContainerManager.prototype = managerMaker();
@@ -19,13 +23,13 @@
         ContainerManager.prototype.create = createContainer;
         ContainerManager.prototype._getNewTrackId = getNewTrackId;
         ContainerManager.prototype._initPendingContainers = initPendingContainers;
+        ContainerManager.prototype.processContainers = runProcessableContainers;
 
         var manager = new ContainerManager();
 
         parser.events.afterParseAll.register("core.container.manager", function() {
-            // TODO: Process tracked elements
-
             manager._initPendingContainers();
+            manager.processContainers();
         });
 
         return manager;
@@ -35,8 +39,17 @@
             var instance = new (this.get(type))(trackId);
 
             this.pendingContainers.push(instance);
+            if (instance.process) {
+                this.processableContainers.push(instance);
+            }
 
             return this.containers[trackId] = instance;
+        }
+
+        function runProcessableContainers() {
+            for(var i = 0; i < this.processableContainers.length; i++) {
+                this.processableContainers[i].process();
+            }
         }
 
         function getContainer(element) {
