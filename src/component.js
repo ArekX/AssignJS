@@ -61,9 +61,7 @@
 
             var instance = new factory();
 
-            instance._props = {};
-            instance.container = container;
-            instance.scope = scope;
+            instance.setup(def, container);
 
             // Also need tests for unlinking
 

@@ -39,6 +39,7 @@
             var instance = new (this.get(type))(trackId);
 
             this.pendingContainers.push(instance);
+            
             if (instance.process) {
                 this.processableContainers.push(instance);
             }
@@ -47,9 +48,13 @@
         }
 
         function runProcessableContainers() {
+            parser.begin();
+
             for(var i = 0; i < this.processableContainers.length; i++) {
                 this.processableContainers[i].process();
             }
+
+            parser.end();
         }
 
         function getContainer(element) {

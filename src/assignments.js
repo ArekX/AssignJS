@@ -22,6 +22,10 @@
         return new Assignments();
 
         function assignToScope(assignments, scope) {
+            if (!assignments) {
+                return;
+            }
+            
             for(var i = 0; i < assignments.length; i++) {
                 var assignment = assignments[i];
                 var value = assignment.type === "literal" ? assignment.value : scope.get(assignment.value);

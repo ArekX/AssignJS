@@ -3,9 +3,9 @@
     
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-    ContainerManagerExtender.deps = [];
+    ContainerManagerExtender.deps = ["core.parser"];
 
-    function ContainerManagerExtender() {
+    function ContainerManagerExtender(parser) {
         var module = this.module;
 
         var base = this.module.get("core.base");
@@ -45,6 +45,7 @@
             }
 
             this._render();
+            parser.pushElement(this.owner);
         }
 
         function invalidateContainer() {

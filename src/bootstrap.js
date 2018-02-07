@@ -29,7 +29,10 @@
                 return;
             }
             
-            parser.parseAll(document.querySelectorAll(this.config.selector));
+            parser.begin();
+            parser.pushElement(document);
+            parser.end();
+
             this.events.afterBootstrap.trigger();
         }
     }

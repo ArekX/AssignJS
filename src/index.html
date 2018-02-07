@@ -17,6 +17,7 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="vars.js"></script>
 <script src="assert.js"></script>
 <script src="modules.js"></script>
+<script src="html.js"></script>
 
 <script src="manager.base.js"></script>
 <script src="event.js"></script>
@@ -41,9 +42,17 @@ coreLib.modules.extend("core.components", function() {
     	console.log('called from here');
 	}
 
-	AppTest.prototype.template = "Oho!";
+
+	// FIXME!!!! Cyclic rendering needs detection! - AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.test'></div>";
+	AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.another.test'></div>";
 
     module.define("app.test", AppTest);
+
+    function AnotherTest() {
+    	this.template = "Template man!";
+    }
+
+     module.define("app.another.test", AnotherTest);
 });
 coreLib.run();
 </script>

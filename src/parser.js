@@ -10,12 +10,17 @@
 
         function Parser() {
             this._parsers = {};
+            this.currentParseStack = [];
+            this.parseStacks = [];
             this.config = {
                 strict: true,
+                selector: '[data-assign]',
                 dataKey: 'assign',
                 assignmentLinesGetter: null
             };
             this.events = {
+                beforeBeginStack: makeEventEmitter(this),
+                afterEndStack: makeEventEmitter(this),
                 beforeParseAll: makeEventEmitter(this),
                 afterParseAll: makeEventEmitter(this)
             };
@@ -25,9 +30,47 @@
         Parser.prototype.get = getParser;
         Parser.prototype.parse = parse;
         Parser.prototype.parseAll = parseAll;
+        Parser.prototype.begin = beginStack;
+        Parser.prototype.pushElement = pushToParseStack;
+        Parser.prototype.end = endStack;
         Parser.prototype._getAssignLines = getAssignLines;
 
         return new Parser();
+
+        function beginStack() {
+            this.events.beforeBeginStack.trigger();
+            this.parseStacks.push(this.currentParseStack);
+            this.currentParseStack = [];
+        }
+
+        function pushToParseStack(element) {
+            var assignElements = element.querySelectorAll(this.config.selector);
+
+            for(var i = 0; i < assignElements.length; i++) {
+                if (assignElements[i].$parsed) {
+                    continue;
+                }
+
+                this.currentParseStack.push(assignElements[i]);
+            }
+
+            if (!element.$parsed && element.dataset && element.dataset.hasOwnProperty(this.config.dataKey)) {
+                this.currentParseStack.push(element);
+            }
+        }
+
+        function endStack() {
+            core.assert.greater(this.parseStacks.length, 0, 'end() cannot be called before begin()');
+
+            var stack = this.currentParseStack;
+            this.currentParseStack = this.parseStacks.pop();
+
+            if (stack.length > 0) {
+                this.parseAll(stack);
+            }
+
+            this.events.afterEndStack.trigger();
+        }
 
         function defineParser(namespace, checker, parser) {
             assert.namespaceValid(namespace);

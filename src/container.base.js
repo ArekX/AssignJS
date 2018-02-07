@@ -36,11 +36,11 @@
         BaseContainer.prototype.registerEvent = registerEvent;
         BaseContainer.prototype.unregisterEvent = unregisterEvent;
         BaseContainer.prototype.getParent = getParentContainer;
-        BaseContainer.prototype._setChild = setChildContainer;
-        BaseContainer.prototype._unsetChild = unsetChildContainer;
         BaseContainer.prototype.link = linkContainer;
         BaseContainer.prototype.unlink = unlinkContainer;
         BaseContainer.prototype.triggerEvent = triggerEvent;
+        BaseContainer.prototype._unsetChild = unsetChildContainer;
+        BaseContainer.prototype._setChild = setChildContainer;
 
         function getId() {
             return this._trackId;

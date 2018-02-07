@@ -15,6 +15,7 @@
     Vars.prototype.isDefined = isDefined;
     Vars.prototype.isBoolean = isBoolean;
     Vars.prototype.isFunction = isFunction;
+    Vars.prototype.isArray = isArray;
     Vars.prototype.forceInt = forceInt;
     Vars.prototype.forceFloat = forceFloat;
     Vars.prototype.extendPrototype = extendPrototype;
@@ -57,6 +58,10 @@
 
     function isFunction(value) {
         return typeof value === "function";
+    }
+
+    function isArray(value) {
+        return this.isObject(value) && value.constructor === Array;
     }
 
     function isObject(value) {

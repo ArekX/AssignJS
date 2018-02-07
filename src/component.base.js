@@ -3,20 +3,22 @@
 
     core.modules.extend("core.components", ComponentManagerExtender);
 
-    ComponentManagerExtender.deps = ["core.scope", "core.assignments", "core.event"];
+    ComponentManagerExtender.deps = ["core.parser"];
 
-    function ComponentManagerExtender() {
+    function ComponentManagerExtender(parser) {
 		this.module.define("core.component.base", BaseComponent, null);
-    
+
         function BaseComponent() {
         }
 
+        BaseComponent.prototype._def = null;
         BaseComponent.prototype._props = null;
         BaseComponent.prototype.scope = null;
         BaseComponent.prototype.container = null;
         BaseComponent.prototype.template = null;
         BaseComponent.prototype.initialize = null;
         BaseComponent.prototype._render = renderComponent;
+        BaseComponent.prototype.setup = setupComponent;
         BaseComponent.prototype.set = setProperty;
         BaseComponent.prototype.setMultiple = setMultipleProperties;
         BaseComponent.prototype.get = getProperty;
@@ -41,14 +43,22 @@
         }
 
         function renderComponent(element) {
-            console.log(element);
-
-            if (this.template) {
-                element.innerHTML = this.template;
+            if (!this.template) {
+                return;
             }
-            // add isInvalidated functionality, which means that this will be rerendered again.
-            // render me :)
-            // html set contents from template if template is set.
+
+            if (core.vars.isString(this.template)) {
+                this.template = core.html.wrapRawHtml(this.template);
+            }
+
+            core.html.setContents(element, this.template);
+        }
+
+        function setupComponent(def, container) {
+            this._def = def;
+            this._props = {};
+            this.container = container;
+            this.scope = container.scope;
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

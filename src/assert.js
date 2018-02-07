@@ -10,6 +10,10 @@
     Assert.prototype.ownKeySet = assertOwnKeySet;
     Assert.prototype.ownKeyNotSet = assertOwnKeyNotSet;
     Assert.prototype.equals = assertEquals;
+    Assert.prototype.greater = assertGreater;
+    Assert.prototype.less = assertLess;
+    Assert.prototype.greaterOrEqual = assertGreaterOrEqual;
+    Assert.prototype.lessOrEqual = assertLessOrEqual;
     Assert.prototype.notEquals = assertNotEquals;
     Assert.prototype.identical = assertIdentical;
     Assert.prototype.notIdentical = assertNotIdentical;
@@ -72,6 +76,30 @@
         }
 
         return true;
+    }
+
+    function assertGreater(valueA, valueB, message, data) {
+        if (valueA <= valueB) {
+            throwError(message, 'Second value is greater than first.', data, {checkA: valueA, checkB: valueB});
+        }
+    }
+
+    function assertLess(valueA, valueB, message, data) {
+        if (valueA >= valueB) {
+            throwError(message, 'Second value is less than first.', data, {checkA: valueA, checkB: valueB});
+        }
+    }
+
+    function assertGreaterOrEqual(valueA, valueB, message, data) {
+        if (valueA < valueB) {
+            throwError(message, 'Second value is greater than first.', data, {checkA: valueA, checkB: valueB});
+        }
+    }
+
+    function assertLessOrEqual(valueA, valueB, message, data) {
+        if (valueA > valueB) {
+            throwError(message, 'Second value is less than first.', data, {checkA: valueA, checkB: valueB});
+        }
     }
 
     function assertEquals(valueA, valueB, message, data) {
