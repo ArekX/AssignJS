@@ -6,9 +6,6 @@
 
     function BootstrapModule(parser, makeEventEmitter) {
         function Bootstrap() {
-            this.config = {
-                selector: "[data-assign]"
-            };
             this.events = {
                 beforeBootstrap: makeEventEmitter(this),
                 afterBootstrap: makeEventEmitter(this)

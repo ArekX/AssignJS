@@ -29,6 +29,7 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="parser.js"></script>
 <script src="component.js"></script>
 <script src="component.base.js"></script>
+<script src="component.props.js"></script>
 <script src="assignments.js"></script>
 
 <script>
@@ -43,13 +44,15 @@ coreLib.modules.extend("core.components", function() {
 	}
 
 
+	// Hmm angular didnt solve this... because it has a valid applicayion - recursion
 	// FIXME!!!! Cyclic rendering needs detection! - AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.test'></div>";
 	AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.another.test'></div>";
 
     module.define("app.test", AppTest);
+    var html = coreLib.html;
 
     function AnotherTest() {
-    	this.template = "Template man!";
+    	this.template = html.parse('div', "Template 2 <a href='#'>man</a>!");
     }
 
      module.define("app.another.test", AnotherTest);

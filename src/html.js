@@ -1,7 +1,7 @@
 (function(core) {
     "use strict";
 
-    function SafeHtml() { }
+    function RawHtml() { }
 
     function Html() {}
 
@@ -9,6 +9,7 @@
     Html.prototype.clearContents = clearContents;
     Html.prototype.encode = encodeHtmlContents;
     Html.prototype.wrapRawHtml = wrapRawHtmlContents;
+    Html.prototype.parse = parseHtml;
 
     var vars = core.vars;
     core.html = new Html();
@@ -19,8 +20,8 @@
             contents = this.encode(contents);
         }
 
-        if (contents instanceof SafeHtml) {
-            contents = contents.rawHtml;
+        if (contents instanceof RawHtml) {
+            contents = contents.value;
         }
 
         if (contents instanceof HTMLElement) {
@@ -38,6 +39,8 @@
                 return;
             }
 
+            this.clearContents(element);
+
             while(contents.length > 0) {
                 element.appendChild(contents[0]);
             }
@@ -46,6 +49,9 @@
         }
 
         if (vars.isArray(contents)) {
+
+            this.clearContents(element);
+
             for(var i = 0; i < contents.length; i++) {
                 element.appendChild(contents[i]);
             }
@@ -70,12 +76,18 @@
     }
 
     function wrapRawHtmlContents(contents) {
-        return Object.create(SafeHtml.prototype, { 
-            rawHtml: {
+        return Object.create(RawHtml.prototype, { 
+            value: {
                 value: contents, 
                 writable: false
             } 
         });
+    }
+
+    function parseHtml(wrapperTag, contents) {
+        var tag = vars.isString(wrapperTag) ? document.createElement(wrapperTag) : wrapperTag;
+        this.setContents(tag, vars.isString(contents) ? this.wrapRawHtml(contents) : contents);
+        return tag;
     }
 
 })(document.querySelector('script[data-assign-js-core]').$main);

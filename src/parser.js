@@ -10,8 +10,8 @@
 
         function Parser() {
             this._parsers = {};
-            this.currentParseStack = [];
-            this.parseStacks = [];
+            this._currentParseStack = [];
+            this._parseStacks = [];
             this.config = {
                 strict: true,
                 selector: '[data-assign]',
@@ -39,8 +39,8 @@
 
         function beginStack() {
             this.events.beforeBeginStack.trigger();
-            this.parseStacks.push(this.currentParseStack);
-            this.currentParseStack = [];
+            this._parseStacks.push(this._currentParseStack);
+            this._currentParseStack = [];
         }
 
         function pushToParseStack(element) {
@@ -51,19 +51,19 @@
                     continue;
                 }
 
-                this.currentParseStack.push(assignElements[i]);
+                this._currentParseStack.push(assignElements[i]);
             }
 
             if (!element.$parsed && element.dataset && element.dataset.hasOwnProperty(this.config.dataKey)) {
-                this.currentParseStack.push(element);
+                this._currentParseStack.push(element);
             }
         }
 
         function endStack() {
-            core.assert.greater(this.parseStacks.length, 0, 'end() cannot be called before begin()');
+            core.assert.greater(this._parseStacks.length, 0, 'end() cannot be called before begin()');
 
-            var stack = this.currentParseStack;
-            this.currentParseStack = this.parseStacks.pop();
+            var stack = this._currentParseStack;
+            this._currentParseStack = this._parseStacks.pop();
 
             if (stack.length > 0) {
                 this.parseAll(stack);
