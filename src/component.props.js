@@ -7,7 +7,8 @@
 
     function MakeComponentProps(makeEventEmitter) {
 		
-        function Props() {
+        function Props(ownerComponent) {
+            this.owner = ownerComponent;
             this._props = {};
             this.events = {
                 created: makeEventEmitter(this),
@@ -42,8 +43,8 @@
         Props.prototype._deleteArrayValue = deleteArrayValue;
 
         var assert = core.assert;
-        return function() {
-            return new Props();
+        return function(ownerComponent) {
+            return new Props(ownerComponent);
         }
 
         function propertyExists(prop) {

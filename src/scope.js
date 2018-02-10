@@ -78,7 +78,7 @@
 
         function unregisterChildScope(scope) {
             this._assertNotDestroyed();
-            core.assert.keySet(this._children, scope._trackId, 'This scope is not defined as a child.');
+            core.assert.keySet(scope._trackId, this._children, 'This scope is not defined as a child.');
             delete this._children[scope._trackId];
         }
 
@@ -104,7 +104,7 @@
 
         function unsetItemFromScope(name) {
             this._assertNotDestroyed();
-            core.assert.keySet(this._items, name, 'This item is not defined in scope.');
+            core.assert.keySet(name, this._items, 'This item is not defined in scope.');
             delete this._items[name];
         }
 

@@ -8,7 +8,6 @@
     function ContainerManagerModule(parser, managerMaker, makeEventEmitter) {
         function ContainerManager() {
             this.trackId = 1;
-            this.containers = {};
             this.processableContainers = [];
             this.pendingContainers = [];
             this.events = {
@@ -20,6 +19,7 @@
         ContainerManager.prototype.getContainer = getContainer;
         ContainerManager.prototype.getParentContainer = getParentContainer;
         ContainerManager.prototype.wrapElement = wrapElement;
+        ContainerManager.prototype.processDeleted = processDeleted;
         ContainerManager.prototype.create = createContainer;
         ContainerManager.prototype._getNewTrackId = getNewTrackId;
         ContainerManager.prototype._initPendingContainers = initPendingContainers;
@@ -44,7 +44,23 @@
                 this.processableContainers.push(instance);
             }
 
-            return this.containers[trackId] = instance;
+            return instance;
+        }
+
+        function processDeleted(elements) {
+            for(var i = 0; i < elements.length; i++) {
+                var containerElements = parser.getParseableElements(elements[i]);
+
+                for (var i = 0; i < containerElements.length; i++) {
+                    var container = this.getContainer(containerElements[i]);
+
+                    if (!container || container.isUnlinked()) {
+                        continue;
+                    }
+
+                    container.unlink();
+                }
+            }
         }
 
         function runProcessableContainers() {
@@ -53,7 +69,7 @@
             for(var i = 0; i < this.processableContainers.length; i++) {
                 this.processableContainers[i].process();
             }   
-            
+
             parser.end();
         }
 

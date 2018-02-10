@@ -28,6 +28,7 @@
 
         Parser.prototype.define = defineParser;
         Parser.prototype.get = getParser;
+        Parser.prototype.getParseableElements = getParseableElements;
         Parser.prototype.parse = parse;
         Parser.prototype.parseAll = parseAll;
         Parser.prototype.begin = beginStack;
@@ -43,8 +44,12 @@
             this._currentParseStack = [];
         }
 
+        function getParseableElements(parentElement) {
+            return parentElement.querySelectorAll(this.config.selector);
+        }
+
         function pushToParseStack(element) {
-            var assignElements = element.querySelectorAll(this.config.selector);
+            var assignElements = this.getParseableElements(element);
 
             for(var i = 0; i < assignElements.length; i++) {
                 if (assignElements[i].$parsed) {

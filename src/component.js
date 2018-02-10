@@ -63,8 +63,6 @@
 
             instance.setup(def, container);
 
-            // Also need tests for unlinking
-
             container.setPayload(instance);
             container.setupAssignments(def.assignments);
 

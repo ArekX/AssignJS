@@ -6,7 +6,8 @@
     ContainerManagerExtender.deps = ["core.scope", "core.assignments", "core.event"];
 
     function ContainerManagerExtender(makeScope, assignments, makeEventEmitter) {
-        this.module.define("core.base", BaseContainer);
+        var module = this.module;
+        module.define("core.base", BaseContainer);
     
         function BaseContainer(trackId) {
             this.owner = null;
@@ -24,7 +25,6 @@
                 beforeUnlink: null,
                 afterUnlink: null
             };
-
         }
 
         BaseContainer.prototype.process = null;
@@ -72,7 +72,7 @@
         function unlinkContainer() {
             this.triggerEvent('beforeUnlink');
             
-            this.setParentContainer(null);
+            this.setParent(null);
             this.scope.destroy();
             this._isUnlinked = true;
             

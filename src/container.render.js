@@ -28,7 +28,8 @@
             _isInvalidated: true,
             _render: renderContainer,
             process: processContainer,
-            invalidate: invalidateContainer
+            invalidate: invalidateContainer,
+            setContents: setContents
         });
      
         function renderContainer() {
@@ -57,6 +58,16 @@
         function invalidateContainer() {
             this._isInvalidated = true;
             module.processContainers();
+        }
+
+
+        function setContents(contents) {
+            if (!this.owner) {
+                return;
+            }
+
+            var deletedElements = core.html.setContents(this.owner, contents);
+            module.processDeleted(deletedElements);
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

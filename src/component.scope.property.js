@@ -52,7 +52,13 @@
 
             parent.scope.set(def.scopeName, element);
 
-            // TODO: if container is destroyed remove from scope.
+            container.registerEvent('beforeUnlink', function() {
+                parent.scope.unset(def.scopeName);
+            });
+
+            parent.registerEvent('beforeUnlink', function() {
+                container.unlink();
+            });
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

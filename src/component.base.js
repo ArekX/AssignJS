@@ -3,9 +3,9 @@
 
     core.modules.extend("core.components", ComponentManagerExtender);
 
-    ComponentManagerExtender.deps = ["core.parser", "core.components.props"];
+    ComponentManagerExtender.deps = ["core.parser", "core.components.props", "core.container.manager"];
 
-    function ComponentManagerExtender(parser, makeProps) {
+    function ComponentManagerExtender(parser, makeProps, containerManager) {
 		this.module.define("core.component.base", BaseComponent, null);
 
         function BaseComponent() {
@@ -25,7 +25,8 @@
                 return;
             }
 
-            this._templateElement = core.html.parse(element, this.template);
+            this._templateElement = core.html.wrapRawHtml(this.template);
+            this.container.setContents(this._templateElement);
         }
 
         function invalidateContainer() {
@@ -34,7 +35,7 @@
 
         function setupComponent(def, container) {
             this._def = def;
-            this.props = makeProps();
+            this.props = makeProps(this);
             this.container = container;
             this.owner = container.owner;
             this.scope = container.scope;

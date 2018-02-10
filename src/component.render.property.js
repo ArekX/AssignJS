@@ -63,11 +63,48 @@
 
             assert.notIdentical(parent, null, 'Parent must be defined.');
 
-            var component = container.getParent().getPayload();
-            var props = component.props;
+            var props = parent.getPayload().props;
             var deleted = true;
 
-            container.setPayload(function(element) {
+            container.setPayload(render);
+            render.props = props;
+
+            props.events.created.register(handleCreated);
+            props.events.deleted.register(handleDeleted);
+
+            parent.registerEvent('beforeUnlink', function() {
+                container.unlink();
+            });
+
+            container.registerEvent('beforeUnlink', function() {
+                props.events.created.unregister(handleCreated);
+                props.events.deleted.unregister(handleDeleted);
+            });
+
+            function handleCreated(result) {
+                if (isTrackedPropertyInResult(result)) {
+                    props.events.changed.register(handleChanged);
+                }
+            }
+
+            function handleDeleted(result) {
+                 if (isTrackedPropertyInResult(result)) {
+                    props.events.changed.unregister(handleChanged);
+                }
+            }
+
+            function handleChanged(result) {
+                if (isTrackedPropertyInResult(result)) {
+                    container.invalidate();
+                }
+            }
+
+            function isTrackedPropertyInResult(result) {
+                return (result.type === 'single' && result.prop === def.name) || 
+                       (result.type === 'multiple' && result.props.hasOwnProperty(def.name));
+            }
+
+            function render(element) {
                 var value = props.get(def.name, '');
 
                 if (def.type === 'function' && vars.isFunction(value)) {
@@ -76,37 +113,10 @@
                         return funcProps[item];
                     });
 
-                    value = value.apply(component, args);
+                    value = value.apply(props.owner, args);
                 }
 
-                html.setContents(element, value);
-            });
-
-            props.events.created.register(function(result) {
-                if (isTrackedPropertyInResult(result)) {
-                    deleted = false;
-                }
-            });
-
-            props.events.deleted.register(function(result) {
-                if (isTrackedPropertyInResult(result)) {
-                    deleted = true;
-                }
-            });
-
-            props.events.changed.register(function(result) {
-                if (deleted) {
-                    return;
-                }
-
-                if (isTrackedPropertyInResult(result)) {
-                    container.invalidate();
-                }
-            });
-
-            function isTrackedPropertyInResult(result) {
-                return (result.type === 'single' && result.prop === def.name) || 
-                       (result.type === 'multiple' && result.props.hasOwnProperty(def.name));
+                container.setContents(value);
             }
         }
     }

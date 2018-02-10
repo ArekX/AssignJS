@@ -16,8 +16,11 @@
     return;
 
     function setHtmlContents(element, contents) {
+        var clearedElements = [];
+
         if (vars.isString(contents)) {
             contents = this.encode(contents);
+            clearedElements = this.clearContents(element);
         }
 
         if (contents instanceof RawHtml) {
@@ -29,9 +32,9 @@
                 return;
             }
 
-            this.clearContents(element);
+            clearedElements = this.clearContents(element);
             element.appendChild(contents);
-            return;
+            return clearedElements;
         }
 
         if (contents instanceof HTMLCollection) {
@@ -39,41 +42,47 @@
                 return;
             }
 
-            this.clearContents(element);
+            clearedElements =this.clearContents(element);
 
             while(contents.length > 0) {
                 element.appendChild(contents[0]);
             }
 
-            return;
+            return clearedElements;
         }
 
         if (vars.isArray(contents)) {
-
-            this.clearContents(element);
+            clearedElements = this.clearContents(element);
 
             for(var i = 0; i < contents.length; i++) {
                 element.appendChild(contents[i]);
             }
 
-            return;
+            return clearedElements;
         }
-
 
         if (element instanceof HTMLInputElement) {
             element.value = contents;
         } else {
             element.innerHTML = contents;
         }
+
+        return clearedElements;
     }
 
     function clearContents(element) {
+        var removedChildren = [];
         while (element.firstChild) {
             var child = element.firstChild;
-
+            
             element.removeChild(child);
-            child.parentElement = null;
+
+            if (child instanceof HTMLElement) {
+                removedChildren.push(child);
+            }
         }
+
+        return removedChildren;
     }
 
     function encodeHtmlContents(contents) {
