@@ -52,8 +52,8 @@
 
             for(var i = 0; i < this.processableContainers.length; i++) {
                 this.processableContainers[i].process();
-            }
-
+            }   
+            
             parser.end();
         }
 

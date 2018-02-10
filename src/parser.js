@@ -95,7 +95,17 @@
                 return this.config.assignmentLinesGetter(element);
             }
 
-            return (element.dataset[this.config.dataKey] || "").split(';');
+            var dataset = element.dataset;
+            var keys = Object.keys(dataset);
+            var lines = [];
+
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i].indexOf(this.config.dataKey) !== -1) {
+                    lines.push(dataset[keys[i]]); 
+                }
+            }
+
+            return lines;
         }
 
         function parseAll(list) {
@@ -118,6 +128,7 @@
             var assignLines = this._getAssignLines(element);
 
             for (var i = 0; i < assignLines.length; i++) {
+                var parsed = false;
                 var line = assignLines[i].trim();
 
                 for(var parserName in this._parsers) {
@@ -129,14 +140,14 @@
                     var isMatch = core.vars.isFunction(parse.checker) ? parse.checker(line, element) : line.match(parse.checker);
 
                     if (isMatch) {
-                        element.$parsed = true;
+                        parsed = true;
                         parse(line, element);
                         break;
                     }
                 }
 
-                if (element.$parsed || !this.config.strict) {
-                    return;
+                if (parsed || !this.config.strict) {
+                    continue;
                 }
 
                 core.throwError("Cannot parse assigment!", {
@@ -145,6 +156,8 @@
                     element: element
                 });
             }
+
+            element.$parsed = true;
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

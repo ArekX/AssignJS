@@ -3,15 +3,16 @@
 <head>
     <title >App</title>
 </head>
-<body > <!-- Assign reference to body element -->
-<pre data-assign='app.test:parentMan <- (true):weee'>
+<body data-test-1="s" data-test-2="b"> <!-- Assign reference to body element -->
+<pre data-assign='app.main:parentMan'>
 Assign JS tests. See source for more info.
 
 Initialize app.my-app component, name it as app, and add "ctrl" component into it. This component has a template.
 <div></div>
-<div data-assign='app.test:body <- (5.25):g, (-225):t ({"evo": 2}):Ref, (true):nesto, ([1,2,3,4,5,6,"heheheh"]):arraycova'>test</div>
+<div data-assign='app.test:body <- (5.25):g, (-225):t ({"evo": 2}):Ref, (true):nesto, ([1,2,3,4,5,6,"heheheh"]):arraycova'>
+</div>
 <div data-assign='app.test:test <- body, (5.25):g, parentMan:parens'>test2</div>
-
+<input data-assign="app.test">
 </pre>
 <script src="index.js" data-name-as="coreLib"></script>
 <script src="vars.js"></script>
@@ -30,26 +31,41 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="component.js"></script>
 <script src="component.base.js"></script>
 <script src="component.props.js"></script>
+<script src="component.render.property.js"></script>
+<script src="component.scope.property.js"></script>
 <script src="assignments.js"></script>
 
 <script>
 coreLib.modules.extend("core.components", function() {
     var module = this.module;
+    var html = coreLib.html;
 
     function AppTest() {
     }
 
     AppTest.prototype.initialize = function() {
-    	console.log('called from here');
+        this.props.set("t", "woohoo");
+        this.props.set("b", "buhu");
+        this.props.set("a", "A is for Awesome");
+        this.props.set("test", "<span>Html is never rendered by default.</span>");
+        this.props.set("prop", function(t, b, a) {
+            return html.parse('span', `${t} | ${b} | <a href="test">${a}</a>`);
+        });
+        console.log(this.owner);
+     //   console.log(this.scope.get("prop"));
 	}
 
-
-	// Hmm angular didnt solve this... because it has a valid applicayion - recursion
-	// FIXME!!!! Cyclic rendering needs detection! - AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.test'></div>";
-	AppTest.prototype.template = "<strong>Oho</strong>! <div data-assign='app.another.test'></div>";
+	AppTest.prototype.template = `
+        <strong>Oho</strong>! 
+        <strong data-assign='@prop(t,b,a)'></strong> 
+        <strong data-assign='@test'></strong> 
+        <strong data-assign='@prop(t,b,a)' data-assign-prop=":prop"></strong> 
+        <div data-assign='app.another.test'></div>
+    `;
 
     module.define("app.test", AppTest);
-    var html = coreLib.html;
+    module.define("app.main", function AppMain() {});
+    
 
     function AnotherTest() {
     	this.template = html.parse('div', "Template 2 <a href='#'>man</a>!");

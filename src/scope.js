@@ -98,7 +98,6 @@
 
         function setItemToScope(name, item) {
             this._assertNotDestroyed();
-
             core.assert.ownKeyNotSet(name, this._items, 'This item is already defined in scope.');
             this._items[name] = item;
         }

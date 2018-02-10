@@ -59,7 +59,12 @@
             return;
         }
 
-        element.innerHTML = contents;
+
+        if (element instanceof HTMLInputElement) {
+            element.value = contents;
+        } else {
+            element.innerHTML = contents;
+        }
     }
 
     function clearContents(element) {

@@ -11,22 +11,21 @@
         function BaseComponent() {
         }
 
-        BaseComponent.prototype._def = null;
-        BaseComponent.prototype.props = null;
-        BaseComponent.prototype.scope = null;
+        BaseComponent.prototype.owner = null;
         BaseComponent.prototype.container = null;
         BaseComponent.prototype.template = null;
+        BaseComponent.prototype._templateElement = null;
         BaseComponent.prototype.initialize = null;
         BaseComponent.prototype.invalidate = invalidateContainer;
         BaseComponent.prototype._render = renderComponent;
         BaseComponent.prototype.setup = setupComponent;
 
         function renderComponent(element) {
-            if (!this.template) {
+            if (!this.template || this._templateElement) {
                 return;
             }
 
-            core.html.parse(element, this.template);
+            this._templateElement = core.html.parse(element, this.template);
         }
 
         function invalidateContainer() {
@@ -37,6 +36,7 @@
             this._def = def;
             this.props = makeProps();
             this.container = container;
+            this.owner = container.owner;
             this.scope = container.scope;
             this.props.events.changed.register(this.invalidate.bind(this));
         }

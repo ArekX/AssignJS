@@ -19,6 +19,11 @@
     Assert.prototype.notIdentical = assertNotIdentical;
     Assert.prototype.isTrue = assertIsTrue;
     Assert.prototype.isFalse = assertIsFalse;
+    Assert.prototype.isString = assertIsString;
+    Assert.prototype.isObject = assertIsObject;
+    Assert.prototype.isDefined = assertIsDefined;
+    Assert.prototype.isUndefined = assertIsUndefined;
+    Assert.prototype.isArray = assertIsArray;
 
     var vars = core.vars;
     core.assert = new Assert();
@@ -138,8 +143,39 @@
         }
     }
 
+    function assertIsString(value, message, data) {
+        if (!vars.isString(value)) {
+            throwError(message, 'Value is not string.', data, {value: value});
+        }
+    }
+
+    function assertIsObject(value, message, data) {
+        if (!vars.isObject(value)) {
+            throwError(message, 'Value is not an object.', data, {value: value});
+        }
+    }
+
+    function assertIsDefined(value, message, data) {
+        if (!vars.isDefined(value)) {
+            throwError(message, 'Value is not defined.', data, {value: value});
+        }
+    }
+
+    function assertIsUndefined(value, message, data) {
+        if (vars.isDefined(value)) {
+            throwError(message, 'Value is defined.', data, {value: value});
+        }
+    }
+
+    function assertIsArray(value, message, data) {
+        if (!vars.isArray(value)) {
+            throwError(message, 'Value is not an array.', data, {value: value});
+        }
+    }
+
     function throwError(message, defaultMessage, data, defaultData) {
         core.throwError(message || defaultMessage, data || defaultData);
     }
+
 
 })(document.querySelector('script[data-assign-js-core]').$main);

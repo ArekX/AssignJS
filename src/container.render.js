@@ -7,7 +7,7 @@
 
     function ContainerManagerExtender(parser) {
         var module = this.module;
-
+        var vars = core.vars;
         var base = this.module.get("core.base");
 
         this.module.define("core.rendered", RenderedContainer);
@@ -34,7 +34,13 @@
         function renderContainer() {
             var payload = this.getPayload();
             this.triggerEvent('beforeRender');
-            payload._render && payload._render(this.owner, this);
+
+            if (vars.isFunction(payload)) {
+                payload(this.owner, this);
+            } else if (vars.isObject(payload)) {
+                payload._render && payload._render(this.owner, this);
+            }
+
             this.triggerEvent('afterRender');
             this._isInvalidated = false;
         }

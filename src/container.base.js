@@ -9,7 +9,11 @@
         this.module.define("core.base", BaseContainer);
     
         function BaseContainer(trackId) {
+            this.owner = null;
+            this.scope = makeScope();
+            
             this._trackId = trackId;
+            this._payload = null;
             this._children = {};
             this._isUnlinked = false;
             this._parentContainer = null;
@@ -21,11 +25,8 @@
                 afterUnlink: null
             };
 
-            this.scope = makeScope();
         }
 
-        BaseContainer.prototype._payload = null;
-        BaseContainer.prototype.owner = null;
         BaseContainer.prototype.process = null;
         BaseContainer.prototype.getId = getId;
         BaseContainer.prototype.setPayload = setPayload;
