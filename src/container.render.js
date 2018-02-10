@@ -60,7 +60,6 @@
             module.processContainers();
         }
 
-
         function setContents(contents) {
             if (!this.owner) {
                 return;

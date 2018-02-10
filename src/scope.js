@@ -21,6 +21,7 @@
         Scope.prototype.assign = assignItemToScope;
         Scope.prototype.assignMultiple = assignMultipleItemsToScope;
         Scope.prototype.get = getItemFromScope;
+        Scope.prototype.getAll = getAllItems;
         Scope.prototype.setParent = setParentScope;
         Scope.prototype.getParent = getParentScope;
         Scope.prototype.getChildren = getChildrenScopes;
@@ -28,6 +29,7 @@
         Scope.prototype.isOwnerOf = isInOwnScope;
         Scope.prototype.isRoot = isRootScope;
         Scope.prototype.destroy = destroyScope;
+        Scope.prototype.isDestroyed = getIsDestroyed;
         Scope.prototype._setChild = registerChildScope;
         Scope.prototype._unsetChild = unregisterChildScope;
         Scope.prototype._assertNotDestroyed = assertNotDestroyed;
@@ -43,13 +45,19 @@
         }
 
         function destroyScope() {
-            this._assertNotDestroyed();
+            if (this.isDestroyed()) {
+                return;
+            }
 
             if (this._parentScope) {
                 this._parentScope._unsetChild(this);
             }
 
             this._isDestroyed = true;
+        }
+
+        function getIsDestroyed() {
+            return this._isDestroyed;
         }
 
         function setParentScope(scope) {
@@ -139,6 +147,10 @@
 
             core.assert.keySet(name, this._items, 'This item is not defined in scope.');
             return this._items[name];
+        }
+
+        function getAllItems() {
+            return core.vars.merge(false, {}, this._items);
         }
 
         function isInOwnScope(name) {

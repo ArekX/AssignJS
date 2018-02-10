@@ -58,8 +58,12 @@
 
         function trackProperty(line, element) {
             var def = this.parseStringDef(line);
+
             var container = containerManager.wrapElement(element, this.config.container);
             var parent = container.getParent();
+            var oldScope = container.scope;
+
+            container.scope = parent.scope;
 
             assert.notIdentical(parent, null, 'Parent must be defined.');
 
@@ -77,6 +81,7 @@
             });
 
             container.registerEvent('beforeUnlink', function() {
+                container.scope = oldScope;
                 props.events.created.unregister(handleCreated);
                 props.events.deleted.unregister(handleDeleted);
             });

@@ -49,17 +49,22 @@
 
         function processDeleted(elements) {
             for(var i = 0; i < elements.length; i++) {
-                var containerElements = parser.getParseableElements(elements[i]);
+                var element = elements[i];
+                var containerElements = parser.getParseableElements(element);
 
-                for (var i = 0; i < containerElements.length; i++) {
-                    var container = this.getContainer(containerElements[i]);
-
-                    if (!container || container.isUnlinked()) {
-                        continue;
-                    }
-
-                    container.unlink();
+                for (var j = 0; j < containerElements.length; j++) {
+                    unlinkContainer(this.getContainer(containerElements[j]));
                 }
+
+                unlinkContainer(this.getContainer(element));
+            }
+
+            function unlinkContainer(container) {
+                if (!container || container.isUnlinked()) {
+                    return;
+                }
+
+                container.unlink();
             }
         }
 

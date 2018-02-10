@@ -29,7 +29,7 @@
 
         if (contents instanceof HTMLElement) {
             if (element.children.length === 1 && contents.parentElement === element) {
-                return;
+                return clearedElements;
             }
 
             clearedElements = this.clearContents(element);
@@ -39,10 +39,10 @@
 
         if (contents instanceof HTMLCollection) {
             if (contents === element.children) {
-                return;
+                return clearedElements;
             }
 
-            clearedElements =this.clearContents(element);
+            clearedElements = this.clearContents(element);
 
             while(contents.length > 0) {
                 element.appendChild(contents[0]);

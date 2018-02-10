@@ -24,7 +24,10 @@
 
         var manager = new ComponentManager();
 
-        parser.define("core.component", componentRegex, manager.makeComponent.bind(manager));
+        parser.define("core.component", componentRegex, function(line, element) {
+              var defConfig = manager.parseStringDef(line);
+              manager.makeComponent(element, defConfig);
+        });
 
         return manager;
 
@@ -52,46 +55,55 @@
             this.super.define.call(this, type, factory);
         }
 
-        function makeComponent(definitionString, element) {
-            var def = this.parseStringDef(definitionString);
-
+        function makeComponent(element, config) {
             var container = containerManager.wrapElement(element, this.config.container);
+
+            if (!container.getParent() && config.parent) {
+                container.setParent(config.parent.container);
+            };
+
             var scope = container.scope;
-            var factory = this.get(def.type);
+            var factory = this.get(config.type);
 
             var instance = new factory();
 
-            instance.setup(def, container);
+            instance.setup(config, container);
+
+            if (config.destroyable === false) {
+                container.setDestroyable(false);
+            }
 
             container.setPayload(instance);
-            container.setupAssignments(def.assignments);
+            container.setupAssignments(config.assignments);
 
-            if (def.referenceAs) {
+            if (config.referenceAs) {
                 var parent = scope.getParent();
 
                 if (parent) {
-                    parent.set(def.referenceAs, container);
+                    parent.set(config.referenceAs, container);
                 }
 
-                scope.set(def.referenceAs, container);
+                scope.set(config.referenceAs, container);
             }
 
             container.registerEvent('afterLink', initializeComponent);
             container.registerEvent('beforeUnlink', unsetComponent);
+
+            return instance;
 
             function initializeComponent() {
                 instance.initialize && instance.initialize();
             }
 
             function unsetComponent() {
-                if (!def.referenceAs) {
+                if (!config.referenceAs) {
                     return;
                 }
 
                 var parent = scope.getParent();
 
                 if (parent) {
-                    parent.unset(def.referenceAs);
+                    parent.unset(config.referenceAs);
                 }
             }
         }

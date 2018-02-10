@@ -11,6 +11,7 @@
     
         function BaseContainer(trackId) {
             this.owner = null;
+            this._isDestroyable = true;
             this.scope = makeScope();
             
             this._trackId = trackId;
@@ -37,6 +38,8 @@
         BaseContainer.prototype.registerEvent = registerEvent;
         BaseContainer.prototype.unregisterEvent = unregisterEvent;
         BaseContainer.prototype.getParent = getParentContainer;
+        BaseContainer.prototype.setDestroyable = setDestroyable;
+        BaseContainer.prototype.isDestroyable = getIsDestroyable;
         BaseContainer.prototype.link = linkContainer;
         BaseContainer.prototype.unlink = unlinkContainer;
         BaseContainer.prototype.triggerEvent = triggerEvent;
@@ -69,12 +72,21 @@
             return this._isUnlinked;
         }
 
-        function unlinkContainer() {
+        function unlinkContainer(force) {
+            if (this.isUnlinked()) {
+                return;
+            }
+
+            if (!this.isDestroyable() && !force) {
+                return;
+            }
+
+            this._isUnlinked = true;
+
             this.triggerEvent('beforeUnlink');
             
             this.setParent(null);
             this.scope.destroy();
-            this._isUnlinked = true;
             
             this.triggerEvent('afterUnlink');
         }
@@ -94,6 +106,14 @@
                 this.scope.setParent(container.scope);
                 this._parentContainer = container;
             }
+        }
+
+        function setDestroyable(value) {
+            this._isDestroyable = value;
+        }
+
+        function getIsDestroyable() {
+            return this._isDestroyable;
         }
 
         function getParentContainer() {
@@ -119,7 +139,7 @@
         }
 
         function registerEvent(eventName, namespace, callback) {
-            if (!this._events[eventName]) {
+            if (this._events[eventName] === null) {
                 this._events[eventName] = makeEventEmitter(this);
             }
 
