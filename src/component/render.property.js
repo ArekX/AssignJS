@@ -132,6 +132,7 @@
                         return funcProps[item];
                     });
 
+
                     value = value.apply(props.owner, args);
                 }
 

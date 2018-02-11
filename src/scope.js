@@ -3,9 +3,9 @@
 
     core.modules.define("core.scope", ScopeModule);
 
-    ScopeModule.deps = [];
+    ScopeModule.deps = ['core.event'];
 
-    function ScopeModule() {
+    function ScopeModule(makeEventEmitter) {
         var scopeTrackId = 1;
 
         function Scope() {
@@ -14,6 +14,11 @@
             this._children = {};
             this._isDestroyed = false;
             this._parentScope = null;
+
+            this.events = {
+                itemSet: makeEventEmitter(this),
+                itemUnset: makeEventEmitter(this)
+            };
         }
 
         Scope.prototype.set = setItemToScope;
@@ -34,8 +39,8 @@
         Scope.prototype._unsetChild = unregisterChildScope;
         Scope.prototype._assertNotDestroyed = assertNotDestroyed;
 
-        return function(parentScope) {
-            return new Scope(parentScope);
+        return function() {
+            return new Scope();
         };
 
         function assertNotDestroyed() {
@@ -108,12 +113,24 @@
             this._assertNotDestroyed();
             core.assert.ownKeyNotSet(name, this._items, 'This item is already defined in scope.');
             this._items[name] = item;
+
+            this.events.itemSet.trigger({
+                name: name,
+                item: item
+            });
         }
 
         function unsetItemFromScope(name) {
             this._assertNotDestroyed();
             core.assert.keySet(name, this._items, 'This item is not defined in scope.');
+            var item = this._items[name];
+            
             delete this._items[name];
+
+            this.events.itemUnset.trigger({
+                name: name,
+                item: item
+            });
         }
 
         function assignItemToScope(name, item) {

@@ -143,12 +143,13 @@
                         return;
                     }
 
-                    var parse = this._parsers[parserName];
-                    var isMatch = core.vars.isFunction(parse.checker) ? parse.checker(line, element) : line.match(parse.checker);
+                    var runParser = this._parsers[parserName];
+                    var isMatch = core.vars.isFunction(runParser.checker) ? runParser.checker(line, element) : line.match(runParser.checker);
 
                     if (isMatch) {
                         parsed = true;
-                        parse(line, element);
+                        element.$parsed = true;
+                        runParser(line, element);
                         break;
                     }
                 }
@@ -164,7 +165,7 @@
                 });
             }
 
-            element.$parsed = true;
+            
         }
 
         function compileFromText(text, ownerTag) {

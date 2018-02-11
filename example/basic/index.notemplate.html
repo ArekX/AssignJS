@@ -38,7 +38,7 @@ AssignJS.modules.extend("core.components", function() {
         });
     };
 
-    AppMain.prototype.afterRender = function() {
+    AppMain.prototype.afterInit = function() {
         var button = this.scope.get('button');
         var buttonClear = this.scope.get('buttonClear');
 

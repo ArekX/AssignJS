@@ -118,7 +118,9 @@
             this.setContents(el, contents);
         }
 
-        this.extend(el, options);
+        if (options) {
+            this.extend(el, options);
+        }
 
         return el;
     }

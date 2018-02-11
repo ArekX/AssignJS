@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title >Component Interaction</title>
+</head>
+<body>
+<h1>Component Interaction Example</h1>
+
+<div data-assign="app.main"></div>
+
+<script src="../../build/assignjs.js"></script>
+<script>
+AssignJS.modules.extend("core.components", function() {
+    var module = this.module;
+    var html = AssignJS.html;
+
+    module.define("app.main", AppMain);
+    module.define("app.child", AppChild);
+
+    function AppChild() {}
+
+    AppChild.prototype.template = `
+        <h2>Hello world</h2>
+        I am a child component.
+        This is set from parent component: <span data-assign="@fromParent"></span>
+    `;
+
+    AppChild.prototype.destroy = function() {
+        console.log("Child component destroyed");
+    };
+
+    function AppMain() {}
+
+    AppMain.prototype.template = `
+        <h1>Main App</h1>
+        <div data-assign="@compRefView()"></div>
+        <div data-assign="@child"></div>
+        <button data-assign=":setButton" disabled>Set child component</button>
+        <button data-assign=":removeButton">Remove child component</button>
+    `;
+
+    AppMain.prototype.initialize = function() {
+        this.props.set("child", html.parse('div', `<div data-assign="app.child:childComponent"></div>`));
+        this.props.set("compRefView", function() {
+           return this.compRefs.childComponent ? 'Child component initialized' : 'Child component removed';
+        });
+    };
+
+    AppMain.prototype.afterInit = function() {
+        var child = this.compRefs.childComponent;
+
+        child.props.set("fromParent", "Hello world");
+
+        var setButton = this.scope.get('setButton');
+        var removeButton = this.scope.get('removeButton');
+
+        removeButton.onclick = () => {
+            this.props.set("child", "");
+            setButton.removeAttribute("disabled");
+            removeButton.setAttribute("disabled", true);
+        };
+
+        setButton.onclick = () => {
+            this.props.set("child", html.parse('div', `<div data-assign="app.child:childComponent"></div>`));
+            setButton.setAttribute("disabled", false);
+            removeButton.removeAttribute("disabled");
+        };
+    };
+
+    AppMain.prototype.compRefAdded = compRefChanged;
+    AppMain.prototype.compRefRemoved = compRefChanged;
+
+    function compRefChanged(ref) {
+        if (ref.name === 'childComponent') {
+            this.props.refresh("compRefView");
+        }
+    }
+});
+AssignJS.run();
+</script>
+</body>
+</html>
