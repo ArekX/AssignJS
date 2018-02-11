@@ -14,20 +14,8 @@ AssignJS.modules.extend("core.components", function() {
     var module = this.module;
     var html = AssignJS.html;
 
+    // Main app component
     module.define("app.main", AppMain);
-    module.define("app.child", AppChild);
-
-    function AppChild() {}
-
-    AppChild.prototype.template = `
-        <h2>Hello world</h2>
-        I am a child component.
-        This is set from parent component: <span data-assign="@fromParent"></span>
-    `;
-
-    AppChild.prototype.destroy = function() {
-        console.log("Child component destroyed");
-    };
 
     function AppMain() {}
 
@@ -47,10 +35,7 @@ AssignJS.modules.extend("core.components", function() {
     };
 
     AppMain.prototype.afterInit = function() {
-        var child = this.compRefs.childComponent;
-
-        child.props.set("fromParent", "Hello world");
-
+        this.compRefs.childComponent.props.set("fromParent", "This will only be set once.");
         var setButton = this.scope.get('setButton');
         var removeButton = this.scope.get('removeButton');
 
@@ -67,14 +52,34 @@ AssignJS.modules.extend("core.components", function() {
         };
     };
 
-    AppMain.prototype.compRefAdded = compRefChanged;
-    AppMain.prototype.compRefRemoved = compRefChanged;
+    AppMain.prototype.compRefAdded = function(ref) {
+        if (ref.name === 'childComponent') {
+            this.props.refresh("compRefView");
+            ref.component.props.set("fromParent", "This is set every time.");
+        }
+    };
 
-    function compRefChanged(ref) {
+    AppMain.prototype.compRefRemoved =  function(ref) {
         if (ref.name === 'childComponent') {
             this.props.refresh("compRefView");
         }
-    }
+    };
+
+   
+    // Child component
+    module.define("app.child", AppChild);
+
+    function AppChild() {}
+
+    AppChild.prototype.template = `
+        <h2>Hello world</h2>
+        I am a child component.
+        This is set from parent component: <span data-assign="@fromParent"></span>
+    `;
+
+    AppChild.prototype.destroy = function() {
+        console.log("Child component destroyed");
+    };
 });
 AssignJS.run();
 </script>

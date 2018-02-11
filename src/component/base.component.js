@@ -56,29 +56,27 @@
             }
 
             var compRefs = {};
+            this.compRefs = compRefs;
+            var compRefAdded = this.compRefAdded ? this.compRefAdded.bind(this) : null;
+            var compRefRemoved = this.compRefRemoved ? this.compRefRemoved.bind(this) : null;
             
             this.scope.events.itemSet.register(function(data) {
                 var payload = vars.isFunction(data.item.getPayload) ? data.item.getPayload() : null;
                 if (payload && payload.isComponent) {
                     compRefs[data.name] = payload;
+
+                    compRefAdded && compRefAdded({name: data.name, component: payload});
                 }
             });
 
             this.scope.events.itemUnset.register(function(data) {
                 if (compRefs.hasOwnProperty(data.name)) {
+                    var component = compRefs[data.name];
                     delete compRefs[data.name];
+                    compRefRemoved && compRefRemoved({name: data.name, component: component});
                 }
             });
 
-            this.compRefs = compRefs;
-
-            if (this.compRefAdded) {
-                this.scope.events.itemSet.register(this.compRefAdded.bind(this));
-            }
-
-            if (this.compRefRemoved) {
-                this.scope.events.itemUnset.register(this.compRefRemoved.bind(this));
-            }
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);
