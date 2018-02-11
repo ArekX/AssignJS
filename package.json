@@ -2,7 +2,7 @@
   "name": "assignjs",
   "version": "1.0.0",
   "description": "AssignJS component framework",
-  "main": "gruntfile.js",
+  "main": "build/assignjs.min.js",
   "directories": {
     "example": "example",
     "src": "src"
