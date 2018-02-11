@@ -18,6 +18,7 @@
         BaseComponent.prototype.initialize = null;
         BaseComponent.prototype.destroy = null;
         BaseComponent.prototype.invalidate = invalidateContainer;
+        BaseComponent.prototype.afterRender = null;
         BaseComponent.prototype._render = renderComponent;
         BaseComponent.prototype.setup = setupComponent;
 
@@ -40,10 +41,13 @@
             this.container = container;
             this.owner = container.owner;
             this.scope = container.scope;
-            this.props.events.changed.register(this.invalidate.bind(this));
             
             if (this.destroy) {
                 this.container.registerEvent('beforeUnlink', this.destroy.bind(this));
+            }
+
+            if (this.afterRender) {
+                this.container.registerEvent('afterRender', this.afterRender.bind(this));
             }
         }
     }

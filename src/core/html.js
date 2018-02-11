@@ -8,6 +8,7 @@
     Html.prototype.setContents = setHtmlContents;
     Html.prototype.createTemplate = createElementTemplate;
     Html.prototype.create = createElement;
+    Html.prototype.extend = extendElement;
     Html.prototype.clearContents = clearContents;
     Html.prototype.encode = encodeHtmlContents;
     Html.prototype.wrapRawHtml = wrapRawHtmlContents;
@@ -117,6 +118,12 @@
             this.setContents(el, contents);
         }
 
+        this.extend(el, options);
+
+        return el;
+    }
+
+    function extendElement(element, options) {
         if (options.attributes) {
             for(var attribute in options.attributes) {
                 if (options.attributes.hasOwnProperty(attribute)) {
@@ -124,7 +131,7 @@
                         return "-" + char.toLowerCase();
                     });
 
-                    el.setAttribute(setAttribute, options.attributes[attribute]);
+                    element.setAttribute(setAttribute, options.attributes[attribute]);
                 }
             }
         }
@@ -135,15 +142,13 @@
                     var value = options.events[event];
 
                     if (vars.isArray(value)) {
-                        el.addEventListener.apply(el, [event].concat(value));
+                        element.addEventListener.apply(el, [event].concat(value));
                     } else {
-                        el.addEventListener(event, value);
+                        element.addEventListener(event, value);
                     }
                 }
             }
         }
-
-        return el;
     }
 
     function createElementTemplate(tag, contents, options) {

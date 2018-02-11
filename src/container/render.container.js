@@ -15,9 +15,9 @@
         function RenderedContainer(trackId) {
             this.super.constructor.call(this, trackId);
 
-            this.events = core.vars.merge(this.events, {
+            this._events = core.vars.merge(this._events, {
                 beforeRender: null,
-                afterRender: null,
+                afterRender: null
             });
 
             this.processable = true;
@@ -42,7 +42,6 @@
                 payload._render && payload._render(this.owner, this);
             }
 
-            this.triggerEvent('afterRender');
             this._isInvalidated = false;
         }
 
@@ -52,7 +51,12 @@
             }
 
             this._render();
+
+            parser.begin();
             parser.pushElement(this.owner);
+            parser.end();
+
+            this.triggerEvent('afterRender');
         }
 
         function invalidateContainer() {

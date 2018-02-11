@@ -1,0 +1,39 @@
+{
+  "name": "assignjs",
+  "version": "1.0.0",
+  "description": "AssignJS component framework",
+  "main": "gruntfile.js",
+  "directories": {
+    "example": "example",
+    "src": "src"
+  },
+  "dependencies": {
+    "grunt": "^1.0.2",
+    "grunt-cli": "^1.2.0",
+    "grunt-concat-sourcemap": "^0.4.3",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-nodeunit": "^1.0.0",
+    "grunt-contrib-uglify": "^3.3.0",
+    "grunt-contrib-watch": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArekX/AssignJS.git"
+  },
+  "keywords": [
+    "assign",
+    "js",
+    "component",
+    "framework"
+  ],
+  "author": "Aleksandar Panic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ArekX/AssignJS/issues"
+  },
+  "homepage": "https://github.com/ArekX/AssignJS#readme"
+}

@@ -58,6 +58,8 @@
 
         function trackProperty(line, element) {
             var def = this.parseStringDef(line);
+            var isListening = true;
+            var isFunction = def.type === 'function';
 
             var container = containerManager.wrapElement(element, this.config.container);
             var parent = container.getParent();
@@ -74,6 +76,7 @@
 
             props.events.created.register(handleCreated);
             props.events.deleted.register(handleDeleted);
+            props.events.changed.register(handleChanged);
 
             parent.registerEvent('beforeUnlink', function() {
                 container.unlink();
@@ -86,32 +89,44 @@
             });
 
             function handleCreated(result) {
-                if (isTrackedPropertyInResult(result)) {
+                if (isTrackedPropertyInResult(result, true) && !isListening) {
                     props.events.changed.register(handleChanged);
+                    isListening = true;
                 }
             }
 
             function handleDeleted(result) {
-                 if (isTrackedPropertyInResult(result)) {
+                 if (isTrackedPropertyInResult(result, true)) {
                     props.events.changed.unregister(handleChanged);
+                    isListening = false;
                 }
             }
 
             function handleChanged(result) {
-                if (isTrackedPropertyInResult(result)) {
+                if (!isListening) {
+                    return;
+                }
+
+                if (isFunction || isTrackedPropertyInResult(result)) {
                     container.invalidate();
                 }
             }
 
-            function isTrackedPropertyInResult(result) {
-                return (result.type === 'single' && result.prop === def.name) || 
-                       (result.type === 'multiple' && result.props.hasOwnProperty(def.name));
+            function isTrackedPropertyInResult(result, selfOnly) {
+                switch(result.type) {
+                    case 'single':
+                        return result.prop === def.name;
+                    case 'multiple':
+                        return result.props.hasOwnProperty(def.name);
+                }
+
+                return false;
             }
 
             function render(element) {
                 var value = props.get(def.name, '');
 
-                if (def.type === 'function' && vars.isFunction(value)) {
+                if (isFunction && vars.isFunction(value)) {
                     var funcProps = props.getMultiple(def.arguments, null);
                     var args = def.arguments.map(function(item) {
                         return funcProps[item];
