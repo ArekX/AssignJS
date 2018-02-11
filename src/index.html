@@ -19,7 +19,6 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 <script src="assert.js"></script>
 <script src="modules.js"></script>
 <script src="html.js"></script>
-
 <script src="manager.base.js"></script>
 <script src="event.js"></script>
 <script src="bootstrap.js"></script>
@@ -73,7 +72,7 @@ coreLib.modules.extend("core.components", function() {
         this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
         this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
         this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
-        this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
+        console.log(this.scope.getAll());
      }, 4000);
 	}
 

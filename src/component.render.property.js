@@ -68,7 +68,6 @@
             assert.notIdentical(parent, null, 'Parent must be defined.');
 
             var props = parent.getPayload().props;
-            var deleted = true;
 
             container.setPayload(render);
             render.props = props;
