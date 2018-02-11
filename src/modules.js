@@ -12,7 +12,7 @@
     Modules.prototype.define = defineModule;
     Modules.prototype.extend = extendModule;
     Modules.prototype.defineRunnable = defineRunnable;
-    Modules.prototype.as = asModule;
+    Modules.prototype.get = asModule;
     Modules.prototype._initializeModule = initializeModule;
     Modules.prototype._initializeExtensions = initializeExtensions;
     Modules.prototype._getModules = getModules;
@@ -72,7 +72,7 @@
     function initializeAllModules() {
         for(var namespace in this._definitions) {
             if (this._definitions.hasOwnProperty(namespace)) {
-                this.as(namespace);
+                this.get(namespace);
             }
         }
     }
@@ -135,7 +135,7 @@
         var asModules = [];
 
         for (var i = 0; i < namespaces.length; i++) {
-            asModules.push(this.as(namespaces[i]));
+            asModules.push(this.get(namespaces[i]));
         }
 
         return asModules;

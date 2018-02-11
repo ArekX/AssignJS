@@ -6,6 +6,8 @@
     function Html() {}
 
     Html.prototype.setContents = setHtmlContents;
+    Html.prototype.createTemplate = createElementTemplate;
+    Html.prototype.create = createElement;
     Html.prototype.clearContents = clearContents;
     Html.prototype.encode = encodeHtmlContents;
     Html.prototype.wrapRawHtml = wrapRawHtmlContents;
@@ -102,6 +104,73 @@
         var tag = vars.isString(wrapperTag) ? document.createElement(wrapperTag) : wrapperTag;
         this.setContents(tag, vars.isString(contents) ? this.wrapRawHtml(contents) : contents);
         return tag;
+    }
+
+    function createElement(tag, contents, options) {
+        var useOptions = vars.defaultValue(options, {});
+
+        var el = document.createElement(tag);
+
+        if (vars.isDefined(contents) && !vars.isObject(contents)) {
+            this.setContents(el, contents);
+        } else if (!vars.isDefined(options)) {
+            useOptions = vars.defaultValue(contents, {});
+        }
+
+        options = useOptions;
+
+        if (options.attributes) {
+            for(var attribute in options.attributes) {
+                if (options.attributes.hasOwnProperty(attribute)) {
+                    attribute = attribute.replace(/([A-Z])/g, function(char){
+                        return "-" + char.toLowerCase();
+                    });
+                    
+                    el.setAttribute(attribute, options.attributes[attribute]);
+                }
+            }
+        }
+
+        if (options.events) {
+            for(var event in options.events) {
+                if (options.events.hasOwnProperty(event)) {
+                    var value = options.events[event];
+
+                    if (vars.isArray(value)) {
+                        el.addEventListener.apply(el, [event].concat(value));
+                    } else {
+                        el.addEventListener(event, value);
+                    }
+                }
+            }
+        }
+
+        return el;
+    }
+
+    function createElementTemplate(tag, contents, options) {
+        var self = this;
+
+        var useOptions = vars.defaultValue(options, {});
+
+        if (vars.isObject(contents) && !vars.isDefined(options)) {
+            useOptions = vars.defaultValue(contents, {});
+        }
+
+        options = useOptions;
+
+        ElementTemplate.tag = tag;
+        ElementTemplate.contents = contents;
+        ElementTemplate.options = options;
+
+        return ElementTemplate;
+
+        function ElementTemplate(overrideContents, overrideOptions) {
+            var useContents = overrideContents || contents;
+            var useOptions = overrideOptions || options;
+
+            return self.create(tag, useContents, useOptions);
+        }
     }
 
 })(document.querySelector('script[data-assign-js-core]').$main);

@@ -7,6 +7,7 @@
 
     function ParserModule(makeEventEmitter) {
         var assert = core.assert;
+        var html = core.html;
 
         function Parser() {
             this._parsers = {};
@@ -28,6 +29,7 @@
 
         Parser.prototype.define = defineParser;
         Parser.prototype.get = getParser;
+        Parser.prototype.compile = compileFromText;
         Parser.prototype.getParseableElements = getParseableElements;
         Parser.prototype.parse = parse;
         Parser.prototype.parseAll = parseAll;
@@ -163,6 +165,24 @@
             }
 
             element.$parsed = true;
+        }
+
+        function compileFromText(text, ownerTag) {
+            var wrapTag = ownerTag || html.create('compiled');
+            var element = html.parse(wrapTag, text);
+
+            if (!ownerTag && element.children.length > 1) {
+                core.throwError("Compile text must have at least one root element if owner tag is not specified.", {
+                    text: text,
+                    ownerTag: ownerTag
+                });
+            }
+
+            this.begin();
+            this.pushElement(element);
+            this.end();
+
+            return ownerTag ? ownerTag : element.children[0];
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

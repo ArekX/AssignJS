@@ -38,6 +38,9 @@ Initialize app.my-app component, name it as app, and add "ctrl" component into i
 coreLib.modules.extend("core.components", function() {
     var module = this.module;
     var html = coreLib.html;
+    var parser = coreLib.modules.get('core.parser');
+
+    var spanTemplate = html.createTemplate('span', {attributes: {dataTest: 'test'}});
 
     function AppTest() {
     }
@@ -48,32 +51,22 @@ coreLib.modules.extend("core.components", function() {
         this.props.set("a", "A is for Awesome");
 
         setTimeout(() => {
-            var span = html.parse('span', '');
-        appTest = module.makeComponent(span, {
-            type: "app.another.test",
-            data: {
-                key: 'value',
-                props: this.props
-            }
-        });
+            var span = spanTemplate();
+        
+        var span = parser.compile(`
+            <div>
+            Ok this is something to be compiled.
+            <div data-assign="app.another.test"></div>
+            <h1>Another Test</h1>
+            </div>
+        `);
+
         this.props.set("test", span);
         }, 2000);
 
         this.props.set("prop", function(t, b, a) {
             return html.parse('span', `${t} | ${b} | <a href="test">${a}</a>`);
         });
-
-
-       
-     //   console.log(this.scope.get("prop"));
-
-     setTimeout(() => {
-        this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
-        this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
-        this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
-        this.props.set("test", html.parse('span', "ss<span data-assign='app.another.test:gogogo'>Html is never rendered by default.</span>"));
-        console.log(this.scope.getAll());
-     }, 4000);
 	}
 
 	AppTest.prototype.template = `
