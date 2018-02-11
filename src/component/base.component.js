@@ -16,14 +16,14 @@
         BaseComponent.prototype.isComponent = true;
         BaseComponent.prototype.container = null;
         BaseComponent.prototype.template = null;
-        BaseComponent.prototype._templateElement = null;
         BaseComponent.prototype.initialize = null;
         BaseComponent.prototype.destroy = null;
-        BaseComponent.prototype.invalidate = invalidateContainer;
         BaseComponent.prototype.afterInit = null;
         BaseComponent.prototype.compRefAdded = null;
         BaseComponent.prototype.compRefRemoved = null;
+        BaseComponent.prototype._templateElement = null;
         BaseComponent.prototype._render = renderComponent;
+        BaseComponent.prototype.invalidate = invalidateContainer;
         BaseComponent.prototype.setup = setupComponent;
 
         function renderComponent(element) {
