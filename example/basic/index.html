@@ -18,15 +18,19 @@ AssignJS.modules.extend("core.components", function() {
 
     function AppMain() {
         this.createItem = html.createTemplate('li', {
-            style: "font-weight: bold; color: red"
+            attributes: {
+                style: "font-weight: bold; color: red"
+            }
         });
     }
 
     AppMain.prototype.template = `
         Total item count: <span data-assign="@listTotalItems()"></span>
-        <ul data-assign="@list"></ul>
+        <div>
         <button data-assign=":button">Add item to list</button>
         <button data-assign=":buttonClear">Clear all</button>
+        </div>
+        <ul data-assign="@list"></ul>
     `;
 
     AppMain.prototype.initialize = function() {
