@@ -89,14 +89,14 @@
             });
 
             function handleCreated(result) {
-                if (isTrackedPropertyInResult(result, true) && !isListening) {
+                if (isTrackedPropertyInResult(result) && !isListening) {
                     props.events.changed.register(handleChanged);
                     isListening = true;
                 }
             }
 
             function handleDeleted(result) {
-                 if (isTrackedPropertyInResult(result, true)) {
+                 if (isTrackedPropertyInResult(result)) {
                     props.events.changed.unregister(handleChanged);
                     isListening = false;
                 }
@@ -112,7 +112,7 @@
                 }
             }
 
-            function isTrackedPropertyInResult(result, selfOnly) {
+            function isTrackedPropertyInResult(result) {
                 switch(result.type) {
                     case 'single':
                         return result.prop === def.name;
