@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title >Basic App</title>
+</head>
+<body>
+<h1>Basic App Example</h1>
+
+<div data-assign="app.main">
+    Total item count: <span data-assign="@listTotalItems()"></span>
+    <ul data-assign="@list"></ul>
+    <button data-assign=":button">Add item to list</button>
+    <button data-assign=":buttonClear">Clear all</button>
+</div>
+
+<script src="../../build/assignjs.js"></script>
+<script>
+AssignJS.modules.extend("core.components", function() {
+    var module = this.module;
+    var html = AssignJS.html;
+
+    module.define("app.main", AppMain);
+
+    function AppMain() {
+        this.createItem = html.createTemplate('li', {
+            style: "font-weight: bold; color: red"
+        });
+    }
+
+    AppMain.prototype.initialize = function() {
+        this.props.set("list", []);
+        this.props.set("listTotalItems", function() {
+            return this.props.get('list', []).length; 
+        });
+    };
+
+    AppMain.prototype.afterRender = function() {
+        var button = this.scope.get('button');
+        var buttonClear = this.scope.get('buttonClear');
+
+        html.extend(button, {
+            events: {
+                click: () => {
+                    var item = this.createItem(new Date());
+                    this.props.array.push("list", item);
+                }
+            }
+        });
+
+        html.extend(buttonClear, {
+            events: {
+                click: () => {
+                    this.props.set("list", []);
+                }
+            }
+        });
+    };
+});
+AssignJS.run();
+</script>
+</body>
+</html>
