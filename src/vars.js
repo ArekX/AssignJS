@@ -1,6 +1,8 @@
 (function(core) {
     "use strict";
 
+    var plainObjectConstructor = ({}).constructor;
+
     function Vars() {}
 
     Vars.prototype.merge = merge;
@@ -10,6 +12,7 @@
     Vars.prototype.getValue = getValue;
     Vars.prototype.isEmpty = isEmpty;
     Vars.prototype.isObject = isObject;
+    Vars.prototype.isPlainObject = isPlainObject;
     Vars.prototype.isNumber = isNumber;
     Vars.prototype.isString = isString;
     Vars.prototype.isDefined = isDefined;
@@ -62,6 +65,10 @@
 
     function isArray(value) {
         return this.isObject(value) && value.constructor === Array;
+    }
+
+    function isPlainObject(value) {
+        return this.isObject(value) && plainObjectConstructor === value.constructor;
     }
 
     function isObject(value) {

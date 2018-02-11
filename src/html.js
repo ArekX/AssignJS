@@ -107,26 +107,24 @@
     }
 
     function createElement(tag, contents, options) {
-        var useOptions = vars.defaultValue(options, {});
-
         var el = document.createElement(tag);
 
-        if (vars.isDefined(contents) && !vars.isObject(contents)) {
-            this.setContents(el, contents);
-        } else if (!vars.isDefined(options)) {
-            useOptions = vars.defaultValue(contents, {});
+        if (!vars.isDefined(options) && vars.isPlainObject(contents)) {
+            options = contents;
         }
 
-        options = useOptions;
+        if (vars.isDefined(contents) && !vars.isPlainObject(contents)) {
+            this.setContents(el, contents);
+        }
 
         if (options.attributes) {
             for(var attribute in options.attributes) {
                 if (options.attributes.hasOwnProperty(attribute)) {
-                    attribute = attribute.replace(/([A-Z])/g, function(char){
+                    var setAttribute = attribute.replace(/([A-Z])/g, function(char){
                         return "-" + char.toLowerCase();
                     });
-                    
-                    el.setAttribute(attribute, options.attributes[attribute]);
+
+                    el.setAttribute(setAttribute, options.attributes[attribute]);
                 }
             }
         }
@@ -151,25 +149,35 @@
     function createElementTemplate(tag, contents, options) {
         var self = this;
 
-        var useOptions = vars.defaultValue(options, {});
-
-        if (vars.isObject(contents) && !vars.isDefined(options)) {
-            useOptions = vars.defaultValue(contents, {});
+        if (!vars.isDefined(options) && vars.isPlainObject(contents)) {
+            options = contents;
+        } else {
+            options = vars.defaultValue(options, {});
         }
 
-        options = useOptions;
+        options = vars.merge({}, options);
 
         ElementTemplate.tag = tag;
-        ElementTemplate.contents = contents;
+        ElementTemplate.contents = vars.defaultValue(contents, null);
         ElementTemplate.options = options;
 
         return ElementTemplate;
 
         function ElementTemplate(overrideContents, overrideOptions) {
-            var useContents = overrideContents || contents;
-            var useOptions = overrideOptions || options;
+            var useOverrideOptions = {};
+            var useOverrideContents = null;
 
-            return self.create(tag, useContents, useOptions);
+            if (!vars.isDefined(overrideOptions) && vars.isPlainObject(overrideContents)) {
+                useOverrideOptions = overrideContents;
+            }
+
+            if (vars.isDefined(overrideContents) && !vars.isPlainObject(overrideContents)) {
+                useOverrideContents = overrideContents;
+            }
+
+            var useOptions = vars.merge({}, options, overrideOptions);
+
+            return self.create(tag, useOverrideContents || contents, useOptions);
         }
     }
 

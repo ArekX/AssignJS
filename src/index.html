@@ -40,7 +40,16 @@ coreLib.modules.extend("core.components", function() {
     var html = coreLib.html;
     var parser = coreLib.modules.get('core.parser');
 
-    var spanTemplate = html.createTemplate('span', {attributes: {dataTest: 'test'}});
+    var spanTemplate = html.createTemplate('span', {
+        attributes: {
+            dataTest: 'test'
+        },
+        events: {
+            click: function() {
+                alert('yeeeey!');
+            }
+        }
+    });
 
     function AppTest() {
     }
@@ -53,13 +62,13 @@ coreLib.modules.extend("core.components", function() {
         setTimeout(() => {
             var span = spanTemplate();
         
-        var span = parser.compile(`
+        parser.compile(`
             <div>
             Ok this is something to be compiled.
             <div data-assign="app.another.test"></div>
             <h1>Another Test</h1>
             </div>
-        `);
+        `, span);
 
         this.props.set("test", span);
         }, 2000);
