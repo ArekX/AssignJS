@@ -20,12 +20,12 @@
             this._isUnlinked = false;
             this._parentContainer = null;
             this._assignments = null;
-            this._events = makeEventGroup([
+            this.events = makeEventGroup([
                 'beforeLink',
                 'afterLink',
                 'beforeUnlink',
                 'afterUnlink'
-            ]);
+            ], this);
         }
 
         BaseContainer.prototype.process = null;
@@ -35,14 +35,11 @@
         BaseContainer.prototype.isUnlinked = getIsUnlinked;
         BaseContainer.prototype.setupAssignments = setupAssignments;
         BaseContainer.prototype.setParent = setParentContainer;
-        BaseContainer.prototype.registerEvent = registerEvent;
-        BaseContainer.prototype.unregisterEvent = unregisterEvent;
         BaseContainer.prototype.getParent = getParentContainer;
         BaseContainer.prototype.setDestroyable = setDestroyable;
         BaseContainer.prototype.isDestroyable = getIsDestroyable;
         BaseContainer.prototype.link = linkContainer;
         BaseContainer.prototype.unlink = unlinkContainer;
-        BaseContainer.prototype.triggerEvent = triggerEvent;
         BaseContainer.prototype._unsetChild = unsetChildContainer;
         BaseContainer.prototype._setChild = setChildContainer;
 
@@ -59,9 +56,9 @@
         }
 
         function linkContainer() {
-            this.triggerEvent('beforeLink', this._assignments);
+            this.events.trigger('beforeLink', this._assignments);
             assignments.assignToScope(this._assignments, this.scope);
-            this.triggerEvent('afterLink');
+            this.events.trigger('afterLink');
         }
 
         function setupAssignments(assignments) {
@@ -83,12 +80,12 @@
 
             this._isUnlinked = true;
 
-            this.triggerEvent('beforeUnlink');
+            this.events.trigger('beforeUnlink');
             
             this.setParent(null);
             this.scope.destroy();
             
-            this.triggerEvent('afterUnlink');
+            this.events.trigger('afterUnlink');
         }
 
         function setParentContainer(container) {
@@ -130,18 +127,6 @@
             if (trackId in this._children) {
                 delete this._children[trackId];
             }
-        }
-
-        function triggerEvent(name, data) {
-            this._events.trigger(name, data);
-        }
-
-        function registerEvent(eventName, namespace, callback) {
-            this._events.register(eventName, namespace, callback);
-        }
-
-        function unregisterEvent(eventName, namespace, callback) {
-            this._events.unregister(eventName, namespace, callback);
         }
     }
 

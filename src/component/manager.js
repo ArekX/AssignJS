@@ -87,11 +87,11 @@
                 scope.set(config.referenceAs, container);
             }
 
-            container.registerEvent('afterLink', initializeComponent);
-            container.registerEvent('beforeUnlink', unsetComponent);
+            container.events.register('afterLink', initializeComponent);
+            container.events.register('beforeUnlink', unsetComponent);
 
             if (parentContainer) {
-                parentContainer.registerEvent('beforeUnlink', function() {
+                parentContainer.events.register('beforeUnlink', function() {
                     container.unlink();
                 });
             }

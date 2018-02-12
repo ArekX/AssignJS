@@ -3,18 +3,18 @@
 
     core.modules.define("core.components.props", MakeComponentProps);
 
-    MakeComponentProps.deps = ["core.event"];
+    MakeComponentProps.deps = ["core.event.group"];
 
-    function MakeComponentProps(makeEventEmitter) {
+    function MakeComponentProps(makeEventGroup) {
 		
         function Props(ownerComponent) {
             this.owner = ownerComponent;
             this._props = {};
-            this.events = {
-                created: makeEventEmitter(this),
-                changed: makeEventEmitter(this),
-                deleted: makeEventEmitter(this)
-            };
+            this.events = makeEventGroup([
+                'created',
+                'changed',
+                'deleted'
+            ], this);
 
             this.array = {
                 push: this._pushArrayValue.bind(this),
@@ -53,7 +53,7 @@
 
         function setProperty(prop, value) {
             if (!this.exists(prop)) {
-                this.events.created.trigger({
+                this.events.trigger('created', {
                     type: 'single',
                     prop: prop, 
                     value: value
@@ -72,7 +72,7 @@
 
             delete this._props[prop];
             
-            this.events.deleted.trigger({
+            this.events.trigger('deleted', {
                 type: 'single',
                 prop: prop,
                 value: value
@@ -92,7 +92,7 @@
                 }
             }
 
-            this.events.deleted.trigger({
+            this.events.trigger('deleted', {
                 type: 'multiple',
                 props: deletedProps
             });
@@ -104,7 +104,7 @@
         }
 
         function refreshProperty(prop) {
-            this.events.changed.trigger({
+            this.events.trigger('changed', {
                 type: 'single',
                 prop: prop,
                 value: this.get(prop, null)
@@ -116,7 +116,7 @@
         }
 
         function refreshMultipleProperties(props) {
-            this.events.changed.trigger({
+            this.events.trigger('changed', {
                 type: 'multiple',
                 props: props
             });

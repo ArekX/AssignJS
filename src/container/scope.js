@@ -3,9 +3,9 @@
 
     core.modules.define("core.scope", ScopeModule);
 
-    ScopeModule.deps = ['core.event'];
+    ScopeModule.deps = ["core.event.group"];
 
-    function ScopeModule(makeEventEmitter) {
+    function ScopeModule(makeEventGroup) {
         var scopeTrackId = 1;
 
         function Scope() {
@@ -15,10 +15,10 @@
             this._isDestroyed = false;
             this._parentScope = null;
 
-            this.events = {
-                itemSet: makeEventEmitter(this),
-                itemUnset: makeEventEmitter(this)
-            };
+            this.events =  makeEventGroup([
+                'itemSet', 
+                'itemUnset'
+            ], this);
         }
 
         Scope.prototype.set = setItemToScope;
@@ -115,7 +115,7 @@
             core.assert.ownKeyNotSet(name, this._items, 'This item is already defined in scope.');
             this._items[name] = item;
 
-            this.events.itemSet.trigger({
+            this.events.trigger('itemSet', {
                 name: name,
                 item: item
             });
@@ -128,7 +128,7 @@
             
             delete this._items[name];
 
-            this.events.itemUnset.trigger({
+            this.events.trigger('itemUnset', {
                 name: name,
                 item: item
             });

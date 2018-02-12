@@ -15,7 +15,7 @@
         function RenderedContainer(trackId) {
             this.super.constructor.call(this, trackId);
 
-            this._events.extend([
+            this.events.extend([
                 'beforeRender',
                 'afterRender'
             ]);
@@ -34,7 +34,7 @@
      
         function renderContainer() {
             var payload = this.getPayload();
-            this.triggerEvent('beforeRender');
+            this.events.trigger('beforeRender');
 
             if (vars.isFunction(payload)) {
                 payload(this.owner, this);
@@ -56,7 +56,7 @@
             parser.pushElement(this.owner);
             parser.end();
 
-            this.triggerEvent('afterRender');
+            this.events.trigger('afterRender');
         }
 
         function invalidateContainer() {

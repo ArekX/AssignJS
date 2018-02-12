@@ -3,16 +3,13 @@
 
     core.modules.define("core.container.manager", ContainerManagerModule);
 
-    ContainerManagerModule.deps = ["core.parser", "core.manager.base", "core.event"];
+    ContainerManagerModule.deps = ["core.parser", "core.manager.base", "core.event.group"];
 
-    function ContainerManagerModule(parser, managerMaker, makeEventEmitter) {
+    function ContainerManagerModule(parser, managerMaker, makeEventGroup) {
         function ContainerManager() {
-            this.trackId = 1;
-            this.processableContainers = [];
-            this.pendingContainers = [];
-            this.events = {
-                afterInitPending: makeEventEmitter(this)
-            };
+            this._trackId = 1;
+            this._processableContainers = [];
+            this._pendingContainers = [];
         }
 
         ContainerManager.prototype = managerMaker();
@@ -21,13 +18,13 @@
         ContainerManager.prototype.wrapElement = wrapElement;
         ContainerManager.prototype.processDeleted = processDeleted;
         ContainerManager.prototype.create = createContainer;
-        ContainerManager.prototype._getNewTrackId = getNewTrackId;
-        ContainerManager.prototype._initPendingContainers = initPendingContainers;
         ContainerManager.prototype.processContainers = runProcessableContainers;
+        ContainerManager.prototype._initPendingContainers = initPendingContainers;
+        ContainerManager.prototype._getNewTrackId = getNewTrackId;
 
         var manager = new ContainerManager();
 
-        parser.events.afterParseAll.register("core.container.manager", function() {
+        parser.events.register('afterParseAll', function() {
             manager._initPendingContainers();
             manager.processContainers();
         });
@@ -38,10 +35,10 @@
             var trackId = this._getNewTrackId();
             var instance = new (this.get(type))(trackId);
 
-            this.pendingContainers.push(instance);
+            this._pendingContainers.push(instance);
             
             if (instance.process) {
-                this.processableContainers.push(instance);
+                this._processableContainers.push(instance);
             }
 
             return instance;
@@ -71,8 +68,8 @@
         function runProcessableContainers() {
             parser.begin();
 
-            for(var i = 0; i < this.processableContainers.length; i++) {
-                this.processableContainers[i].process();
+            for(var i = 0; i < this._processableContainers.length; i++) {
+                this._processableContainers[i].process();
             }   
 
             parser.end();
@@ -95,14 +92,14 @@
         }
 
         function initPendingContainers() {
-            while(this.pendingContainers.length > 0) {
-                var container = this.pendingContainers.shift();
+            while(this._pendingContainers.length > 0) {
+                var container = this._pendingContainers.shift();
                 container.link();
             }
         }
 
         function getNewTrackId() {
-            return this.trackId++;
+            return this._trackId++;
         }
 
         function getParentContainer(element) {

@@ -3,9 +3,9 @@
     
     core.modules.define("core.parser", ParserModule);
 
-    ParserModule.deps = ["core.event"];
+    ParserModule.deps = ["core.event.group"];
 
-    function ParserModule(makeEventEmitter) {
+    function ParserModule(makeEventGroup) {
         var assert = core.assert;
         var html = core.html;
 
@@ -19,12 +19,12 @@
                 dataKey: 'assign',
                 assignmentLinesGetter: null
             };
-            this.events = {
-                beforeBeginStack: makeEventEmitter(this),
-                afterEndStack: makeEventEmitter(this),
-                beforeParseAll: makeEventEmitter(this),
-                afterParseAll: makeEventEmitter(this)
-            };
+            this.events = makeEventGroup([
+                'beforeBeginStack',
+                'afterEndStack',
+                'beforeParseAll',
+                'afterParseAll'
+            ], this);
         }
 
         Parser.prototype.define = defineParser;
@@ -41,7 +41,7 @@
         return new Parser();
 
         function beginStack() {
-            this.events.beforeBeginStack.trigger();
+            this.events.trigger('beforeBeginStack');
             this._parseStacks.push(this._currentParseStack);
             this._currentParseStack = [];
         }
@@ -76,7 +76,7 @@
                 this.parseAll(stack);
             }
 
-            this.events.afterEndStack.trigger();
+            this.events.trigger('afterEndStack');
         }
 
         function defineParser(namespace, checker, parser) {
@@ -116,7 +116,7 @@
         }
 
         function parseAll(list) {
-            if (!this.events.beforeParseAll.trigger()) {
+            if (!this.events.trigger('beforeParseAll')) {
                 return;
             }
 
@@ -124,7 +124,7 @@
                 this.parse(list[i]);
             }
 
-            this.events.afterParseAll.trigger();
+            this.events.trigger('afterParseAll');
         }
 
         function parse(element) {

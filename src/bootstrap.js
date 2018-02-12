@@ -2,14 +2,14 @@
     "use strict";
     core.modules.define("core.bootstrap", BootstrapModule);
 
-    BootstrapModule.deps = ["core.parser", "core.event"];
+    BootstrapModule.deps = ["core.parser", "core.event.group"];
 
-    function BootstrapModule(parser, makeEventEmitter) {
+    function BootstrapModule(parser, makeEventGroup) {
         function Bootstrap() {
-            this.events = {
-                beforeBootstrap: makeEventEmitter(this),
-                afterBootstrap: makeEventEmitter(this)
-            };
+            this.events = makeEventGroup([
+                'beforeBootstrap',
+                'afterBootstrap',
+            ], this);
         }
 
         Bootstrap.prototype.run = runBootstrap;
@@ -22,7 +22,7 @@
         return bootstrap;
 
         function runBootstrap() {
-            if (!this.events.beforeBootstrap.trigger()) {
+            if (!this.events.trigger('beforeBootstrap')) {
                 return;
             }
             
@@ -30,7 +30,7 @@
             parser.pushElement(document);
             parser.end();
 
-            this.events.afterBootstrap.trigger();
+            this.events.trigger('afterBootstrap');
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

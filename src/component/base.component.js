@@ -25,6 +25,7 @@
         BaseComponent.prototype._render = renderComponent;
         BaseComponent.prototype.invalidate = invalidateContainer;
         BaseComponent.prototype.setup = setupComponent;
+        BaseComponent.prototype._setupCompRefs = setupCompRefs;
 
         function renderComponent(element) {
             if (!this.template || this._templateElement) {
@@ -48,19 +49,24 @@
             
 
             if (this.destroy) {
-                this.container.registerEvent('beforeUnlink', this.destroy.bind(this));
+                this.container.events.register('beforeUnlink', this.destroy.bind(this));
             }
 
             if (this.afterInit) {
-                this.container.registerEvent('afterRender', this.afterInit.bind(this));
+                this.container.events.register('afterRender', this.afterInit.bind(this));
             }
 
+            this._setupCompRefs();
+        }
+
+        function setupCompRefs() {
             var compRefs = {};
-            this.compRefs = compRefs;
             var compRefAdded = this.compRefAdded ? this.compRefAdded.bind(this) : null;
             var compRefRemoved = this.compRefRemoved ? this.compRefRemoved.bind(this) : null;
+
+            this.compRefs = compRefs;
             
-            this.scope.events.itemSet.register(function(data) {
+            this.scope.events.register('itemSet', function(data) {
                 var payload = vars.isFunction(data.item.getPayload) ? data.item.getPayload() : null;
                 if (payload && payload.isComponent) {
                     compRefs[data.name] = payload;
@@ -69,14 +75,13 @@
                 }
             });
 
-            this.scope.events.itemUnset.register(function(data) {
+            this.scope.events.register('itemUnset', function(data) {
                 if (compRefs.hasOwnProperty(data.name)) {
                     var component = compRefs[data.name];
                     delete compRefs[data.name];
                     compRefRemoved && compRefRemoved({name: data.name, component: component});
                 }
             });
-
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);

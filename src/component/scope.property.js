@@ -52,11 +52,11 @@
 
             parent.scope.set(def.scopeName, element);
 
-            container.registerEvent('beforeUnlink', function() {
+            container.events.register('beforeUnlink', function() {
                 parent.scope.unset(def.scopeName);
             });
 
-            parent.registerEvent('beforeUnlink', function() {
+            parent.events.register('beforeUnlink', function() {
                 container.unlink();
             });
         }

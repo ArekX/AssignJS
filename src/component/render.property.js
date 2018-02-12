@@ -74,30 +74,30 @@
             container.setPayload(render);
             render.props = props;
 
-            props.events.created.register(handleCreated);
-            props.events.deleted.register(handleDeleted);
-            props.events.changed.register(handleChanged);
+            props.events.register('created', handleCreated);
+            props.events.register('deleted', handleDeleted);
+            props.events.register('changed', handleChanged);
 
-            parent.registerEvent('beforeUnlink', function() {
+            parent.events.register('beforeUnlink', function() {
                 container.unlink();
             });
 
-            container.registerEvent('beforeUnlink', function() {
+            container.events.register('beforeUnlink', function() {
                 container.scope = oldScope;
-                props.events.created.unregister(handleCreated);
-                props.events.deleted.unregister(handleDeleted);
+                props.events.unregister('created', handleCreated);
+                props.events.unregister('deleted', handleDeleted);
             });
 
             function handleCreated(result) {
                 if (isTrackedPropertyInResult(result) && !isListening) {
-                    props.events.changed.register(handleChanged);
+                    props.events.register('changed', handleChanged);
                     isListening = true;
                 }
             }
 
             function handleDeleted(result) {
                  if (isTrackedPropertyInResult(result)) {
-                    props.events.changed.unregister(handleChanged);
+                    props.events.unregister('changed', handleChanged);
                     isListening = false;
                 }
             }
