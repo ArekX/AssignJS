@@ -60,10 +60,10 @@
             this._assertEventDefined(eventName);
 
             if (this._events[eventName] === null) {
-                return;
+                return true;
             }
 
-            this._events[eventName].trigger(data);
+            return this._events[eventName].trigger(data);
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);
