@@ -6,7 +6,7 @@
     ComponentManagerExtender.deps = ["core.parser", "core.components.props", "core.scope"];
 
     function ComponentManagerExtender(parser, makeProps, makeScope) {
-		this.module.define("core.component.base", BaseComponent, null);
+        this.module.define("core.component.base", BaseComponent, null);
         var vars = core.vars;
 
         function BaseComponent() {

@@ -6,7 +6,7 @@
     MakeComponentProps.deps = ["core.event.group"];
 
     function MakeComponentProps(makeEventGroup) {
-		
+        
         function Props(ownerComponent) {
             this.owner = ownerComponent;
             this._props = {};
