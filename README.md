@@ -45,6 +45,30 @@ Properties can be defined inside the component and it will be tracked for change
 </script>
 ```
 
+### No template
+
+AssignJS component doesn't require a template. You can just assign it to an element and that element will be controlled by that component.
+
+```html
+<div data-assign="app.hello">
+   Hello world at <span data-assign="@date"></span>
+</div>
+<script src="assignjs.js"></script>
+<script>
+  AssignJS.modules.extend("core.components", function() { 
+    this.module.define("app.hello", function AppHello() {
+      this.initialize = function() {
+          this.props.set("date", new Date());
+          setInterval(() => {
+              this.props.set("date", new Date());
+          }, 1000);
+      };
+    });
+  });
+  AssignJS.run();
+</script>
+```
+
 # Detailed guide
 
 Please refer to Wiki for more info (currently under construction).
