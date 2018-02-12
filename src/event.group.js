@@ -24,15 +24,16 @@
         }
 
         function assertEventDefined(eventName) {
-            assert.ownKeySet(eventName, this._events, 'Event is not defined!', {
+            assert.ownKeySet(eventName, this._events, 'Event is not defined.', {
                 eventName: eventName
             });
         }
 
         function extendList(eventList) {
              for(var i = 0; i < eventList.length; i++) {
-                assert.ownKeyNotSet(eventList[i], this._events, 'This event is already defind!');
-                this._events[eventList[i]] = null;
+                var event = eventList[i];
+                assert.ownKeyNotSet(event, this._events, 'This event is already defined.', {event: event});
+                this._events[event] = null;
              }
         }
 

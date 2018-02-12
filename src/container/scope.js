@@ -26,6 +26,7 @@
         Scope.prototype.assign = assignItemToScope;
         Scope.prototype.assignMultiple = assignMultipleItemsToScope;
         Scope.prototype.get = getItemFromScope;
+        Scope.prototype.getGlobal = getGlobalItemFromScope;
         Scope.prototype.getAll = getAllItems;
         Scope.prototype.setParent = setParentScope;
         Scope.prototype.getParent = getParentScope;
@@ -161,8 +162,14 @@
 
         function getItemFromScope(name) {
             this._assertNotDestroyed();
+            core.assert.ownKeySet(name, this._items, 'This item is not defined in local scope.');
+            return this._items[name];
+        }
 
-            core.assert.keySet(name, this._items, 'This item is not defined in scope.');
+        function getGlobalItemFromScope(name) {
+            this._assertNotDestroyed();
+
+            core.assert.keySet(name, this._items, 'This item is not defined in global scope.');
             return this._items[name];
         }
 

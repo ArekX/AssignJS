@@ -28,7 +28,7 @@
             
             for(var i = 0; i < assignments.length; i++) {
                 var assignment = assignments[i];
-                var value = assignment.type === "literal" ? assignment.value : scope.get(assignment.value);
+                var value = assignment.type === "literal" ? assignment.value : scope.getGlobal(assignment.value);
                 scope.set(assignment.name, value);
             }
         }
