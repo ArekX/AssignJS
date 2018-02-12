@@ -9,7 +9,7 @@ AssignJS is a component framework which allows you to structure your DOM element
 
 Minimal setup for usage is as follows:
 
-```
+```html
 <div data-assign="app.hello"></div>
 <script src="assignjs.js"></script>
 <script>
