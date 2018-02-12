@@ -75,7 +75,7 @@ Please refer to Wiki for more info (currently under construction).
 
 ## Examples
 
-Examples are found in `examples` folder.
+Examples are found in `example` folder.
 
 # Building
 
