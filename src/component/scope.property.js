@@ -48,17 +48,17 @@
             var container = containerManager.wrapElement(element, this.config.container);
             var parent = container.getParent();
 
-            assert.notIdentical(parent, null, 'Parent must be defined.');
+            if (parent) {
+                parent.scope.set(def.scopeName, element);
 
-            parent.scope.set(def.scopeName, element);
+                container.events.register('beforeUnlink', function() {
+                    parent.scope.unset(def.scopeName);
+                });
 
-            container.events.register('beforeUnlink', function() {
-                parent.scope.unset(def.scopeName);
-            });
-
-            parent.events.register('beforeUnlink', function() {
-                container.unlink();
-            });
+                parent.events.register('beforeUnlink', function() {
+                    container.unlink();
+                });
+            }
         }
     }
 })(document.querySelector('script[data-assign-js-core]').$main);
