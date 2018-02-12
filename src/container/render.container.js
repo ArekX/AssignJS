@@ -15,10 +15,10 @@
         function RenderedContainer(trackId) {
             this.super.constructor.call(this, trackId);
 
-            this._events = core.vars.merge(this._events, {
-                beforeRender: null,
-                afterRender: null
-            });
+            this._events.extend([
+                'beforeRender',
+                'afterRender'
+            ]);
 
             this.processable = true;
         }

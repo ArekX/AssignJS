@@ -62,6 +62,7 @@
                 container.setParent(config.parent.container);
             };
 
+            var parentContainer = container.getParent();
             var scope = container.scope;
             var factory = this.get(config.type);
 
@@ -88,6 +89,12 @@
 
             container.registerEvent('afterLink', initializeComponent);
             container.registerEvent('beforeUnlink', unsetComponent);
+
+            if (parentContainer) {
+                parentContainer.registerEvent('beforeUnlink', function() {
+                    container.unlink();
+                });
+            }
 
             return instance;
 

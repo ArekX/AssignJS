@@ -3,9 +3,9 @@
 
     core.modules.extend("core.container.manager", ContainerManagerExtender);
 
-    ContainerManagerExtender.deps = ["core.scope", "core.assignments", "core.event"];
+    ContainerManagerExtender.deps = ["core.scope", "core.assignments", "core.event.group"];
 
-    function ContainerManagerExtender(makeScope, assignments, makeEventEmitter) {
+    function ContainerManagerExtender(makeScope, assignments, makeEventGroup) {
         var module = this.module;
         module.define("core.base", BaseContainer);
     
@@ -20,12 +20,12 @@
             this._isUnlinked = false;
             this._parentContainer = null;
             this._assignments = null;
-            this._events = {
-                beforeLink: null,
-                afterLink: null,
-                beforeUnlink: null,
-                afterUnlink: null
-            };
+            this._events = makeEventGroup([
+                'beforeLink',
+                'afterLink',
+                'beforeUnlink',
+                'afterUnlink'
+            ]);
         }
 
         BaseContainer.prototype.process = null;
@@ -133,25 +133,15 @@
         }
 
         function triggerEvent(name, data) {
-            if (this._events[name]) {
-                this._events[name].trigger(data);
-            }
+            this._events.trigger(name, data);
         }
 
         function registerEvent(eventName, namespace, callback) {
-            if (this._events[eventName] === null) {
-                this._events[eventName] = makeEventEmitter(this);
-            }
-
-            this._events[eventName].register(namespace, callback);
+            this._events.register(eventName, namespace, callback);
         }
 
         function unregisterEvent(eventName, namespace, callback) {
-            if (!this._events[eventName]) {
-                return;
-            }
-
-            this._events[eventName].unregister(namespace, callback);
+            this._events.unregister(eventName, namespace, callback);
         }
     }
 

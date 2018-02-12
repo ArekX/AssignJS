@@ -3,8 +3,6 @@
     
     core.modules.define("core.event", EventsModule);
 
-    EventsModule.deps = [];
-
     function EventsModule() {
         function EventEmitter(context) {
             this.namedListeners = {};
@@ -24,7 +22,7 @@
         };
 
         function setAfterTrigger(callback) {
-            this.afterTriggerCallback = callback;
+            this.afterTriggerCallback = callback.bind(this.context);
         }
 
         function registerEvent(eventNamespace, callback) {
@@ -33,14 +31,14 @@
                 return;
             }
 
-            this.unnamedListeners.push(eventNamespace);
+            this.unnamedListeners.push(eventNamespace.bind(this.context));
         }
 
         function registerNamedEvent(eventNamespace, callback) {
             core.assert.namespaceValid(eventNamespace);
             core.assert.keyNotSet(eventNamespace, this.namedListeners, "Event namespace is already defined.");
 
-            this.namedListeners[eventNamespace] = callback;
+            this.namedListeners[eventNamespace] = callback.bind(this.context);
         }
 
         function unregisterEvent(event) {
@@ -55,26 +53,24 @@
             }
         }
 
-        function triggerEvents() {
+        function triggerEvents(data) {
             for(var eventNamespace in this.namedListeners) {
                 if (this.namedListeners.hasOwnProperty(eventNamespace)) {
-                    var shouldContinue = this.namedListeners[eventNamespace].apply(this.context, arguments);
-
-                    if (shouldContinue === false) {
+                    if (this.namedListeners[eventNamespace](data) === false) {
                         return false;
                     }
                 }
             }
 
             for(var i = 0; i < this.unnamedListeners.length; i++) {
-                var shouldContinue = this.unnamedListeners[i].apply(this.context, arguments);
-
-                if (shouldContinue === false) {
+                if (this.unnamedListeners[i](data) === false) {
                     return false;
                 }
             }
 
-            this.afterTriggerCallback && this.afterTriggerCallback.apply(this, arguments);
+            if (this.afterTriggerCallback) {
+                return this.afterTriggerCallback(data);
+            }
 
             return true;
         }
