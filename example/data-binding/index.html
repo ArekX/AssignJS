@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic App</title>
+</head>
+<body>
+<h1>Basic App Example</h1>
+
+<div data-assign="app.main">
+    Two way data binding:
+    <div>
+        Input 1:
+        <input data-assign="#data" type="text" />
+    </div>
+
+    <div>
+        Input 2:
+        <input data-assign="#data" type="text" />
+    </div>
+
+    <p>Data bound result: <span data-assign="@data"></span></p>
+
+    <div>
+        <button data-assign=":button1" data-value="Hello">Set data to "Hello"</button><br>
+        <button data-assign=":button2" data-value="Hello World">Set data to "Hello World"</button><br>
+        <button data-assign=":clear">Clear data</button><br>
+    </div>
+</div>
+
+<script src="../../build/assignjs.js"></script>
+<script>
+AssignJS.modules.extend("core.components", function() {
+    var module = this.module;
+    var html = AssignJS.html;
+
+    module.define("app.main", AppMain);
+
+    function AppMain() {}
+
+    AppMain.prototype.initialize = function() {
+        this.props.set("data", "");
+    };
+
+    AppMain.prototype.afterInit = function() {
+        var button1 = this.scope.get("button1");
+        var button2 = this.scope.get("button2");
+        var clear = this.scope.get("clear");
+
+        button1.onclick = button2.onclick = (e) => {
+            this.props.set("data", e.target.dataset.value);
+        };
+
+        clear.onclick = () => {
+            this.props.set("data", "");
+        };
+    }
+});
+AssignJS.run();
+</script>
+</body>
+</html>
