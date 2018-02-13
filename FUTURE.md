@@ -3,7 +3,7 @@
 * Add only a render function instead of component which returns an template. Or a plain object.
 * Join component specific rendering with container, payload should only be the actual component.
 * Event binding constructs `@(onClick)=propFunction`, `@(onInput)=propFunction`, etc. Prop function will receive the event as the parameter.
-* Add `#propParam` for two-way data binding on input fields. In case of `#propFunction` that function should have getter and setter methods. Make a helper function for this `.toPropertyFunction(getter, setter) -> function Property() {}, {value: { get: getter, set: setter }}`
+* Add `#propParam` for two-way data binding on input fields. In case of `#propFunction` that function should have getter and setter methods. Make a helper function for this `.toPropertyFunction(getter, setter, initialValue) -> function Property() {}, {value: { get: getter, set: setter, value: initialValue }}`
 * Refactor component lifecycle methods.
 * Pass scoped data into constructor of component. Resolve containers into components and scoped elements before.
 * Check situation when components are added to property array are older ones being recreated?
