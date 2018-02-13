@@ -10,7 +10,7 @@
         var assert = core.assert;
         var vars = core.vars;
         var html = core.html;
-        var regex =  /^\@([^()\ ]+)(\(.*?\))?$/;
+        var regex =  /^(\@|\#)([^()\ ]+)(\(.*?\))?$/;
         var argumentsRegex = /^\((.*?)\)$/;
 
         function PropertyManager() {
@@ -33,12 +33,15 @@
         function parseStringDef(line) {
             var parts = line.split(regex);
 
-            assert.identical(parts.length, 4, "Cannot parse tracked property. Invalid syntax.", {
+            assert.identical(parts.length, 5, "Cannot parse tracked property. Invalid syntax.", {
                 line: line,
                 parts: parts
             });
 
-            var type = parts[2] ? 'function' : 'property';
+            var name = parts[2];
+            var isTwoWay = parts[1] == '#'; 
+
+            var type = parts[3] ? 'function' : 'property';
             var args = [];
 
             if (type === 'function') {
@@ -49,9 +52,15 @@
                 });
             }
 
-            return {
+            assert.isFalse(isTwoWay && type === 'function', 'Two way databound properties cannot be functions.', {
                 type: type,
-                name: parts[1],
+                name: name
+            });
+
+            return {
+                twoWay: isTwoWay,
+                type: type,
+                name: name,
                 arguments: args
             };
         }
@@ -87,6 +96,13 @@
                 props.events.unregister('created', handleCreated);
                 props.events.unregister('deleted', handleDeleted);
             });
+
+            var isEditableElement = ((element instanceof HTMLInputElement) || (element instanceof HTMLSelectElement));
+            if (def.twoWay && isEditableElement) {
+                element.addEventListener('input', function() {
+                     props.set(def.name, element.value);
+                });
+            }
 
             function handleCreated(result) {
                 if (isTrackedPropertyInResult(result) && !isListening) {

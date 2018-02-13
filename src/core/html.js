@@ -20,10 +20,13 @@
 
     function setHtmlContents(element, contents) {
         var clearedElements = [];
+        var isEditableElement = (element instanceof HTMLInputElement) || (element instanceof HTMLSelectElement);
 
         if (vars.isString(contents)) {
             contents = this.encode(contents);
-            clearedElements = this.clearContents(element);
+            if (!isEditableElement) {
+                clearedElements = this.clearContents(element);
+            }
         }
 
         if (contents instanceof RawHtml) {
@@ -64,7 +67,7 @@
             return clearedElements;
         }
 
-        if (element instanceof HTMLInputElement) {
+        if (isEditableElement)  {
             element.value = contents;
         } else {
             element.innerHTML = contents;
