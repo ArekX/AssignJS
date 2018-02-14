@@ -1,23 +1,18 @@
 (function(core) {
     "use strict";
     
-    core.modules.extend("core.container.manager", ComponentRenderProperty);
+    core.modules.extend("core.container.manager", ComponentBindProperty);
 
-    ComponentRenderProperty.deps = ["core.parser", "core.manager.base", "core.container.manager"];
+    ComponentBindProperty.deps = ["core.parser", "core.manager.base", "core.container.manager"];
 
-    function ComponentRenderProperty(parser, makeManager, containerManager) {
+    function ComponentBindProperty(parser, makeManager, containerManager) {
         var module = this.module;
         var assert = core.assert;
         var vars = core.vars;
         var html = core.html;
-        var regex = /^([_a-zA-Z0-9]*)\@([^()\ ]+)(\(.*?\))?(\s+\%\s+([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\])?(\:([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]))?)?$/;
+        var regex = /^([_a-zA-Z0-9]*)(\@|\#)([^()\ ]+)(\(.*?\))?(\s+\-\>\s+([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$)?(\:([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$))?)?$/;
         var argumentsRegex = /^\((.*?)\)$/;
-        var CHECK_SWITCH = 'checkSwitch';
-        var allowedTypes = [
-            html.contentTypes.INTO_HTML,
-            html.contentTypes.INTO_VALUE,
-            CHECK_SWITCH
-        ];
+        var CHECK_SWITCH = 'checked';
 
         function PropertyManager() {
             this.config = {
@@ -39,29 +34,26 @@
         function parseStringDef(line, element) {
             var parts = line.split(regex);
 
-            assert.identical(parts.length, 9, "Cannot parse tracked property. Invalid syntax.", {
+            assert.identical(parts.length, 10, "Cannot parse tracked property. Invalid syntax.", {
                 line: line,
                 parts: parts
             });
 
             var config = {
-                bindEvent: null,
-                name: parts[2],
+                trackType: parts[2] === '@' ? 'property' : 'event',
+                bindEvent: parts[1] || null,
+                name: parts[3],
                 readFrom: null,
                 writeTo: null
             };
 
-            if (parts[1]) {
-                config.bindEvent = parts[1] === '#' ? 'input' : parts[1];
-            }
-
-            var functionArgs = parts[3];
+            var functionArgs = parts[4];
 
             config.type = functionArgs ? 'function' : 'property';
             var args = [];
 
             if (config.type === 'function') {
-                args = parts[3].split(argumentsRegex)[1].split(",").map(function(item) {
+                args = parts[4].split(argumentsRegex)[1].split(",").map(function(item) {
                     return item.trim();
                 }).filter(function(item) {
                     return item.length > 0;
@@ -70,21 +62,28 @@
 
             config.arguments = args;
 
-            if (parts[5]) {
-                config.readFrom = parts[5];
+            if (parts[6]) {
+                config.readFrom = parts[6];
             }
 
-            if (parts[7]) {
-                config.writeTo = parts[7];
+            if (parts[8]) {
+                config.writeTo = parts[8];
             }
-
 
             if (config.readFrom === null) {
-                config.readFrom = html.isInputElement(element) ? 'value' : 'html';
+                if (config.trackType === "event") {
+                    config.readFrom = "[]";
+                } else {
+                    config.readFrom = html.isInputElement(element) ? 'value' : 'html';
+                }
             }
 
             if (config.writeTo === null) {
-                config.writeTo = html.isInputElement(element) ? 'value' : 'html';
+                if (config.trackType === "event") {
+                    config.writeTo = "$";
+                } else {
+                    config.writeTo = html.isInputElement(element) ? 'value' : 'html';
+                }
             }
 
             return config;
@@ -125,6 +124,9 @@
 
             if (def.bindEvent) {
                 element.addEventListener(def.bindEvent, function(event) {
+                     if (def.readFrom === '$') {
+                        return;
+                     }
 
                      if (def.readFrom === CHECK_SWITCH && element.type === "checkbox") {
                         if (!element.checked) {
@@ -185,18 +187,24 @@
             }
 
             function render(element) {
+                if (def.writeTo === '$') {
+                    return;
+                }
+
                 var value = props.get(def.name, '');
 
                 if (isFunction && vars.isFunction(value)) {
                     value = value.apply(props.owner, getFunctionProps());
                 }
 
+                if (def.writeTo === '[]') {
+                    return;
+                }
+
                 if (def.writeTo === CHECK_SWITCH) {
                     element.checked = element.value === value;
                 } else {
-                    if (def.writeTo !== '[]') {
-                        container.setContents(value, def.writeTo);
-                    }
+                    container.setContents(value, def.writeTo);    
                 }
             }
 

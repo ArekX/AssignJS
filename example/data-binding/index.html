@@ -20,7 +20,7 @@
 
     <p>Data bound result: <span data-assign="@data"></span></p>
 
-    <select data-assign="input@data" data-assign-options="@items % :html">
+    <select data-assign="input@data" data-assign-options="@items -> :html">
         <option value="value1"> Value 1</option>
         <option value="someValue_2">Value 2</option>
         <option value="value3">Value 3</option>
@@ -29,13 +29,14 @@
     </select>
 
     <textarea data-assign="input@data"></textarea>
-    <input type="checkbox" data-assign="change@data % checkSwitch:checkSwitch" value="Hello" />
-    <input type="radio" data-assign="change@data % checkSwitch:checkSwitch" value="Hello" />
-    <input type="radio" data-assign="change@data % checkSwitch:checkSwitch" value="Hello World" />
+    <input type="checkbox" data-assign="change@data -> checked:checked" value="Hello" />
+    <input type="radio" data-assign="change@data -> checked:checked" value="Hello" />
+    <input type="radio" data-assign="change@data -> checked:checked" value="Hello World" />
     <div>
-        <button data-assign="click@data % [data-value]:[]" data-value="Hello">Set data to "Hello"</button><br>
-        <button data-assign="click@data % [data-value]:[]" data-value="Hello World">Set data to "Hello World"</button><br>
-        <button data-assign="click@data % [data-value]:[]" data-value="">Clear data</button><br>
+        <button data-assign="click@data -> [data-value]:$" data-value="Hello">Set data to "Hello"</button><br>
+        <button data-assign="click@data -> [data-value]:$" data-value="Hello World">Set data to "Hello World"</button><br>
+        <button data-assign="click@data -> [data-value]:$" data-value="">Clear data</button><br>
+        <button data-assign="click#changeData(defaultData)">Test</button>
     </div>
 </div>
 
@@ -51,10 +52,15 @@ AssignJS.modules.extend("core.components", function() {
 
     AppMain.prototype.initialize = function() {
         this.props.set("data", "");
+        this.props.set("defaultData", "Hello");
         this.props.set("items", [
             html.create('option', 'World!', {attributes: {value: 'Hello'}}),
             html.create('option', 'Ojha!', {attributes: {value: 'ojha'}}),
         ]);
+
+        this.props.set("changeData", function(event, defaultData) {
+             this.props.set("data", defaultData);
+        });
     };
 });
 AssignJS.run();
