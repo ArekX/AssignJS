@@ -10,8 +10,14 @@
         var assert = core.assert;
         var vars = core.vars;
         var html = core.html;
-        var regex =  /^(\@|\#)([^()\ ]+)(\(.*?\))?$/;
+        var regex = /^(\@|\#)([^()\ ]+)(\(.*?\))?(\s*\-\>\s*([a-zA-Z0-9]+)(\:([_a-zA-Z0-9]+))?)?$/;
         var argumentsRegex = /^\((.*?)\)$/;
+        var CHECK_SWITCH = 'checkSwitch';
+        var allowedTypes = [
+            html.contentTypes.INTO_HTML,
+            html.contentTypes.INTO_VALUE,
+            CHECK_SWITCH
+        ];
 
         function PropertyManager() {
             this.config = {
@@ -30,10 +36,10 @@
 
         return manager;
 
-        function parseStringDef(line) {
+        function parseStringDef(line, element) {
             var parts = line.split(regex);
 
-            assert.identical(parts.length, 5, "Cannot parse tracked property. Invalid syntax.", {
+            assert.identical(parts.length, 9, "Cannot parse tracked property. Invalid syntax.", {
                 line: line,
                 parts: parts
             });
@@ -45,28 +51,47 @@
             var args = [];
 
             if (type === 'function') {
-                args = parts[2].split(argumentsRegex)[1].split(",").map(function(item) {
+                args = parts[3].split(argumentsRegex)[1].split(",").map(function(item) {
                     return item.trim();
                 }).filter(function(item) {
                     return item.length > 0;
                 });
             }
 
+            // TODO: But they can be Property function
             assert.isFalse(isTwoWay && type === 'function', 'Two way databound properties cannot be functions.', {
                 type: type,
                 name: name
             });
 
+            if (!isTwoWay) {
+                assert.isTrue(!parts[7], 'One way databound properties cannot have events.', {
+                    type: type,
+                    name: name
+                });
+            }
+            
+
+            var setInto = html.isInputElement(element) ? 'value' : 'html';
+
+            if (parts[5] && allowedTypes.indexOf(parts[5]) !== -1) {
+                setInto = parts[5];
+            }
+
+            var bindEvent = parts[7] ? parts[7] : 'input';
+
             return {
                 twoWay: isTwoWay,
                 type: type,
                 name: name,
-                arguments: args
+                arguments: args,
+                setInto: setInto,
+                bindEvent: bindEvent
             };
         }
 
         function trackProperty(line, element) {
-            var def = this.parseStringDef(line);
+            var def = this.parseStringDef(line, element);
             var isListening = true;
             var isFunction = def.type === 'function';
 
@@ -97,9 +122,16 @@
                 props.events.unregister('deleted', handleDeleted);
             });
 
-            var isEditableElement = ((element instanceof HTMLInputElement) || (element instanceof HTMLSelectElement));
-            if (def.twoWay && isEditableElement) {
-                element.addEventListener('input', function() {
+            if (def.twoWay && html.isInputElement(element)) {
+                element.addEventListener(def.bindEvent, function() {
+
+                     if (def.setInto === CHECK_SWITCH && element.type === "checkbox") {
+                        if (!element.checked) {
+                            props.set(def.name, "");
+                            return;
+                        }
+                     }
+
                      props.set(def.name, element.value);
                 });
             }
@@ -152,7 +184,11 @@
                     value = value.apply(props.owner, args);
                 }
 
-                container.setContents(value);
+                if (def.setInto === CHECK_SWITCH) {
+                    element.checked = element.value === value;
+                } else {
+                    container.setContents(value, def.setInto);
+                }
             }
         }
     }

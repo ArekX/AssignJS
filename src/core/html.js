@@ -5,28 +5,40 @@
 
     function Html() {}
 
-    Html.prototype.setContents = setHtmlContents;
+    Html.prototype.contentTypes = {
+        INTO_HTML: 'html',
+        INTO_VALUE: 'value'
+    };
+    
+    Html.prototype.setContents = setContents;
+    Html.prototype.setHtmlContents = setHtmlContents;
+    Html.prototype.setInputContents = setInputContents;
     Html.prototype.createTemplate = createElementTemplate;
     Html.prototype.create = createElement;
     Html.prototype.extend = extendElement;
     Html.prototype.clearContents = clearContents;
     Html.prototype.encode = encodeHtmlContents;
     Html.prototype.wrapRawHtml = wrapRawHtmlContents;
+    Html.prototype.isInputElement = getIsInputElement;
     Html.prototype.parse = parseHtml;
 
     var vars = core.vars;
     core.html = new Html();
     return;
 
+    function setContents(element, contents, into) {
+        if (this.isInputElement(element) && into !== this.contentTypes.INTO_HTML) {
+            return this.setInputContents(element, contents, into);
+        } 
+        return this.setHtmlContents(element, contents);
+    }
+
     function setHtmlContents(element, contents) {
         var clearedElements = [];
-        var isEditableElement = (element instanceof HTMLInputElement) || (element instanceof HTMLSelectElement);
 
         if (vars.isString(contents)) {
             contents = this.encode(contents);
-            if (!isEditableElement) {
-                clearedElements = this.clearContents(element);
-            }
+            clearedElements = this.clearContents(element);
         }
 
         if (contents instanceof RawHtml) {
@@ -67,13 +79,18 @@
             return clearedElements;
         }
 
-        if (isEditableElement)  {
-            element.value = contents;
-        } else {
-            element.innerHTML = contents;
-        }
+        element.innerHTML = contents;
 
         return clearedElements;
+    }
+
+    function setInputContents(element, contents, into) {
+        if (contents instanceof RawHtml) {
+            contents = contents.value;
+        }
+
+        element.value = contents;
+        return [];
     }
 
     function clearContents(element) {
@@ -189,6 +206,12 @@
 
             return self.create(tag, useOverrideContents || contents, useOptions);
         }
+    }
+
+    function getIsInputElement(element) {
+        return (element instanceof HTMLInputElement) || 
+               (element instanceof HTMLSelectElement) ||
+               (element instanceof HTMLTextAreaElement);
     }
 
 })(document.querySelector('script[data-assign-js-core]').$main);

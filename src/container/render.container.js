@@ -64,12 +64,12 @@
             module.processContainers();
         }
 
-        function setContents(contents) {
+        function setContents(contents, into) {
             if (!this.owner) {
                 return;
             }
 
-            var deletedElements = core.html.setContents(this.owner, contents);
+            var deletedElements = core.html.setContents(this.owner, contents, into);
             module.processDeleted(deletedElements);
         }
     }

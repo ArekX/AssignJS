@@ -11,3 +11,4 @@
 * Allow component property traversal `@propObject.param.anotherParam.value`. User will have to call refresh.
 * Make a top root scope automatically so that there is no need data-assign on html element.
 * Method aliasing. So that `AssignJS.modules.extend('core.components', function() { return componentFunction })` -> `AssignJS.defineComponent(componentFunction)` `core.alias`
+* Data binding to specific attributes of element.
