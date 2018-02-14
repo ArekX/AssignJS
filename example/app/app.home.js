@@ -20,16 +20,14 @@
         AppHome.prototype.template = `
             <h2>This is a home page</h2>
             <div data-assign="app.lipsum"></div>
-            <button data-assign=":button">Go to About</button>
+            <button data-assign="click#goToAbout()">Go to About</button>
         `;
 
-        AppHome.prototype.afterInit = function() {
-             var button = this.scope.get('button');
-
-             button.onclick = () => {
+        AppHome.prototype.initialize = function() {
+            this.props.set("goToAbout", function() {
                 appRoutes.changeRoute('About');
-             };
-        };
+            });
+        }
 
         module.define('app.lipsum', AppLipsum);
 

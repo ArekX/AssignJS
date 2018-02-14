@@ -187,14 +187,14 @@
     }
 
     function extendElement(element, options) {
-        if (options.attributes) {
-            for(var attribute in options.attributes) {
-                if (options.attributes.hasOwnProperty(attribute)) {
+        if (options.attrs) {
+            for(var attribute in options.attrs) {
+                if (options.attrs.hasOwnProperty(attribute)) {
                     var setAttribute = attribute.replace(/([A-Z])/g, function(char){
                         return "-" + char.toLowerCase();
                     });
 
-                    element.setAttribute(setAttribute, options.attributes[attribute]);
+                    element.setAttribute(setAttribute, options.attrs[attribute]);
                 }
             }
         }

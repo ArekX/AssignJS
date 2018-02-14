@@ -135,18 +135,18 @@
                         }
                      }
 
-                     var value = html.getContents(element, def.readFrom);
+                     var valueContents = html.getContents(element, def.readFrom);
 
                      if (isFunction) {
                         var value = props.get(def.name, '');
                         if (vars.isFunction(value)) {
-                            value.apply(props.owner, [event].concat(getFunctionProps()));
+                            value.apply(props.owner, [event, valueContents].concat(getFunctionProps()));
                         }
                         return;
                      }
 
                      if (def.readFrom !== '[]') {
-                        props.set(def.name, value);
+                        props.set(def.name, valueContents);
                      }
                 });
             }

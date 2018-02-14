@@ -36,7 +36,7 @@
         <button data-assign="click@data -> [data-value]:$" data-value="Hello">Set data to "Hello"</button><br>
         <button data-assign="click@data -> [data-value]:$" data-value="Hello World">Set data to "Hello World"</button><br>
         <button data-assign="click@data -> [data-value]:$" data-value="">Clear data</button><br>
-        <button data-assign="click#changeData(defaultData)">Test</button>
+        <button data-assign="click#changeData(defaultData) -> [data-c]" data-c="hoho">Test</button>
     </div>
 </div>
 
@@ -54,11 +54,12 @@ AssignJS.modules.extend("core.components", function() {
         this.props.set("data", "");
         this.props.set("defaultData", "Hello");
         this.props.set("items", [
-            html.create('option', 'World!', {attributes: {value: 'Hello'}}),
-            html.create('option', 'Ojha!', {attributes: {value: 'ojha'}}),
+            html.create('option', 'World!', {attrs: {value: 'Hello'}}),
+            html.create('option', 'Ojha!', {attrs: {value: 'ojha'}}),
         ]);
 
-        this.props.set("changeData", function(event, defaultData) {
+        this.props.set("changeData", function(event, readValue, defaultData) {
+            console.log(readValue);
              this.props.set("data", defaultData);
         });
     };

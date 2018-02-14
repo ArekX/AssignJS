@@ -47,7 +47,12 @@
         
 
         function AppMain() {
-            this.createLink = html.createTemplate('a', {attributes: {href: 'javascript:void(0)', style: "margin-right: 10px;"}});
+            this.createLink = html.createTemplate('a', {attrs: {
+              href: 'javascript:void(0)', 
+              style: "margin-right: 10px;",
+              dataAssign: "click#changeRoute() -> [data-route]"
+            }});
+
             appRoutes.onRouteChange.register(this._changeChildComponent.bind(this));
         }
 
@@ -59,6 +64,9 @@
 
 
         AppMain.prototype.initialize = function() {
+            this.props.set("changeRoute", function(event, readValue) {
+                appRoutes.changeRoute(readValue);
+            });
             var links = [];
 
             for(var route in appRoutes.routes) {
@@ -66,15 +74,7 @@
                     continue;
                 }
 
-                ((routeName) => {
-                    var link = this.createLink(routeName);
-
-                    link.onclick = () => {
-                        appRoutes.changeRoute(routeName);
-                    };
-
-                    links.push(link);
-                })(route);
+                links.push(this.createLink(route, {attrs: {dataRoute: route}}));
             }
 
             this.props.set("navLinks", links);
@@ -86,7 +86,7 @@
 
 
         AppMain.prototype._changeChildComponent = function(routeComponent) {
-            this.props.set("child", html.create('route', {attributes: {dataAssign: routeComponent}}));
+            this.props.set("child", html.create('route', {attrs: {dataAssign: routeComponent}}));
         };
     }
 
