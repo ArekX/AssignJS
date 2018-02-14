@@ -6,11 +6,16 @@
     function Html() {}
 
     Html.prototype.contentTypes = {
-        INTO_HTML: 'html',
-        INTO_VALUE: 'value'
+        TYPE_HTML: 'html',
+        TYPE_VALUE: 'value'
     };
     
+    Html.prototype.getContents = getContents;
+    Html.prototype.getHtmlContents = getHtmlContents;
+    Html.prototype.getInputContents = getInputContents;
+    Html.prototype.getAttributeContents = getAttributeContents;
     Html.prototype.setContents = setContents;
+    Html.prototype.setAttributeContents = setAttributeContents;
     Html.prototype.setHtmlContents = setHtmlContents;
     Html.prototype.setInputContents = setInputContents;
     Html.prototype.createTemplate = createElementTemplate;
@@ -26,10 +31,27 @@
     core.html = new Html();
     return;
 
+    function getContents(element, from) {
+        if (this.isInputElement(element) && from !== this.contentTypes.TYPE_HTML) {
+            return this.getInputContents(element);
+        } 
+
+        if (vars.isString(from) && from[0] === '[') {
+            return this.getAttributeContents(element, from.substr(1, from.length - 2));
+        }
+
+        return this.getHtmlContents(element);
+    }
+
     function setContents(element, contents, into) {
-        if (this.isInputElement(element) && into !== this.contentTypes.INTO_HTML) {
+        if (vars.isString(into) && into[0] === '[') {
+            return this.setAttributeContents(element, contents, into.substr(1, into.length - 2));
+        }
+
+        if (this.isInputElement(element) && into !== this.contentTypes.TYPE_HTML) {
             return this.setInputContents(element, contents, into);
         } 
+
         return this.setHtmlContents(element, contents);
     }
 
@@ -84,6 +106,10 @@
         return clearedElements;
     }
 
+    function getHtmlContents(element) {
+        return element.innerHTML;
+    }
+
     function setInputContents(element, contents, into) {
         if (contents instanceof RawHtml) {
             contents = contents.value;
@@ -91,6 +117,21 @@
 
         element.value = contents;
         return [];
+    }
+
+    function getInputContents(element) {
+        return element.value;
+    }
+
+    function setAttributeContents(element, contents, attribute) {
+        if (attribute.length > 0) {
+            element.setAttribute(attribute, contents);
+        }
+        return [];
+    }
+
+    function getAttributeContents(element, attribute) {
+        return element.getAttribute(attribute);
     }
 
     function clearContents(element) {

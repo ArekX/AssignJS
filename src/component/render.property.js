@@ -10,7 +10,7 @@
         var assert = core.assert;
         var vars = core.vars;
         var html = core.html;
-        var regex = /^(\@|\#)([^()\ ]+)(\(.*?\))?(\s*\-\>\s*([a-zA-Z0-9]+)(\:([_a-zA-Z0-9]+))?)?$/;
+        var regex = /^([_a-zA-Z0-9]*)\@([^()\ ]+)(\(.*?\))?(\s+\%\s+([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\])?(\:([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]))?)?$/;
         var argumentsRegex = /^\((.*?)\)$/;
         var CHECK_SWITCH = 'checkSwitch';
         var allowedTypes = [
@@ -44,13 +44,23 @@
                 parts: parts
             });
 
-            var name = parts[2];
-            var isTwoWay = parts[1] == '#'; 
+            var config = {
+                bindEvent: null,
+                name: parts[2],
+                readFrom: null,
+                writeTo: null
+            };
 
-            var type = parts[3] ? 'function' : 'property';
+            if (parts[1]) {
+                config.bindEvent = parts[1] === '#' ? 'input' : parts[1];
+            }
+
+            var functionArgs = parts[3];
+
+            config.type = functionArgs ? 'function' : 'property';
             var args = [];
 
-            if (type === 'function') {
+            if (config.type === 'function') {
                 args = parts[3].split(argumentsRegex)[1].split(",").map(function(item) {
                     return item.trim();
                 }).filter(function(item) {
@@ -58,40 +68,31 @@
                 });
             }
 
-            // TODO: But they can be Property function
-            assert.isFalse(isTwoWay && type === 'function', 'Two way databound properties cannot be functions.', {
-                type: type,
-                name: name
-            });
+            config.arguments = args;
 
-            if (!isTwoWay) {
-                assert.isTrue(!parts[7], 'One way databound properties cannot have events.', {
-                    type: type,
-                    name: name
-                });
-            }
-            
-
-            var setInto = html.isInputElement(element) ? 'value' : 'html';
-
-            if (parts[5] && allowedTypes.indexOf(parts[5]) !== -1) {
-                setInto = parts[5];
+            if (parts[5]) {
+                config.readFrom = parts[5];
             }
 
-            var bindEvent = parts[7] ? parts[7] : 'input';
+            if (parts[7]) {
+                config.writeTo = parts[7];
+            }
 
-            return {
-                twoWay: isTwoWay,
-                type: type,
-                name: name,
-                arguments: args,
-                setInto: setInto,
-                bindEvent: bindEvent
-            };
+
+            if (config.readFrom === null) {
+                config.readFrom = html.isInputElement(element) ? 'value' : 'html';
+            }
+
+            if (config.writeTo === null) {
+                config.writeTo = html.isInputElement(element) ? 'value' : 'html';
+            }
+
+            return config;
         }
 
         function trackProperty(line, element) {
             var def = this.parseStringDef(line, element);
+
             var isListening = true;
             var isFunction = def.type === 'function';
 
@@ -122,17 +123,29 @@
                 props.events.unregister('deleted', handleDeleted);
             });
 
-            if (def.twoWay && html.isInputElement(element)) {
-                element.addEventListener(def.bindEvent, function() {
+            if (def.bindEvent) {
+                element.addEventListener(def.bindEvent, function(event) {
 
-                     if (def.setInto === CHECK_SWITCH && element.type === "checkbox") {
+                     if (def.readFrom === CHECK_SWITCH && element.type === "checkbox") {
                         if (!element.checked) {
                             props.set(def.name, "");
                             return;
                         }
                      }
 
-                     props.set(def.name, element.value);
+                     var value = html.getContents(element, def.readFrom);
+
+                     if (isFunction) {
+                        var value = props.get(def.name, '');
+                        if (vars.isFunction(value)) {
+                            value.apply(props.owner, [event].concat(getFunctionProps()));
+                        }
+                        return;
+                     }
+
+                     if (def.readFrom !== '[]') {
+                        props.set(def.name, value);
+                     }
                 });
             }
 
@@ -175,20 +188,23 @@
                 var value = props.get(def.name, '');
 
                 if (isFunction && vars.isFunction(value)) {
-                    var funcProps = props.getMultiple(def.arguments, null);
-                    var args = def.arguments.map(function(item) {
-                        return funcProps[item];
-                    });
-
-
-                    value = value.apply(props.owner, args);
+                    value = value.apply(props.owner, getFunctionProps());
                 }
 
-                if (def.setInto === CHECK_SWITCH) {
+                if (def.writeTo === CHECK_SWITCH) {
                     element.checked = element.value === value;
                 } else {
-                    container.setContents(value, def.setInto);
+                    if (def.writeTo !== '[]') {
+                        container.setContents(value, def.writeTo);
+                    }
                 }
+            }
+
+            function getFunctionProps() {
+                var funcProps = props.getMultiple(def.arguments, null);
+                return def.arguments.map(function(item) {
+                    return funcProps[item];
+                });
             }
         }
     }

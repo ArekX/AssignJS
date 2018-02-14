@@ -10,17 +10,17 @@
     Two way data binding:
     <div>
         Input 1:
-        <input data-assign="#data" type="text" />
+        <input data-assign="input@data" type="text" />
     </div>
 
     <div>
         Input 2:
-        <input data-assign="#data" type="text" />
+        <input data-assign="input@data" type="text" />
     </div>
 
     <p>Data bound result: <span data-assign="@data"></span></p>
 
-    <select data-assign="#data" data-assign-options="@items -> html">
+    <select data-assign="input@data" data-assign-options="@items % :html">
         <option value="value1"> Value 1</option>
         <option value="someValue_2">Value 2</option>
         <option value="value3">Value 3</option>
@@ -28,14 +28,14 @@
         <option value="Hello World">Hello World</option>
     </select>
 
-    <textarea data-assign="#data"></textarea>
-    <input type="checkbox" data-assign="#data -> checkSwitch:change" value="Hello" />
-    <input type="radio" data-assign="#data -> checkSwitch:change" value="Hello" />
-    <input type="radio" data-assign="#data -> checkSwitch:change" value="Hello World" />
+    <textarea data-assign="input@data"></textarea>
+    <input type="checkbox" data-assign="change@data % checkSwitch:checkSwitch" value="Hello" />
+    <input type="radio" data-assign="change@data % checkSwitch:checkSwitch" value="Hello" />
+    <input type="radio" data-assign="change@data % checkSwitch:checkSwitch" value="Hello World" />
     <div>
-        <button data-assign=":button1" data-value="Hello">Set data to "Hello"</button><br>
-        <button data-assign=":button2" data-value="Hello World">Set data to "Hello World"</button><br>
-        <button data-assign=":clear">Clear data</button><br>
+        <button data-assign="click@data % [data-value]:[]" data-value="Hello">Set data to "Hello"</button><br>
+        <button data-assign="click@data % [data-value]:[]" data-value="Hello World">Set data to "Hello World"</button><br>
+        <button data-assign="click@data % [data-value]:[]" data-value="">Clear data</button><br>
     </div>
 </div>
 
@@ -56,20 +56,6 @@ AssignJS.modules.extend("core.components", function() {
             html.create('option', 'Ojha!', {attributes: {value: 'ojha'}}),
         ]);
     };
-
-    AppMain.prototype.afterInit = function() {
-        var button1 = this.scope.get("button1");
-        var button2 = this.scope.get("button2");
-        var clear = this.scope.get("clear");
-
-        button1.onclick = button2.onclick = (e) => {
-            this.props.set("data", e.target.dataset.value);
-        };
-
-        clear.onclick = () => {
-            this.props.set("data", "");
-        };
-    }
 });
 AssignJS.run();
 </script>
