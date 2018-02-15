@@ -40,8 +40,15 @@
         Scope.prototype._unsetChild = unregisterChildScope;
         Scope.prototype._assertNotDestroyed = assertNotDestroyed;
 
-        return function() {
-            return new Scope();
+        var rootScope = new Scope();
+
+        return {
+            make: function() {
+                var scope = new Scope();
+                scope.setParent(rootScope);
+                return scope;
+            },
+            rootScope: rootScope
         };
 
         function assertNotDestroyed() {
@@ -67,6 +74,10 @@
         }
 
         function setParentScope(scope) {
+            if (scope === null) {
+                scope = rootScope;
+            }
+
             if (this._parentScope) {
                 this._parentScope._unsetChild(this);
                 this._items.__proto__ = {};

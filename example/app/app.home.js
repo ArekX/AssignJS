@@ -11,7 +11,10 @@
         var html = core.html;
 
         module.define('app.home', AppHome);
-        appRoutes.addRoute('Home', 'app.home');
+        appRoutes.addRoute('Home', {
+            route: 'app.home',
+            title: 'Home'
+        });
         appRoutes.setDefault('Home');
 
         function AppHome() {

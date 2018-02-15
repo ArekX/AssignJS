@@ -11,7 +11,10 @@
         var html = core.html;
 
         module.define('app.about', AppAbout);
-        appRoutes.addRoute('About', 'app.about');
+        appRoutes.addRoute('About', {
+            route: 'app.about',
+            title: 'About'
+        });
 
         function AppAbout() {
         }

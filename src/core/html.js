@@ -212,6 +212,20 @@
                 }
             }
         }
+
+        if (options.style) {
+            var styleString = "";
+            for(var style in options.style) {
+                if (options.style.hasOwnProperty(style)) {
+                    var setStyle = style.replace(/([A-Z])/g, function(char){
+                        return "-" + char.toLowerCase();
+                    });
+                    styleString += setStyle + ':' + options.style[style] + ';';
+                }
+            }
+
+            element.setAttribute('style', styleString);
+        }
     }
 
     function createElementTemplate(tag, contents, options) {

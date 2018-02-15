@@ -48,9 +48,9 @@
             var container = containerManager.wrapElement(element, this.config.container);
             var parent = container.getParent();
 
+            container.scope.getParent().set(def.scopeName, element);
+            
             if (parent) {
-                parent.scope.set(def.scopeName, element);
-
                 container.events.register('beforeUnlink', function() {
                     parent.scope.unset(def.scopeName);
                 });

@@ -52,6 +52,8 @@
         }
 
         function setProperty(prop, value) {
+            assert.notIdentical(prop[0], '%', 'Props cannot start with % sign.');
+
             if (!this.exists(prop)) {
                 this.events.trigger('created', {
                     type: 'single',

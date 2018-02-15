@@ -11,7 +11,10 @@
         var html = core.html;
 
         module.define('app.example', AppExample);
-        appRoutes.addRoute('Example', 'app.example');
+        appRoutes.addRoute('Example', {
+            route: 'app.example',
+            title: 'Example page'
+        });
 
         function AppExample() {}
 

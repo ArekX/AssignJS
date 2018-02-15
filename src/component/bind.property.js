@@ -10,7 +10,7 @@
         var assert = core.assert;
         var vars = core.vars;
         var html = core.html;
-        var regex = /^([_a-zA-Z0-9]*)(\@|\#)([^()\ ]+)(\(.*?\))?(\s+\-\>\s+([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$)?(\:([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$))?)?$/;
+        var regex = /^([_a-zA-Z0-9]*)(\@|\#)([^()\ ]+)(\(.*?\))?(\s+\<\>\s+([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$)?(\:([a-zA-Z0-9]+|\[[a-zA-Z0-9-]*\]|\$))?)?$/;
         var argumentsRegex = /^\((.*?)\)$/;
         var CHECK_SWITCH = 'checked';
 
@@ -99,9 +99,13 @@
             var parent = container.getParent();
             var oldScope = container.scope;
 
-            container.scope = parent.scope;
+            assert.notIdentical(parent, null, 'Parent must be defined.', {
+                line: line, 
+                element: element, 
+                parent: parent
+            });
 
-            assert.notIdentical(parent, null, 'Parent must be defined.');
+            container.scope = parent.scope;
 
             var props = parent.getPayload().props;
 
@@ -135,15 +139,15 @@
                         }
                      }
 
-                     var valueContents = html.getContents(element, def.readFrom);
-
                      if (isFunction) {
-                        var value = props.get(def.name, '');
-                        if (vars.isFunction(value)) {
-                            value.apply(props.owner, [event, valueContents].concat(getFunctionProps()));
+                        var functionValue = props.get(def.name, '');
+                        if (vars.isFunction(functionValue)) {
+                            functionValue.apply(props.owner, [event].concat(getFunctionProps()));
                         }
                         return;
                      }
+
+                     var valueContents = html.getContents(element, def.readFrom);
 
                      if (def.readFrom !== '[]') {
                         props.set(def.name, valueContents);
@@ -211,6 +215,10 @@
             function getFunctionProps() {
                 var funcProps = props.getMultiple(def.arguments, null);
                 return def.arguments.map(function(item) {
+                    if (item[0] === '%') {
+                        return html.getContents(container.owner, item.substr(1));
+                    }
+
                     return funcProps[item];
                 });
             }

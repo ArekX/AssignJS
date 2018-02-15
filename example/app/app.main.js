@@ -8,6 +8,7 @@
     function AppRoutes(makeEventEmitter) {
           function AppLinks() {
               this.default = null;
+              this.currentRoute = null;
               this.routes = {};
               this.onRouteChange = makeEventEmitter(this);
           }
@@ -22,12 +23,17 @@
               }
           }
 
-          AppLinks.prototype.addRoute = function(linkName, componentName) {
-               this.routes[linkName] = componentName;
+          AppLinks.prototype.addRoute = function(linkName, info) {
+               this.routes[linkName] = info;
           };
 
           AppLinks.prototype.changeRoute = function(linkName) {
-               this.onRouteChange.trigger(this.routes[linkName]);
+               this.currentRoute = linkName;
+               this.onRouteChange.trigger(this.routes[linkName].route);
+          };
+
+          AppLinks.prototype.getTitle = function(linkName) {
+               return this.routes[this.currentRoute].title;
           };
 
           return new AppLinks();
@@ -44,14 +50,16 @@
 
         module.define('app.main', AppMain);
 
-        
-
         function AppMain() {
-            this.createLink = html.createTemplate('a', {attrs: {
-              href: 'javascript:void(0)', 
-              style: "margin-right: 10px;",
-              dataAssign: "click#changeRoute() -> [data-route]"
-            }});
+            this.createLink = html.createTemplate('a', {
+              attrs: {
+                href: 'javascript:void(0)', 
+                dataAssign: "click#changeRoute() -> [data-route]"
+              },
+              style: {
+                marginRight: '10px'
+              }
+            });
 
             appRoutes.onRouteChange.register(this._changeChildComponent.bind(this));
         }

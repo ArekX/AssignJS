@@ -5,14 +5,14 @@
 
     ContainerManagerExtender.deps = ["core.scope", "core.assignments", "core.event.group"];
 
-    function ContainerManagerExtender(makeScope, assignments, makeEventGroup) {
+    function ContainerManagerExtender(scopeManager, assignments, makeEventGroup) {
         var module = this.module;
         module.define("core.base", BaseContainer);
     
         function BaseContainer(trackId) {
             this.owner = null;
             this._isDestroyable = true;
-            this.scope = makeScope();
+            this.scope = scopeManager.make();
             
             this._trackId = trackId;
             this._payload = null;
