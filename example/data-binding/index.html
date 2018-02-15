@@ -20,7 +20,7 @@
 
     <p>Data bound result: <span data-assign="@data"></span></p>
 
-    <select data-assign="input@data" data-assign-options="@items <> :html">
+    <select data-assign="input@data" data-assign-options="@items <> :html" multiple>
         <option value="value1"> Value 1</option>
         <option value="someValue_2">Value 2</option>
         <option value="value3">Value 3</option>
@@ -28,25 +28,37 @@
         <option value="Hello World">Hello World</option>
     </select>
 
+    <input type="range" name="a" value="50" data-assign="input@data">
+
     <textarea data-assign="input@data"></textarea>
     <input type="checkbox" data-assign="change@data" value="Hello" />
     <input type="radio" data-assign="change@data" value="Hello" />
     <input type="radio" data-assign="change@data <> checked:checked" value="Hello World" />
+    <div data-test="app.pagination <- 
+        (10):pageSize,
+        @propPass:currentPage,
+        @totalItems:totalItems
+    "></div>
     <div>
         <button data-assign="click#data <> [data-value]" data-value="Hello">Set data to "Hello"</button><br>
         <button data-assign="click#data <> [data-value]" data-value="Hello World">Set data to "Hello World"</button><br>
         <button data-assign="click#data <> [data-value]" data-value="">Clear data</button><br>
         <button data-assign="click#changeData(defaultData)">Test</button>
     </div>
+
+    <div>
+        <input type="checkbox" data-assign="change#info(%value)" value="Hello" />
+        <input type="checkbox" data-assign="change#info(%value)" value="Hello World" />
+        <input type="checkbox" data-assign="change#info(%value)" value="Hello Baja" />
+        <input type="checkbox" data-assign="change#info(%value)" value="Hello Nesto" />
+    </div>
 </div>
 
 <script src="../../build/assignjs.js"></script>
 <script>
-AssignJS.modules.extend("core.components", function() {
-    var module = this.module;
-    var html = AssignJS.html;
-
-    module.define("app.main", AppMain);
+(function(core) {
+    var html = core.html;
+    AssignJS.do.defineComponent("app.main", AppMain);
 
     function AppMain() {}
 
@@ -61,8 +73,13 @@ AssignJS.modules.extend("core.components", function() {
         this.props.set("changeData", function(event, defaultData) {
              this.props.set("data", defaultData);
         });
+
+        this.props.set("info", function(event, value) {
+            console.log('val', value, event.target.checked);
+        });
     };
-});
+})(AssignJS);
+
 AssignJS.run();
 </script>
 </body>

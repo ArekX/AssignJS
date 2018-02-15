@@ -11,7 +11,7 @@ Minimal setup for usage is as follows:
 <div data-assign="app.hello"></div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.modules.extend("core.components", function() { 
+  AssignJS.do.defineComponent(function() { 
     this.module.define("app.hello", function AppHello() {
       this.template = "Hello world.";
     });
@@ -30,7 +30,7 @@ Properties can be defined inside the component and it will be tracked for change
 <div data-assign="app.hello"></div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.modules.extend("core.components", function() { 
+  AssignJS.do.defineComponent(function() { 
     this.module.define("app.hello", function AppHello() {
       this.template = `Hello world at <span data-assign="@date"></span>`;
       this.initialize = function() {
@@ -55,7 +55,7 @@ AssignJS component doesn't require a template. You can just assign it to an elem
 </div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.modules.extend("core.components", function() { 
+  AssignJS.do.defineComponent(function() { 
     this.module.define("app.hello", function AppHello() {
       this.initialize = function() {
           this.props.set("date", new Date());

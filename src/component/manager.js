@@ -4,6 +4,12 @@
 
     ComponentModule.deps = ["core.container.manager", "core.manager.base", "core.parser", "core.event", "core.assignments"];
 
+    core.alias.set("defineComponent", function(componentNamespace, componentFactory) {
+        core.modules.extend("core.components", function() {
+              this.module.define(componentNamespace, componentFactory);
+        });
+    });
+
     function ComponentModule(containerManager, makeManager, parser, makeEventEmitter, assignments) {
         var assert = core.assert;
         var main = this;

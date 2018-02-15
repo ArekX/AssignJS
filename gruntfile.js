@@ -4,6 +4,7 @@ module.exports = function(grunt) {
     'src/core/index.js',
     'src/core/vars.js',
     'src/core/assert.js',
+    'src/core/alias.js',
     'src/core/modules.js',
     'src/core/html.js',
     'src/*.js',

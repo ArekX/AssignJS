@@ -16,7 +16,8 @@
 
         function PropertyManager() {
             this.config = {
-                container: "core.rendered"
+                container: "core.rendered",
+                checkableTypes: ['checkbox', 'radio']
             };
         }
 
@@ -70,7 +71,7 @@
                 config.writeTo = parts[8];
             }
 
-            var isCheckableElement = element.type === "checkbox" || element.type === "radio";
+            var isCheckableElement = this.config.checkableTypes.indexOf(element.type) !== -1;
 
             if (config.readFrom === null) {
                 if (config.trackType === "event") {

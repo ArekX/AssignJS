@@ -93,12 +93,20 @@
 
         if (vars.isArray(contents)) {
             clearedElements = this.clearContents(element);
+            var addedChildElements = false;
 
             for(var i = 0; i < contents.length; i++) {
-                element.appendChild(contents[i]);
+                var item = contents[i];
+
+                if (item instanceof HTMLElement) {
+                    element.appendChild(contents[i]);
+                    addedChildElements = true;
+                }
             }
 
-            return clearedElements;
+            if (addedChildElements) {
+                return clearedElements;
+            }
         }
 
         element.innerHTML = contents;
@@ -115,11 +123,32 @@
             contents = contents.value;
         }
 
+        if (vars.isArray(contents) && element.options && element.multiple) {
+            for(var i = 0; i < element.options.length; i++) {
+                element.options[i].selected = contents.indexOf(element.options[i].value) !== -1;
+            }
+
+            return [];
+        }
+
         element.value = contents;
         return [];
     }
 
     function getInputContents(element) {
+        if (element.options && element.multiple) {
+            var values = [];
+
+            for(var i = 0; i < element.options.length; i++) {
+                var option = element.options[i];
+                if (option.selected) {
+                    values.push(option.value);    
+                }
+            }
+
+            return values;
+        }
+
         return element.value;
     }
 
