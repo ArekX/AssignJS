@@ -70,11 +70,17 @@
                 config.writeTo = parts[8];
             }
 
+            var isCheckableElement = element.type === "checkbox" || element.type === "radio";
+
             if (config.readFrom === null) {
                 if (config.trackType === "event") {
                     config.readFrom = "[]";
                 } else {
-                    config.readFrom = html.isInputElement(element) ? 'value' : 'html';
+                    if (html.isInputElement(element)) {
+                        config.readFrom = isCheckableElement ? 'checked' : 'value';
+                    } else {
+                        config.readFrom = 'html';
+                    }
                 }
             }
 
@@ -82,7 +88,11 @@
                 if (config.trackType === "event") {
                     config.writeTo = "$";
                 } else {
-                    config.writeTo = html.isInputElement(element) ? 'value' : 'html';
+                    if (html.isInputElement(element)) {
+                        config.writeTo = isCheckableElement ? 'checked' : 'value';
+                    } else {
+                        config.writeTo = 'html';
+                    }
                 }
             }
 
