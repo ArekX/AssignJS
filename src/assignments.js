@@ -14,14 +14,14 @@
         function Assignments() {}
 
         Assignments.prototype.parse = parse;
-        Assignments.prototype.assignToScope = assignToScope;
+        Assignments.prototype.setAssignments = setAssignments;
         Assignments.prototype._parseAssignmentItems = parseAssignmentItems;
         Assignments.prototype._parsePartsAsLiteral = parsePartsAsLiteral;
         Assignments.prototype._parsePartsAsItem = parsePartsAsItem;
 
         return new Assignments();
 
-        function assignToScope(assignments, scope) {
+        function setAssignments(assignments, scope) {
             if (!assignments) {
                 return;
             }

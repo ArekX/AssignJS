@@ -7,8 +7,8 @@
 
     function MakeComponentProps(makeEventGroup) {
         
-        function Props(ownerComponent) {
-            this.owner = ownerComponent;
+        function Props() {
+            this.owner = null;
             this._props = {};
             this.events = makeEventGroup([
                 'created',
@@ -25,6 +25,7 @@
             };
         }
 
+        Props.prototype.initialize = initialize;
         Props.prototype.set = setProperty;
         Props.prototype.delete = deleteProperty;
         Props.prototype.deleteMultiple = deleteMultipleProperties;
@@ -47,12 +48,17 @@
             return new Props(ownerComponent);
         }
 
+        function initialize(config) {
+            this.owner = config.owner || null;
+        }
+
         function propertyExists(prop) {
             return this._props.hasOwnProperty(prop);
         }
 
         function setProperty(prop, value) {
             assert.notIdentical(prop[0], '%', 'Props cannot start with % sign.');
+            assert.notIdentical(prop[0], '@', 'Props cannot start with @ sign.');
 
             if (!this.exists(prop)) {
                 this.events.trigger('created', {

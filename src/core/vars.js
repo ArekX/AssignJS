@@ -51,12 +51,14 @@
     }
 
     function isEmpty(value) {
-        return !this.isFunction(value)
-               value === "" ||
-               value === "0" ||
-               value === 0 ||
-               value === undefined ||
-               (this.isObject(value) && Object.keys(value).length == 0);
+        return !this.isFunction(value) && (
+                   value === "" ||
+                   value === "0" ||
+                   value === 0 ||
+                   value === null ||
+                   value === undefined ||
+                   (this.isObject(value) && Object.keys(value).length == 0)
+               );
     }
 
     function isFunction(value) {
