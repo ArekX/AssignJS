@@ -57,7 +57,7 @@
 
         function linkContainer() {
             this.events.trigger('beforeLink', this._assignments);
-            assignments.assignToScope(this._assignments, this.scope);
+            assignments.setAssignments(this._assignments, this.scope);
             this.events.trigger('afterLink');
         }
 

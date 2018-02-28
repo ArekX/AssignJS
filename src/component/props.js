@@ -7,8 +7,8 @@
 
     function MakeComponentProps(makeEventGroup) {
         
-        function Props() {
-            this.owner = null;
+        function Props(owner) {
+            this.owner = owner;
             this._props = {};
             this.events = makeEventGroup([
                 'created',

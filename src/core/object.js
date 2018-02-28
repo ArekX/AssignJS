@@ -21,17 +21,11 @@
         return object;
     }
 
-    function createObject(func, props, initSet) {
-        function ClosureObject() {
-            func.call(this);
+    function createObject(func, props, args) {
+        if (args) {
+            func = func.bind.apply(func, [null].concat(args));
         }
-
-        ClosureObject.prototype = Object.create(func.prototype, props || undefined);
-        var ob = new ClosureObject();
-        
-        initSet && this.configure(ob, initSet);
-        
-        return ob;
+        return Object.create(new func(), props || undefined);
     }
     
     function mixPrototype(func, mixWith) {
@@ -88,24 +82,27 @@
         return func;
     }
 
-    function extendPrototype(func, extendWith) {
+    function extendPrototype(func, extendWith, leftSide) {
         var proto = func;
         var protoWalker = proto;
 
         if (Array.isArray(extendWith)) {
-            for(var i = extendWith.length - 1; i > -1; i--) {
-                protoWalker.prototype = Object.create(extendWith[i].prototype);
-                protoWalker.prototype.constructor = protoWalker;
-                protoWalker = protoWalker.prototype;
+            for(var i = 0; i < extendWith.length; i++) {
+                extendProtoWalker(extendWith[leftSide ? i : extendWith.length - 1 - i]);
             }
 
             return func;
         }
- 
-        proto.prototype = Object.create(extendWith.prototype);
-        proto.prototype.constructor = proto;
+
+        extendProtoWalker(extendWith);
 
         return func;
+
+        function extendProtoWalker(with) {
+            protoWalker.prototype = Object.create(with.prototype);
+            protoWalker.prototype.constructor = protoWalker;
+            protoWalker = protoWalker.prototype;
+        }
     }
 
 
