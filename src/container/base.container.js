@@ -33,8 +33,8 @@ lib(['container', 'assert', 'events'], function(container, assert, events) {
         element.$container = this;
 
         this.events = events.createGroup([
-            'onLink',
-            'onUnlink'
+            'onConnect',
+            'onDestroy'
         ], this);
     }
 

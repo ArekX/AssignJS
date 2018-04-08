@@ -14,6 +14,7 @@ lib(['events', 'assert', 'object'], function(events, assert, object) {
     };
 
     events.factory.add('base', EventEmitter);
+    events.factory.setDefaultType('base');
 
     function init(context) {
         this._namedListeners = {};
