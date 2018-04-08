@@ -26,6 +26,7 @@
 * Passing callback function into html.createTemplate for options so that additional options and logic can be set.
 * Circular module dependency detection
 * Async (not promised) modules
+* Adding/Removing items should propagate to child scope (parentItemAdded, parentItemRemoved)
 
 Ideas:
 

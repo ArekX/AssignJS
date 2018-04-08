@@ -1,39 +1,42 @@
-(function(core) {
-    "use strict";
+// @import: core/base.js
 
+"use strict";
+
+lib(function() {
+    
     var plainObjectConstructor = ({}).constructor;
 
-    function Vars() {}
+    this.vars = {
+        merge: merge,
+        clone: clone,
+        parseJson: parseJson,
+        getValue: getValue,
+        isEmpty: isEmpty,
+        isObject: isObject,
+        isPlainObject: isPlainObject,
+        isNumber: isNumber,
+        isString: isString,
+        isDefined: isDefined,
+        isBoolean: isBoolean,
+        isFunction: isFunction,
+        isElement: isElement,
+        isInputElement: isInputElement,
+        isIterable: isIterable,
+        isArray: isArray,
+        forceInt: forceInt,
+        forceFloat: forceFloat
+    };
 
-    Vars.prototype.merge = merge;
-    Vars.prototype.clone = clone;
-    Vars.prototype.parseJson = parseJson;
-    Vars.prototype.defaultValue = defaultValue;
-    Vars.prototype.getValue = getValue;
-    Vars.prototype.isEmpty = isEmpty;
-    Vars.prototype.isObject = isObject;
-    Vars.prototype.isPlainObject = isPlainObject;
-    Vars.prototype.isNumber = isNumber;
-    Vars.prototype.isString = isString;
-    Vars.prototype.isDefined = isDefined;
-    Vars.prototype.isBoolean = isBoolean;
-    Vars.prototype.isFunction = isFunction;
-    Vars.prototype.isArray = isArray;
-    Vars.prototype.forceInt = forceInt;
-    Vars.prototype.forceFloat = forceFloat;
-    Vars.prototype.extendPrototype = extendPrototype;
-
-    core.vars = new Vars();
     return;
 
-    function getValue(object, varname, defaultValue) {
-        if (varname in object) {
-            return object[varname];
+    function getValue(object, propName, defaultValue) {
+        if (propName in object) {
+            return object[propName];
         }
 
         var walker = object;
 
-        varparts = varname.split('.');
+        varparts = propName.split('.');
 
         for(var i = 0; i < varparts.length; i++) {
             if (!(varparts[i] in walker)) {
@@ -43,7 +46,7 @@
             walker = walker[varparts[i]];
         }
 
-        if (!this.isDefined(walker)) {
+        if (!isDefined(walker)) {
             return defaultValue;
         }
 
@@ -51,13 +54,13 @@
     }
 
     function isEmpty(value) {
-        return !this.isFunction(value) && (
+        return !isFunction(value) && (
                    value === "" ||
                    value === "0" ||
                    value === 0 ||
                    value === null ||
                    value === undefined ||
-                   (this.isObject(value) && Object.keys(value).length == 0)
+                   (isObject(value) && Object.keys(value).length == 0)
                );
     }
 
@@ -66,11 +69,11 @@
     }
 
     function isArray(value) {
-        return this.isObject(value) && value.constructor === Array;
+        return isObject(value) && value.constructor === Array;
     }
 
     function isPlainObject(value) {
-        return this.isObject(value) && plainObjectConstructor === value.constructor;
+        return isObject(value) && plainObjectConstructor === value.constructor;
     }
 
     function isObject(value) {
@@ -93,6 +96,16 @@
         return typeof value === "boolean";  
     }
 
+    function isElement(value) {
+        return value instanceof HTMLElement;
+    }
+
+    function isInputElement(value) {
+        return (element instanceof HTMLInputElement) || 
+               (element instanceof HTMLSelectElement) ||
+               (element instanceof HTMLTextAreaElement);
+    }
+
     function merge() {
         var mergedConfig = {};
         var args = arguments;
@@ -101,9 +114,9 @@
             return args[0];
         }
 
-        var useRecursiveMerge = true;
+        var useRecursiveMerge = false;
 
-        if (this.isBoolean(args[0])) {
+        if (isBoolean(args[0])) {
             useRecursiveMerge = args[0];
             args = [];
             for (var i = 1; i < arguments.length; i++) {
@@ -149,62 +162,48 @@
         }
     }
 
-    function defaultValue(value, defaultValue) {
-        return !this.isDefined(value) ? defaultValue : value;
-    }
-
     function parseJson(jsonString, failValue) {
-        failValue = this.defaultValue(failValue, null);
+        failValue = failValue || null;
 
         try {
-            return $.parseJSON(jsonString);
+            return JSON.parse(jsonString);
         } catch (e) {
             return failValue;
         }
     }
 
     function clone(jsonObject) {
-        var addedObjects = [];
+        var oldObjects = [];
+        var clonedObjects = [];
 
-        var clonedObject = process(jsonObject);
-
-        return clonedObject == false ? {} : clonedObject;
+        return process(jsonObject);
 
         function process(object) {
-            var newObject = {};
+            var cloned = isArray(object) ? [] : {};
 
-            if (addedObjects.indexOf(object) !== -1) {
-                return false;
+            var existingIndex = oldObjects.indexOf(object);
+
+            if (existingIndex !== -1) {
+                return clonedObjects[existingIndex];
             }
 
-            addedObjects.push(object);
+            oldObjects.push(object);
+            clonedObjects.push(cloned);
 
             for (var key in object) {
-                if (!object.hasOwnProperty(key)) {
-                    continue;
+                if (object.hasOwnProperty(key)) {
+                    var value = object[key];
+                    cloned[key] = isObject(value) ? process(value) : value; 
                 }
-
-                if (isObject(object[key])) {
-                    var result = process(object[key]);
-
-                    if (result === false) {
-                        continue;
-                    }
-
-                    newObject[key] = result;
-                    continue;
-                }
-
-                newObject[key] = object[key];
             }
 
-            return newObject;
+            return cloned;
         }
     }
 
 
     function forceInt(value, failValue, radix) {
-        radix = this.defaultValue(radix, 10);
+        radix = radix || 10;
         var value = parseInt(value, radix);
         return !isNaN(value) ? value : failValue;
     }
@@ -214,21 +213,11 @@
         return !isNaN(value) ? value : failValue;
     }
 
-    function extendPrototype(prototype, extensions, properties) {
-        var result = Object.create(prototype, properties);
-        result.super = {};
-
-        for(var extension in extensions) {
-            if (extensions.hasOwnProperty(extension)) {
-                if (extension in result) {
-                    result.super[extension] = result[extension];
-                }
-
-                result[extension] = extensions[extension];
-            }
-        }
-
-        return result;
+    function isIterable(value) {
+        return Array.isArray(value) ||
+            value instanceof NodeList ||
+            value instanceof HTMLCollection ||
+            (value.hasOwnProperty(0) && value.hasOwnProperty('length') && value.hasOwnProperty(value.length - 1));
     }
 
-})(document.querySelector('script[data-assign-js-core]').$main);
+});

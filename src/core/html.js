@@ -1,38 +1,37 @@
-(function(core) {
-    "use strict";
+// @import: core/vars.js
+
+"use strict";
+
+lib(['vars'], function(vars) {
 
     function RawHtml() { }
 
-    function Html() {}
-
-    Html.prototype.contentTypes = {
-        TYPE_HTML: 'html',
-        TYPE_VALUE: 'value'
+    this.html = {
+        contentTypes: {
+            TYPE_HTML: 'html',
+            TYPE_VALUE: 'value'
+        },
+        getContents: getContents,
+        getHtmlContents: getHtmlContents,
+        getInputContents: getInputContents,
+        getAttributeContents: getAttributeContents,
+        setContents: setContents,
+        setAttributeContents: setAttributeContents,
+        setHtmlContents: setHtmlContents,
+        setInputContents: setInputContents,
+        createTemplate: createElementTemplate,
+        create: createElement,
+        extend: extendElement,
+        clearContents: clearContents,
+        encode: encodeHtmlContents,
+        wrapRawHtml: wrapRawHtmlContents,
+        parse: parseHtml
     };
-    
-    Html.prototype.getContents = getContents;
-    Html.prototype.getHtmlContents = getHtmlContents;
-    Html.prototype.getInputContents = getInputContents;
-    Html.prototype.getAttributeContents = getAttributeContents;
-    Html.prototype.setContents = setContents;
-    Html.prototype.setAttributeContents = setAttributeContents;
-    Html.prototype.setHtmlContents = setHtmlContents;
-    Html.prototype.setInputContents = setInputContents;
-    Html.prototype.createTemplate = createElementTemplate;
-    Html.prototype.create = createElement;
-    Html.prototype.extend = extendElement;
-    Html.prototype.clearContents = clearContents;
-    Html.prototype.encode = encodeHtmlContents;
-    Html.prototype.wrapRawHtml = wrapRawHtmlContents;
-    Html.prototype.isInputElement = getIsInputElement;
-    Html.prototype.parse = parseHtml;
 
-    var vars = core.vars;
-    core.html = new Html();
     return;
 
     function getContents(element, from) {
-        if (this.isInputElement(element) && from !== this.contentTypes.TYPE_HTML) {
+        if (vars.isInputElement(element) && from !== this.contentTypes.TYPE_HTML) {
             return this.getInputContents(element);
         } 
 
@@ -61,9 +60,7 @@
         if (vars.isString(contents)) {
             contents = this.encode(contents);
             clearedElements = this.clearContents(element);
-        }
-
-        if (contents instanceof RawHtml) {
+        } else if (contents instanceof RawHtml) {
             contents = contents.value;
         }
 
@@ -75,9 +72,7 @@
             clearedElements = this.clearContents(element);
             element.appendChild(contents);
             return clearedElements;
-        }
-
-        if (contents instanceof HTMLCollection) {
+        } else if (contents instanceof HTMLCollection) {
             if (contents === element.children) {
                 return clearedElements;
             }
@@ -89,9 +84,7 @@
             }
 
             return clearedElements;
-        }
-
-        if (vars.isArray(contents)) {
+        } else if (vars.isArray(contents)) {
             clearedElements = this.clearContents(element);
             var addedChildElements = false;
 
@@ -107,9 +100,11 @@
             if (addedChildElements) {
                 return clearedElements;
             }
+        } else {
+            clearedElements = this.clearContents(element);
+            element.innerHTML = contents;
         }
 
-        element.innerHTML = contents;
 
         return clearedElements;
     }
@@ -246,7 +241,7 @@
             var styleString = "";
             for(var style in options.style) {
                 if (options.style.hasOwnProperty(style)) {
-                    var setStyle = style.replace(/([A-Z])/g, function(char){
+                    var setStyle = style.replace(/([A-Z])/g, function(char) {
                         return "-" + char.toLowerCase();
                     });
                     styleString += setStyle + ':' + options.style[style] + ';';
@@ -291,11 +286,4 @@
             return self.create(tag, useOverrideContents || contents, useOptions);
         }
     }
-
-    function getIsInputElement(element) {
-        return (element instanceof HTMLInputElement) || 
-               (element instanceof HTMLSelectElement) ||
-               (element instanceof HTMLTextAreaElement);
-    }
-
-})(document.querySelector('script[data-assign-js-core]').$main);
+});

@@ -1,110 +1,46 @@
-(function(core) {
-    "use strict";
+// @import: core/assert.js
+// @import: core/lists.js
 
-    function Maker() {}
+"use strict";
 
-    Maker.prototype.mix = mixPrototype;
-    Maker.prototype.extend = extendPrototype;
-    Maker.prototype.create = createObject;
-    Maker.prototype.configure = configure;
+lib(['assert', 'lists'], function(assert, lists) {
 
-    core.maker = new Maker();
+    this.object = {
+        create: createObject,
+        mixin: mixinObject,
+        isInstance: isInstance
+    };
     return;
 
-    function configure(object, setData) {
-        for (var name in setData) {
-            if (setData.hasOwnProperty(name)) {
-                object[name] = setData[name];
-            }
-        }
-
-        return object;
+    function createObject(ob, params) {
+        var obItem = Object.create(ob);
+        obItem.init && obItem.init.apply(obItem, params);
+        return obItem;
     }
 
-    function createObject(func, props, args) {
-        if (args) {
-            func = func.bind.apply(func, [null].concat(args));
-        }
-        return Object.create(new func(), props || undefined);
+    function mixinObject(type, withTypes) {
+        var allMixins = withTypes.concat([type]);
+        var newObject = createObject(type, {__mixins__: {value: allMixins}});
+
+        lists.each(allMixins, function(withType) {
+            lists.each(withType, function(value, name) {
+                newObject[name] = value;
+            });
+        });
+
+        return newObject;
     }
-    
-    function mixPrototype(func, mixWith) {
-        var funcName = func.name;
-        var superObject = {};
-        var proto = func.prototype;
-        proto.super = superObject;
 
-        if (Array.isArray(mixWith)) {
-            for(var i = 0; i < mixWith.length; i++) {
-                var mix = mixWith[i].prototype;
-                var mixName = mixWith[i].name;
-
-                for(var propName in mix) {
-                    if (!mix.hasOwnProperty(propName)) {
-                        continue;
-                    }
-
-                    if (propName in proto) {
-                        if (!superObject[mixName]) {
-                            superObject[mixName] = {};
-                        }
-
-                        if (!superObject[funcName]) {
-                            superObject[funcName] = {};
-                        }
-
-                        superObject[funcName][propName] = proto[propName];
-                        superObject[mixName][propName] = mix[propName];
-                    }
-
-                    proto[propName] = mix[propName];
+    function isInstance(object, ofType) {
+        if (ofType.__mixins__) {
+            for(var i = 0; i < ofType.__mixins__.length; i++) {
+                if (object.__proto__ === ofType.__mixins__[i]) {
+                    return true;
                 }
             }
-
-            proto.constructor = func;
-
-            return func;
         }
 
-        var mixProto = mixWith.prototype;
-        for(var extension in mixProto) {
-            if (mixProto.hasOwnProperty(extension)) {
-                if (extension in proto) {
-                    superObject[extension] = proto[extension];
-                }
-
-                proto[extension] = mixProto[extension];
-            }
-        }
-
-        proto.constructor = func;
-
-        return func;
+        return object.__proto__ === ofType;
     }
 
-    function extendPrototype(func, extendWith, leftSide) {
-        var proto = func;
-        var protoWalker = proto;
-
-        if (Array.isArray(extendWith)) {
-            for(var i = 0; i < extendWith.length; i++) {
-                extendProtoWalker(extendWith[leftSide ? i : extendWith.length - 1 - i]);
-            }
-
-            return func;
-        }
-
-        extendProtoWalker(extendWith);
-
-        return func;
-
-        function extendProtoWalker(with) {
-            protoWalker.prototype = Object.create(with.prototype);
-            protoWalker.prototype.constructor = protoWalker;
-            protoWalker = protoWalker.prototype;
-        }
-    }
-
-
-
-})(document.querySelector('script[data-assign-js-core]').$main);
+});

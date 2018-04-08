@@ -1,0 +1,2 @@
+/*! <%= pkg.name %> <%= pkg.version %> by <%= pkg.author %>. License: <%= pkg.license %> */
+!function(scriptElement){

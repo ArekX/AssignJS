@@ -1,39 +1,33 @@
-(function(core) {
-    "use strict";
-    function Assert() {
-        this._namespaceRegex = /^([a-zA-Z0-9-]+)(\.([a-zA-Z0-9-]+))+$/;
-    }
+// @import: core/base.js
+// @import: core/vars.js
 
-    Assert.prototype.namespaceValid = assertNamespaceValid; 
-    Assert.prototype.keyNotSet = assertKeyNotSet;
-    Assert.prototype.keySet = assertKeySet;
-    Assert.prototype.ownKeySet = assertOwnKeySet;
-    Assert.prototype.ownKeyNotSet = assertOwnKeyNotSet;
-    Assert.prototype.equals = assertEquals;
-    Assert.prototype.greater = assertGreater;
-    Assert.prototype.less = assertLess;
-    Assert.prototype.greaterOrEqual = assertGreaterOrEqual;
-    Assert.prototype.lessOrEqual = assertLessOrEqual;
-    Assert.prototype.notEquals = assertNotEquals;
-    Assert.prototype.identical = assertIdentical;
-    Assert.prototype.notIdentical = assertNotIdentical;
-    Assert.prototype.isTrue = assertIsTrue;
-    Assert.prototype.isFalse = assertIsFalse;
-    Assert.prototype.isString = assertIsString;
-    Assert.prototype.isObject = assertIsObject;
-    Assert.prototype.isDefined = assertIsDefined;
-    Assert.prototype.isUndefined = assertIsUndefined;
-    Assert.prototype.isArray = assertIsArray;
+"use strict";
 
-    var vars = core.vars;
-    core.assert = new Assert();
+lib(['vars', 'throwError'], function(vars, throwCoreError) {
+
+    this.assert = {
+        keyNotSet: assertKeyNotSet,
+        keySet: assertKeySet,
+        ownKeySet: assertOwnKeySet,
+        ownKeyNotSet: assertOwnKeyNotSet,
+        equal: assertEquals,
+        greater: assertGreater,
+        less: assertLess,
+        greaterOrEqual: assertGreaterOrEqual,
+        lessOrEqual: assertLessOrEqual,
+        notEqual: assertNotEquals,
+        identical: assertIdentical,
+        notIdentical: assertNotIdentical,
+        isTrue: assertIsTrue,
+        isFalse: assertIsFalse,
+        isString: assertIsString,
+        isObject: assertIsObject,
+        isDefined: assertIsDefined,
+        isUndefined: assertIsUndefined,
+        isArray: assertIsArray
+    };
+
     return;
-
-    function assertNamespaceValid(namespace, message, data) {
-        if (namespace.match(this._namespaceRegex) === null) {
-            throwError(message, 'Namespace is not valid.', data, {namespace: namespace });
-        }
-    }
 
     function assertKeyNotSet(key, object, message, data) {
         if (key in object) {
@@ -174,8 +168,8 @@
     }
 
     function throwError(message, defaultMessage, data, defaultData) {
-        core.throwError(message || defaultMessage, data || defaultData);
+        throwCoreError(message || defaultMessage, data || defaultData);
     }
 
 
-})(document.querySelector('script[data-assign-js-core]').$main);
+});

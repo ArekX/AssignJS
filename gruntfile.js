@@ -1,31 +1,30 @@
+const compileList = require('./compile');
+const fs = require('fs');
+const path = require('path');
+
+const SRC_FOLDER = 'src';
+
+const compiledSourceList = compileList('index.js', SRC_FOLDER);
+
 module.exports = function(grunt) {
 
-  const sourceList = [
-    'src/core/index.js',
-    'src/core/vars.js',
-    'src/core/assert.js',
-    'src/core/alias.js',
-    'src/core/modules.js',
-    'src/core/html.js',
-    'src/*.js',
-    'src/container/*.js',
-    'src/component/*.js'
-  ];
-
+  console.log('Compiling List of Files:\n', compiledSourceList, '\n');
+  
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
       options: {
-        banner: `/*! <%= pkg.name %> <%= pkg.version %> by <%= pkg.author %>. License: <%= pkg.license %> */`
+        banner: fs.readFileSync(path.join(__dirname, SRC_FOLDER, 'header.template'), 'utf8'),
+        footer: fs.readFileSync(path.join(__dirname, SRC_FOLDER, 'footer.template'), 'utf8')
       },
       build: {
-        src: sourceList,
+        src: compiledSourceList,
         dest: 'build/<%= pkg.name %>.min.js'
       },
       buildDev: {
         options: {mangle: false, sourceMap: true},
-        src: sourceList,
+        src: compiledSourceList,
         dest: 'build/<%= pkg.name %>.js'
       }
     },
@@ -34,7 +33,6 @@ module.exports = function(grunt) {
         atBegin: true
       },
       files: ['src/**/*.js'],
-      
       tasks: ['build']
     }
   });
