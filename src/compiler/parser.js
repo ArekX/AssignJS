@@ -1,74 +1,48 @@
-// @import: core
-// @import: compiler/compiler.js
+// @import: compiler/base.js
 
-"use strict";
+lib(['inspect', 'compiler', 'config', 'addRunner', 'events'], 
+function CompilerParser(inspect, compiler, configManager, addRunner, events) {
 
-lib(['vars', 'html', 'compiler', 'events', 'throwError', 'addRunner', 'config'], 
-    function(vars, html, compiler, events, throwError, addRunner, configManager) {
-
-    var config = {
+    var config = configManager.parser = {
+        startContainer: document,
         checkAttributes: ['[assign]', '[as]', 'data-assign'],
         selector: '[data-assign], [\\[assign\\]], [\\[as\\]]',
     };
 
-    configManager.parser = config;
+    var eventList = events.createGroup([
+        'beforeRun',
+        'afterRun'
+    ], this);
 
-    this.parser = {
-        getActiveElements: getActiveElements,
+    compiler.parser = {
+        findActiveElements: findActiveElements,
         getParseLines: getParseLines,
-        parseText: parseText,
-        parse: parse
+        parse: parse,
+        events: eventList
     };
 
-    var eventList = this.parser.events = events.createGroup([
-        'beforeBootstrap',
-        'afterBootstrap'
-    ], this.parser)
-
-    addRunner(function() {
-        if (!eventList.trigger('beforeBootstrap')) {
+    addRunner(function () {
+        if (!eventList.trigger('beforeRun')) {
             return;
         }
 
-        parse(getActiveElements(document));
+        parse(findActiveElements(config.startContainer));
 
-        eventList.trigger('afterBootstrap');
+        eventList.trigger('afterRun');
     });
 
-    return;
-
-    function getActiveElements(element) {
+    function findActiveElements(element) {
         return element.querySelectorAll(config.selector);
     }
 
-    function getParseLines(element) {
-        var lines = [];
-
-        for(var i = 0; i < config.checkAttributes.length; i++) {
-            var check = config.checkAttributes[i];
-            var result = element.getAttribute(check);
-            if (result) {
-                lines.push(result);
-                var counter = 1;
-
-                while((result = element.getAttribute(check + '-' + counter++)) !== null) {
-                    lines.push(result);
-                }
-                break;
-            }
-        }
-
-        return lines;
-    }
-
     function parse(node) {
-        if (vars.isIterable(node)) {
-            for(var i = 0; i < node.length; i++) {
+        if (inspect.isIterable(node)) {
+            for (var i = 0; i < node.length; i++) {
                 processNode(node[i]);
-            }   
-            return;      
+            }
+            return;
         }
-   
+
         processNode(node);
 
         function processNode(node) {
@@ -79,17 +53,23 @@ lib(['vars', 'html', 'compiler', 'events', 'throwError', 'addRunner', 'config'],
         }
     }
 
-    function parseText(text, ownerTag) {
-        var wrapTag = ownerTag || html.create('compiled');
-        var element = html.parse(wrapTag, text);
+    function getParseLines(element) {
+        var lines = [];
 
-        if (!ownerTag && element.children.length > 1) {
-            throwError("Compile text must have at least one root element if owner tag is not specified.", {
-                text: text,
-                ownerTag: ownerTag
-            });
+        for (var i = 0; i < config.checkAttributes.length; i++) {
+            var check = config.checkAttributes[i];
+            var result = element.getAttribute(check);
+            if (result) {
+                lines.push(result);
+                var counter = 1;
+
+                while ((result = element.getAttribute(check + '-' + counter++)) !== null) {
+                    lines.push(result);
+                }
+                break;
+            }
         }
 
-        return ownerTag ? ownerTag : element.children[0];
+        return lines;
     }
 });

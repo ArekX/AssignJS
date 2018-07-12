@@ -23,7 +23,7 @@ module.exports = function(grunt) {
         dest: 'build/<%= pkg.name %>.min.js'
       },
       buildDev: {
-        options: {mangle: false, sourceMap: true},
+        options: {mangle: false, sourceMap: true, compress: false, beautify: true},
         src: compiledSourceList,
         dest: 'build/<%= pkg.name %>.js'
       }
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
         atBegin: true
       },
       files: ['src/**/*.js'],
-      tasks: ['build']
+      tasks: ['buildDev']
     }
   });
 
@@ -41,4 +41,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('build', ['uglify']);
+  grunt.registerTask('buildDev', ['uglify']);
 };

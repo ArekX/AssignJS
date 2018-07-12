@@ -1,9 +1,7 @@
 // @import: core/base.js
-// @import: core/vars.js
+// @import: core/inspect.js
 
-"use strict";
-
-lib(['vars', 'throwError'], function(vars, throwCoreError) {
+lib(['inspect', 'throwError'], function CoreAssert(inspect, throwCoreError) {
 
     this.assert = {
         keyNotSet: assertKeyNotSet,
@@ -24,7 +22,9 @@ lib(['vars', 'throwError'], function(vars, throwCoreError) {
         isObject: assertIsObject,
         isDefined: assertIsDefined,
         isUndefined: assertIsUndefined,
-        isArray: assertIsArray
+        isArray: assertIsArray,
+        contains: assertContains,
+        doesNotContain: assertDoesNotContains 
     };
 
     return;
@@ -138,32 +138,44 @@ lib(['vars', 'throwError'], function(vars, throwCoreError) {
     }
 
     function assertIsString(value, message, data) {
-        if (!vars.isString(value)) {
+        if (!inspect.isString(value)) {
             throwError(message, 'Value is not string.', data, {value: value});
         }
     }
 
     function assertIsObject(value, message, data) {
-        if (!vars.isObject(value)) {
+        if (!inspect.isObject(value)) {
             throwError(message, 'Value is not an object.', data, {value: value});
         }
     }
 
     function assertIsDefined(value, message, data) {
-        if (!vars.isDefined(value)) {
+        if (!inspect.isDefined(value)) {
             throwError(message, 'Value is not defined.', data, {value: value});
         }
     }
 
     function assertIsUndefined(value, message, data) {
-        if (vars.isDefined(value)) {
+        if (inspect.isDefined(value)) {
             throwError(message, 'Value is defined.', data, {value: value});
         }
     }
 
     function assertIsArray(value, message, data) {
-        if (!vars.isArray(value)) {
+        if (!inspect.isArray(value)) {
             throwError(message, 'Value is not an array.', data, {value: value});
+        }
+    }
+
+    function assertContains(value, container, message, data) {
+        if (container.indexOf(value) === -1) {
+            throwError(message, 'Value is not in container.', data, {value: value});
+        }
+    }
+
+    function assertDoesNotContains(value, container, message, data) {
+        if (container.indexOf(value) !== -1) {
+            throwError(message, 'Value is in the container.', data, {value: value});
         }
     }
 

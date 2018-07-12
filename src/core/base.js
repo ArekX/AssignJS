@@ -1,24 +1,17 @@
-// @import: core/lib.js
+// @import: throwError.js
 
-"use strict";
-
-lib(function() {
-    var coreName = scriptElement.dataset.nameAs || 'AssignJS';
-
-    var runners = [];
+lib(function CoreBase() {
     var core = this;
-
+    
+    var runners = [];
+    
     core.config = {
-        base: {
-            nameRegex: /[a-zA-Z][a-zA-Z0-9_\.-]+/
-        }
+        assignParam: '$assign'
     };
+    
     core.throwError = throwError;
     core.addRunner = addRunner;
     core.run = run;
-
-    scriptElement.$main = window[coreName] = core;
-    scriptElement.setAttribute('data-assign-js-core', coreName);
 
     return;
 

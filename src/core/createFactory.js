@@ -1,10 +1,8 @@
 // @import: core/object.js
 // @import: core/assert.js
-// @import: core/vars.js
+// @import: core/inspect.js
 
-"use strict";
-
-lib(['object', 'assert', 'vars'], function(object, assert, vars) {
+lib(['object', 'assert', 'inspect'], function CoreFactory(object, assert, inspect) {
     var Factory = {
         _types: null,
         _conflictHandler: null,
@@ -44,8 +42,9 @@ lib(['object', 'assert', 'vars'], function(object, assert, vars) {
     }
 
     function addType(type, maker) {
-        if (type in this._types) {
-            type = this._conflictHandler ? this._conflictHandler(type, this._types) : type;
+        if ((type in this._types) && this._conflictHandler) {
+            this._conflictHandler(type, maker, this._types);
+            return;
         }
 
         assert.keyNotSet(type, this._types, 'This type is already set!', {type: type, types: this._types});
@@ -67,7 +66,7 @@ lib(['object', 'assert', 'vars'], function(object, assert, vars) {
         assert.keySet(type, this._types, 'This type is not set!', {type: type, types: this._types});
         var type = this._types[type];
         
-        if (vars.isFunction(type)) {
+        if (inspect.isFunction(type)) {
             return type.apply(type, args);
         }
 

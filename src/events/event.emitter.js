@@ -1,9 +1,7 @@
 // @import: core
 // @import: events/base.js
 
-"use strict";
-
-lib(['events', 'assert', 'object'], function(events, assert, object) {
+lib(['events', 'assert', 'object'], function EventsEmitter(events, assert) {
 
     var EventEmitter = {
         init: init,

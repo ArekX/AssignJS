@@ -1,8 +1,6 @@
 // @import: core
 
-"use strict";
-
-lib(['assert', 'vars', 'createFactory'], function(assert, vars, createFactory) {
+lib(['createFactory'], function EventsBase(createFactory) {
     this.events = {
         factory: createFactory()
     };
