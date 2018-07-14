@@ -20,7 +20,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
         isInputElement: isInputElement,
         isElementList: isElementList,
         isCompiledElement: isCompiledElement,
-        getCompiledObject: getCompiledObject,
+        getElementObject: getElementObject,
         isElementParent: isElementParent,
         isRawHtml: isRawHtml
     };
@@ -95,7 +95,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
         return (element[config.assignParam] || {}).compiled || false;
     }
 
-    function getCompiledObject(element) {
+    function getElementObject(element) {
         if (!isCompiledElement(element)) {
             return null;
         }
