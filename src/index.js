@@ -4,12 +4,14 @@
 
 // @import: core
 // @import: events
-// @import: renderer
 // @import: compiler
 // @import: io
 // @import: component
 
+// @import: instance.js
+
 var coreName = scriptElement.dataset.nameAs || 'AssignJS';
+var originalImplementors = ([]).concat(implementors);
 
 scriptElement.$main = window[coreName] = {
     create: makeNewInstance,

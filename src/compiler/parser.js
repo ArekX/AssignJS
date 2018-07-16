@@ -1,8 +1,7 @@
-// @import: renderer
-// @import: compiler/base.js
+// @import: compiler/renderer.js
 
-lib(['inspect', 'compiler', 'config', 'addRunner', 'events', 'renderer'], 
-function CompilerParser(inspect, compiler, configManager, addRunner, events, renderer) {
+lib(['inspect', 'compiler', 'config', 'addRunner', 'events'], 
+function CompilerParser(inspect, compiler, configManager, addRunner, events) {
 
     var config = configManager.parser = {
         startContainer: document,
@@ -32,7 +31,7 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events, ren
         eventList.trigger('afterRun');
     });
 
-    renderer.events.on('afterRun', parseAll);
+    compiler.renderer.events.on('afterRun', parseAll);
 
     function parseAll(startContainer) {
         parse(findActiveElements(startContainer || config.startContainer));

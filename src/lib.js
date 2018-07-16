@@ -25,20 +25,3 @@ function lib(required, implementor) {
         return implementor.apply(core, data);
     });
 }
-
-function makeNewInstance() {
-    var core = Object.create({}, {
-        versionCode: {
-            value: versionCode
-        },
-        version: {
-            value: versionString
-        }
-    });
-
-    for (var i = 0; i < implementors.length; i++) {
-        implementors[i].apply(core);
-    }
-
-    return core;
-}

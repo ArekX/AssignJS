@@ -1,7 +1,7 @@
 // @import: core
 lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(configManager, createFactory, assert, compiler) {
 
-    var config = configManager.components = {
+    var config = configManager.component = {
         handlerType: 'base',
         propsType: 'base'
     };

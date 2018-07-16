@@ -1,5 +1,5 @@
 // @import: core
-// @import: events/base.js
+// @import: component/base.js
 
 lib(['component', 'config', 'inspect', 'io'], 
     function ComponentHandler(component, configManager, inspect, io) {
