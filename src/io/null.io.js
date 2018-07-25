@@ -8,8 +8,6 @@ lib(['io'], function IoBase(io) {
         write: nullFunction
     };
 
-    var nullIoObject
-
     io.addHandler('io.null', /_/, NullIo, true);
 
     function init() {

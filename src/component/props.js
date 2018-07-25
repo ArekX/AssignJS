@@ -21,7 +21,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     component.propsFactory.add('base', Props);
     component.propsFactory.setDefaultType('base');
 
-    function initializeDefinition(props, dataStructure) {
+    function initializeDefinition(propDef, dataStructure) {
         this._dataStructure = dataStructure;
         this._propVals = {};
         this._propFunctions = {};
@@ -29,7 +29,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         this.changed = events.factory.createDefault(this);
 
         if (propDef) {
-            this.setMultiple(props);
+            this.setMultiple(propDef);
         }
 
         dataStructure.$manager = this;

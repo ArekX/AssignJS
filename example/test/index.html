@@ -6,8 +6,17 @@
 <body>
 <h1 [assign]=":title">Basic App Example</h1>
 
+<div [as]="app.nesto | _:_ <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
+
 <script src="../../build/assignjs.js" data-name-as="Core"></script>
 
-<script>Core.create().run();</script>
+<script>
+var core = Core.create();
+
+core.component.add('app.nesto', {
+
+});
+
+core.run();</script>
 </body>
 </html>

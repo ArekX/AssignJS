@@ -1,5 +1,6 @@
 // @import: core
 // @import: component/base.js
+// @import: component/props.js
 
 lib(['component', 'config', 'inspect', 'io'], 
     function ComponentHandler(component, configManager, inspect, io) {
@@ -31,7 +32,7 @@ lib(['component', 'config', 'inspect', 'io'],
         this.def.init && this.def.init();
     }
 
-    function bind(element) {
+    function bind(element, ioString) {
         this.element = element;
         this.elementObject = inspect.getElementObject(element);
         this.io = io.resolve(ioString, {

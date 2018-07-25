@@ -6,12 +6,13 @@ lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(c
         propsType: 'base'
     };
 
-    var components = {};
+    var componentDefs = {};
 
     this.component = {
         handlerFactory: createFactory(),
         propsFactory: createFactory(),
-        add: addComponent
+        add: addComponent,
+        create: createComponent
     };
 
     function addComponent(name, def) {
@@ -19,7 +20,13 @@ lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(c
             def.handler = config.handlerType;
         }
 
-        assert.keyNotSet(name, components, 'This component already exists.');
-        components[name] = def;
+        assert.keyNotSet(name, componentDefs, 'This component already exists.');
+        componentDefs[name] = def;
+    }
+
+    function createComponent(name) {
+        assert.keySet(name, componentDefs, 'This component is not defined.');
+        var def = componentDefs[name];
+        return this.handlerFactory.create(def.handler, [def]);
     }
 });

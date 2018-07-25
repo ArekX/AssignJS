@@ -32,10 +32,9 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                 var isMatch = inspect.isFunction(runHandler.checker) ?
                     runHandler.checker(part, element) : part.match(runHandler.checker);
     
-                assert.isTrue(isMatch, 'Cannot resolve IO part. No matching handler found.', {
-                    type: type,
-                    ioPart: part
-                });
+                if (isMatch === null) {
+                    continue;
+                }
 
                 if (runHandler.isSingleton) {
                     partHandler = runHandler.init(part, context);
@@ -43,6 +42,11 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                     partHandler = object.create(runHandler.handler, [part, context]);
                 }
             }
+
+            assert.isTrue(partHandler !== null, 'No matching handler found for this IO.', {
+                io: part,
+                type: type
+            })
 
             results[type] = partHandler; 
         }

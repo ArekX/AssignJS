@@ -1,7 +1,6 @@
 // @import: core
 
 lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
-        
     var actions = [];
     var processId = null;
 
@@ -23,7 +22,11 @@ lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
         tickHandler();
 
         if (action) {
-            actions.push([action, onDone, onAllDone]);
+            actions.push({
+                action: action, 
+                onDone: onDone, 
+                onAllDone: onAllDone
+            });
         }
     }
 
@@ -44,12 +47,12 @@ lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
 
         try {
             for (var i = 0; i < actions.length; i++) {
-                actions[i][0]();
-                actions[i][1] && actions[i][1]();
+                actions[i].action();
+                actions[i].onDone && actions[i].onDone();
             }
 
             for (var i = 0; i < actions.length; i++) {
-                actions[i][2] && actions[i][2]();
+                actions[i].onAllDone && actions[i].onAllDone();
             }
 
             renderer.events.trigger('afterRun');
