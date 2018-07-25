@@ -1,6 +1,11 @@
 // @import: compiler
 
-lib(['compiler', 'component', 'assert'], function ComponentParser(compiler, componentManager, assert) {
+lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(compiler, componentManager, assert, configManager) {
+    
+    var config = configManager.component;
+
+    config.defaultIO = '_:~html';
+    
     var tokenizer = compiler.createTokenizer([
         {
             name: 'name',
@@ -10,6 +15,10 @@ lib(['compiler', 'component', 'assert'], function ComponentParser(compiler, comp
             name: 'ioString',
             regex: /(\s+\|\s+([^:\ ]+)(:([^\ ]+))?)?/,
             parse: function(match) {
+                if (!match[2] || !match[3]) {
+                    return config.defaultIO;
+                }
+
                 return match[2] + match[3];
             }
         },
@@ -33,6 +42,6 @@ lib(['compiler', 'component', 'assert'], function ComponentParser(compiler, comp
 
         component.bind(element, result.ioString);
 
-        console.log(result, component);
+        component.render();
     }
 });

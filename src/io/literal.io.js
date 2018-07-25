@@ -2,16 +2,16 @@
 
 lib(['io', 'object'], function IoBase(io, object) {
 
-    var LiteralIo = {
+    var LiteralIo = object.extend({
         _value: null,
         init: init,
         read: read,
         write: write
-    };
+    }, io.BaseIo);
 
     io.addHandler('io.literal', /\(.+\)/, LiteralIo);
 
-    function init(part, config) {
+    function init(part) {
         this._value = object.parseJson(part, null);
     }
 
@@ -20,4 +20,8 @@ lib(['io', 'object'], function IoBase(io, object) {
     }
 
     function write() {}
+
+    function shouldWrite() {
+        return false;
+    }
 });

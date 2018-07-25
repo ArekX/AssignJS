@@ -10,18 +10,18 @@ lib(['io', 'object'], function IoBase(io, object) {
         write: write
     }, io.BaseIo);
 
-    io.addHandler('io.attribute', /\[.+\]/, AttributeIo);
+    io.addHandler('io.attribute.param', /\%(.+)/, AttributeIo);
 
     function init(part, config) {
         this._element = config.element;
-        this._attributeName = part.substring(1, part.length - 1);
+        this._attributeName = part.substring(1);
     }
 
     function read() {
-        return this._element.getAttribute(this._attributeName);
+        return this._element[this._attributeName];
     }
 
     function write(value) {
-        this._element.setAttribute(this._attributeName, value);
+        this._element[this._attributeName] = value;
     }
 });

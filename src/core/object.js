@@ -1,7 +1,8 @@
-lib(function CoreObject() {
+lib(['inspect'], function CoreObject(inspect) {
 
     this.object = {
         create: createObject,
+        extend: extendObject,
         merge: merge,
         clone: clone,
         parseJson: parseJson,
@@ -16,6 +17,10 @@ lib(function CoreObject() {
         return obItem;
     }
 
+    function extendObject(ob, parentObject) {
+        return merge(true, Object.create(parentObject), ob);
+    }
+
     function merge() {
         var mergedConfig = {};
         var args = arguments;
@@ -26,7 +31,7 @@ lib(function CoreObject() {
 
         var useRecursiveMerge = false;
 
-        if (isBoolean(args[0])) {
+        if (inspect.isBoolean(args[0])) {
             useRecursiveMerge = args[0];
             args = [];
             for (var i = 1; i < arguments.length; i++) {

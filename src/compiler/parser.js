@@ -6,7 +6,8 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
     var config = configManager.parser = {
         startContainer: document,
         checkAttributes: ['[assign]', '[as]', 'data-assign'],
-        selector: '[data-assign], [\\[assign\\]], [\\[as\\]]',
+        selector: '[data-assign]:not([data-assignjs-parsed]), [\\[assign\\]]:not([data-assignjs-parsed]), [\\[as\\]]:not([data-assignjs-parsed])',
+        initializedAttribute: 'data-assignjs-parsed'
     };
 
     var eventList = events.createGroup([
@@ -42,6 +43,7 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
     }
 
     function parse(node) {
+        
         if (inspect.isIterable(node)) {
             for (var i = 0; i < node.length; i++) {
                 processNode(node[i]);
@@ -52,10 +54,8 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
         processNode(node);
 
         function processNode(node) {
-            if (!node.$parsed) {
-                compiler.compileElement(node, getParseLines(node));
-                node.$parsed = true;
-            }
+            compiler.compileElement(node, getParseLines(node));
+            node.setAttribute(config.initializedAttribute, true);
         }
     }
 

@@ -1,12 +1,12 @@
 // @import: core
 
-lib(['io'], function IoBase(io) {
+lib(['io', 'object'], function IoBase(io, object) {
 
-    var NullIo = {
+    var NullIo = object.extend({
         init: init,
         read: nullFunction,
         write: nullFunction
-    };
+    }, io.BaseIo);
 
     io.addHandler('io.null', /_/, NullIo, true);
 

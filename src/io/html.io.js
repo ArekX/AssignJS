@@ -1,14 +1,14 @@
 // @import: core
 
-lib(['io', 'inspect', 'html'], function IoBase(io, inspect, html) {
+lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, object) {
 
-    var HtmlIo = {
+    var HtmlIo = object.extend({
         _element: null,
         init: init,
         read: read,
         shouldWrite: shouldWrite,
         write: write
-    };
+    }, io.BaseIo);
 
     io.addHandler('io.html', /\~html/, HtmlIo);
 
@@ -46,7 +46,8 @@ lib(['io', 'inspect', 'html'], function IoBase(io, inspect, html) {
         }
 
         if (isString) {
-            contents = html.encode(contents);
+            element.textContent = contents;
+            return;
         }
 
         element.innerHTML = contents;

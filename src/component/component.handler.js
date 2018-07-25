@@ -2,12 +2,13 @@
 // @import: component/base.js
 // @import: component/props.js
 
-lib(['component', 'config', 'inspect', 'io'], 
-    function ComponentHandler(component, configManager, inspect, io) {
-    
+lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'], 
+    function ComponentHandler(component, configManager, inspect, io, compiler, html) {
+
     var config = configManager.component;
 
-    config.defaultIO = '_:~html';
+    var renderer = compiler.renderer;
+    var parser = compiler.parser;
 
     var ComponentHandler = {
         element: null,
@@ -35,6 +36,7 @@ lib(['component', 'config', 'inspect', 'io'],
     function bind(element, ioString) {
         this.element = element;
         this.elementObject = inspect.getElementObject(element);
+        this.elementObject.component = this;
         this.io = io.resolve(ioString, {
             element: element,
             component: this
@@ -43,9 +45,14 @@ lib(['component', 'config', 'inspect', 'io'],
 
     function render() {
         this.def.beforeRender && this.def.beforeRender();
-        
-        if (this.def.template) {
-            this.io.output.write();
+
+        var output = this.io.output;
+        var def = this.def; 
+
+        if (this.def.template && output.shouldWrite()) {
+            renderer.push(function() {
+                output.write(html.toRawHtml(def.template));
+            });
         }
 
         this.def.afterRender && this.def.afterRender();

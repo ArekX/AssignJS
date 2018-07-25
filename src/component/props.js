@@ -48,11 +48,11 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         }
 
         this._propVals[name] = value;
-        this._triggerChange(name, oldValue, newValue);
+        this.triggerChange(name, oldValue, newValue);
     }
 
     function getProp(name) {
-        return this._propVals[name] = value;
+        return this._propVals[name];
     }
 
     function triggerChange(name, oldValue, newValue) {
@@ -63,7 +63,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         this.changed.trigger({
             name: name,
             oldValue: oldValue,
-            value: value
+            value: newValue
         });
     }
 
@@ -99,7 +99,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         }
 
         this.endChangeMode();
-        this._triggerChange(names, oldValues, values);
+        this.triggerChange(names, oldValues, values);
     }
 
     function defineProperty(name, getter, setter) {

@@ -83,12 +83,13 @@ lib(['config', 'html'], function CoreInspect(config, html) {
     }
 
     function isIterable(value) {
-        return Array.isArray(value) ||
-            (
-                ('0' in value) 
-                && ('length' in value) 
-                && ((value.length - 1).toFixed(0) in value)
-            );
+        if (!isDefined(value)) {
+            return false;
+        }
+
+
+        
+        return Array.isArray(value) || ('length' in value);
     }
 
     function isCompiledElement(element) {

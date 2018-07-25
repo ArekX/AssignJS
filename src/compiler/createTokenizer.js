@@ -27,16 +27,15 @@ lib(['compiler', 'object'], function CompilerTokens(compiler, object) {
         for(var i = 0; i < this.tokens.length; i++) {
             var part = this.tokens[i];
             var match = line.match(part.regex);
-
             if (!match) {
                 continue;
             }
 
             if (match.index === 0) {
-                result[part.name] = part.parse ? part.parse(match) : match[0];
+                result[part.name] = part.parse ? part.parse(match, result) : match[0];
             }
 
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
 
         return result;
