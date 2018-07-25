@@ -46,7 +46,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
             assert.isTrue(partHandler !== null, 'No matching handler found for this IO.', {
                 io: part,
                 type: type
-            })
+            });
 
             results[type] = partHandler; 
         }
