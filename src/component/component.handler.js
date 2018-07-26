@@ -30,31 +30,35 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
         var props = component.propsFactory.create(config.propsType);
         this.props = props.initializeDefinition(this.def.props, {});
         
-        this.def.init && this.def.init();
+        this.def.init && this.def.init.call(this);
     }
 
     function bind(element, ioString) {
         this.element = element;
         this.elementObject = inspect.getElementObject(element);
         this.elementObject.component = this;
-        this.io = io.resolve(ioString, {
+        this.io = this.elementObject.io = io.resolve(ioString, {
             element: element,
             component: this
         });
     }
 
     function render() {
-        this.def.beforeRender && this.def.beforeRender();
+        var self = this;
+        this.def.beforeRender && this.def.beforeRender.call(self);
 
         var output = this.io.output;
         var def = this.def; 
 
-        if (this.def.template && output.shouldWrite()) {
-            renderer.push(function() {
-                output.write(html.toRawHtml(def.template));
-            });
+        if (this.def.template) {
+            renderer.render(
+                self.element, 
+                html.toRawHtml(def.template), 
+                def.afterRender ? def.afterRender.bind(self) : null
+            );
+        } else {
+            parser.parseAll(self.element);
+            def.afterRender && def.afterRender.call(self);
         }
-
-        this.def.afterRender && this.def.afterRender();
     }
 });

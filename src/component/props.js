@@ -48,7 +48,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         }
 
         this._propVals[name] = value;
-        this.triggerChange(name, oldValue, newValue);
+        this.triggerChange(name, oldValue, value);
     }
 
     function getProp(name) {

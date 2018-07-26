@@ -6,18 +6,7 @@
 <body>
 <h1 [assign]=":title">Basic App Example</h1>
 
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
-<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App!</div>
+<div [as]="app.nesto <- prop:(2), prop3:('test'), prop4:({'test':1,'test':2})">App! <a href="test" [as]="@prop">ahaaa</a> <a href="test" [as]="@test">ahaaa</a></div>
 
 <script src="../../build/assignjs.js" data-name-as="Core"></script>
 
@@ -25,12 +14,20 @@
 var core = Core.create();
 
 core.component.add('app.nesto', {
-    template: '<a href="test" [as]="@prop">ahaaa</a> <a href="test" [as]="@test">ahaaa</a>',
     props: {
-        prop: 'prop binding',
-        test: 'yes!'
+        prop: 1,
+        test: ['yes!', 'yes!', '<a href="">safasf</a>']
+    },
+    init: function() {
+        this.props.test = ['ok!', 'ok2'];
+    },
+    afterRender: function() {
+        setTimeout(() => this.props.prop = core.html.toRawHtml("<strong [as]='app.test'>test!</strong>"), 3000);
+        console.log('run!');
     }
 });
+
+core.component.add('app.test', {template: '<h1>Another component from prop <span [as]="@g"></span></h1>', props: { g: true}});
 
 core.run();</script>
 </body>

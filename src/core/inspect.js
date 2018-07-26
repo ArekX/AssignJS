@@ -87,9 +87,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
             return false;
         }
 
-
-        
-        return Array.isArray(value) || ('length' in value);
+        return Array.isArray(value) || isDefined(value.length);
     }
 
     function isCompiledElement(element) {

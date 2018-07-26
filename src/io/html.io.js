@@ -40,9 +40,17 @@ lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, obje
             element.innerHTML = '';
 
             for (var i = 0; i < contents.length; i++) {
-                element.appendChild(contents[i]);
-                ob._oldContents.push(contents[i]);
+                var content = contents[i];
+
+                if (inspect.isString(content)) {
+                    content = document.createTextNode(content);
+                }
+
+                element.appendChild(content);
+                ob._oldContents.push(content);
             }
+            
+            return;
         }
 
         if (isString) {

@@ -26,6 +26,11 @@ lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(comp
             name: 'props',
             regex: /(\s+\<\-(.+))?\s*$/,
             parse: function(match) {
+                if (!match[2]) {
+                    return {};
+                }
+                
+                // TODO: return props object.
                 return match[2].trim();
             }
         }

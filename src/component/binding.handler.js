@@ -1,6 +1,7 @@
 // @import: events
 
-lib(['compiler', 'config', 'inspect'], function ComponentBindingHandler(compiler, configManager, inspect) {
+lib(['compiler', 'config', 'inspect', 'assert', 'io'], 
+function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager) {
     
     var config = configManager.component.binding = {
         defaultWriteIo: '_:~html',
@@ -41,20 +42,34 @@ lib(['compiler', 'config', 'inspect'], function ComponentBindingHandler(compiler
     function handleComponent(line, element) {
         var result = tokenizer.consume(line);
 
+        var component = getParentComponent(element);
+        var elementObject = inspect.getElementObject(element);
+
+        assert.isTrue(component !== null, 'Parent component not found.');
+
+        var props = component.props.$manager;
+
+        elementObject.io = ioManager.resolve(result.ioString, {
+            element: element
+        });
+
+        props.changed.register(function() {
+            renderer.render(element, props.get(result.prop));
+        });
+
+        renderer.render(element, props.get(result.prop));
+    }
+
+    function getParentComponent(element) {
         var parent = element;
-        var parentOb = null;
 
         while((parent = parent.parentElement) !== null) {
             var ob = inspect.getElementObject(parent);
             if (ob && ob.component) {
-                parentOb = ob;
-                break;
+                return ob.component;
             }
         }
 
-        var component = parentOb.component;
-
-        // TODO: throw error if parent ob is null
-        element.innerHTML = component.props[result.prop];
+        return null;
     }
 });

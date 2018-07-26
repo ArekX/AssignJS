@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
+lib(['events', 'compiler', 'inspect'], function CompilerRenderer(events, compiler, inspect) {
     var actions = [];
     var processId = null;
 
@@ -12,19 +12,20 @@ lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
         push: pushAction
     };
 
+    var parser = compiler.parser;
+
     renderer.events = events.createGroup([
         'afterRun'
     ], renderer);
 
     return;
 
-    function pushAction(action, onAllDone, onDone) {
+    function pushAction(action, onAllDone) {
         tickHandler();
 
         if (action) {
             actions.push({
                 action: action, 
-                onDone: onDone, 
                 onAllDone: onAllDone
             });
         }
@@ -46,35 +47,38 @@ lib(['events', 'compiler'], function CompilerRenderer(events, compiler) {
         }
 
         try {
-            for (var i = 0; i < actions.length; i++) {
-                actions[i].action();
-                actions[i].onDone && actions[i].onDone();
+            var allDone = [];
+
+            while(actions.length > 0) {
+                var action = actions.shift();
+                action.action();
+                action.onAllDone && allDone.push(action.onAllDone);
             }
 
-            for (var i = 0; i < actions.length; i++) {
-                actions[i].onAllDone && actions[i].onAllDone();
+            for (var i = 0; i < allDone.length; i++) {
+                allDone[i]();
             }
 
-            renderer.events.trigger('afterRun');
-            
-            actions = [];
+            // renderer.events.trigger('afterRun');
         } catch (e) {
             actions = [];
             throw e;
         }
     }
 
-    function render(element, contents, onAllDone, onDone) {
+    function render(element, contents, onAllDone) {
         var ob = inspect.getElementObject(element);
 
-        if (!ob.io.shouldWrite(contents)) {
+        if (!ob.io.output.shouldWrite(contents)) {
+            onAllDone && onAllDone();
             return;
         }
 
-        this.push(performRender, onAllDone, onDone);
+        this.push(performRender, onAllDone);
 
         function performRender() {
-            ob.io.write(contents);
+            ob.io.output.write(contents);
+            parser.parseAll(element);
         }
     }
 
