@@ -72,7 +72,7 @@ lib(['compiler', 'inspect', 'assert', 'object'], function CompilerPipeline(compi
 
     function runTriggers(handlers, checker) {
         while(handlers.length > 0) {
-           var func = handlers.pop();
+           var func = handlers.shift();
            if (checker.indexOf(func) === -1) {
                func();
                checker.push(func);

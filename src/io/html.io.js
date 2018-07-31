@@ -31,8 +31,6 @@ lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, obje
         if (contents && inspect.isIterable(contents)) {
             for (var i = 0; i < contents.length; i++) {
                 writeItem(element, contents[i]);
-
-                console.log('write array item to', element, contents[i]);
             }
 
             return;
@@ -40,7 +38,6 @@ lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, obje
 
         io.$oldContents = contents;
         writeItem(element, contents);
-        console.log('write to', element, contents);
     }
 
     function writeItem(element, contents) {

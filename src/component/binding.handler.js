@@ -66,6 +66,8 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
             pipeline.pushOnce(output);
         });
 
+        output();
+
         if (!result.event) {
             return;
         }
@@ -82,6 +84,9 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
         });
 
         function outputResult() {
+            if (!io.output.shouldWrite(handlers[result.name])) {
+                return;
+            }
             io.output.write(handlers[result.name]);
             parser.parseAll(element);
         }
