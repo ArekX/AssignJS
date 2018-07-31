@@ -23,60 +23,54 @@ lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, obje
 
     function write(contents) {
         var element = this._element;
-        var ob = this._elementObject;
-        
-        ob._oldContents = contents;
+        var io = this._elementObject.io;
 
-        if (inspect.isElement(contents)) {
-            element.innerHTML = '';
-            element.appendChild(contents);
-            return;
-        }
+        io.$oldContents = null;
+        element.innerHTML = '';
 
-        var isString = inspect.isString(contents);
-
-        if (!isString && inspect.isIterable(contents)) {
-            ob._oldContents = [];
-            element.innerHTML = '';
-
+        if (contents && inspect.isIterable(contents)) {
             for (var i = 0; i < contents.length; i++) {
-                var content = contents[i];
+                writeItem(element, contents[i]);
 
-                if (inspect.isString(content)) {
-                    content = document.createTextNode(content);
-                }
-
-                element.appendChild(content);
-                ob._oldContents.push(content);
+                console.log('write array item to', element, contents[i]);
             }
-            
+
             return;
         }
 
-        if (isString) {
-            element.textContent = contents;
-            return;
+        io.$oldContents = contents;
+        writeItem(element, contents);
+        console.log('write to', element, contents);
+    }
+
+    function writeItem(element, contents) {
+        if (html.isRawHtml(contents)) {
+           contents = contents.toElement();
         }
 
-        element.innerHTML = contents;
+        if (!(contents instanceof Node)) {
+           contents = html.toTextNode(contents);
+        }
+
+        element.appendChild(contents);
     }
 
     function shouldWrite(contents) {
-        var ob = this._elementObject;
+        var io = this._elementObject.io;
         var el = this._element;
 
-        if (!ob._oldContents) {
-            ob._oldContents = null;
-        }
-
-        if (!inspect.isIterable(contents) && (ob._oldContents === contents)) {
-            return false;
+        if (!io.$oldContents) {
+            io.$oldContents = null;
         }
 
         if (inspect.isElementList(contents) && inspect.isElementParent(contents, el)) {
             return false;
         }
 
-        return true;
+        if (io.$oldContents === null) {
+           return true;
+        }
+
+        return io.$oldContents !== contents;
     }
 });

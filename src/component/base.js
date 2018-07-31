@@ -1,5 +1,6 @@
 // @import: core
-lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(configManager, createFactory, assert, compiler) {
+lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
+  function ComponentsBase(configManager, createFactory, assert, compiler, inspect) {
 
     var config = configManager.component = {
         handlerType: 'base',
@@ -12,7 +13,8 @@ lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(c
         handlerFactory: createFactory(),
         propsFactory: createFactory(),
         add: addComponent,
-        create: createComponent
+        create: createComponent,
+        getParent: getParentComponent
     };
 
     function addComponent(name, def) {
@@ -28,5 +30,18 @@ lib(['config', 'createFactory', 'assert', 'compiler'], function ComponentsBase(c
         assert.keySet(name, componentDefs, 'This component is not defined.');
         var def = componentDefs[name];
         return this.handlerFactory.create(def.handler, [def]);
+    }
+
+    function getParentComponent(element) {
+        var parent = element;
+
+        while((parent = parent.parentElement) !== null) {
+            var ob = inspect.getElementObject(parent);
+            if (ob && ob.component) {
+                return ob.component;
+            }
+        }
+
+        return null;
     }
 });

@@ -15,7 +15,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         assert.lessOrEqual(ioParts.length, 2, "IO string must have only one ':' character.");
 
         var results = {};
-        
+
         for(var i = 0; i < ioParts.length; i++) {
             var part = ioParts[i];
             var type = i === 0 ? 'input' : 'output';
@@ -26,12 +26,12 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                 if (!handlerList.hasOwnProperty(handlerName)) {
                     continue;
                 }
-    
+
                 var runHandler = handlerList[handlerName];
-    
+
                 var isMatch = inspect.isFunction(runHandler.checker) ?
                     runHandler.checker(part, element) : part.match(runHandler.checker);
-    
+
                 if (isMatch === null) {
                     continue;
                 }
@@ -48,7 +48,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                 type: type
             });
 
-            results[type] = partHandler; 
+            results[type] = partHandler;
         }
 
         return results;

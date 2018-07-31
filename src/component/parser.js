@@ -1,11 +1,11 @@
 // @import: compiler
 
 lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(compiler, componentManager, assert, configManager) {
-    
+
     var config = configManager.component;
 
     config.defaultIO = '_:~html';
-    
+
     var tokenizer = compiler.createTokenizer([
         {
             name: 'name',
@@ -29,7 +29,7 @@ lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(comp
                 if (!match[2]) {
                     return {};
                 }
-                
+
                 // TODO: return props object.
                 return match[2].trim();
             }
@@ -45,8 +45,11 @@ lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(comp
 
         var component = componentManager.create(result.name);
 
-        component.bind(element, result.ioString);
+        var parentComponent = componentManager.getParent(element);
 
-        component.render();
+        var pipeline = (parentComponent ? parentComponent.pipeline : compiler.pipeline.root).branch();
+
+        component.bind(element, result.ioString, pipeline);
+        component.initializeView();
     }
 });

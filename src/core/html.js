@@ -1,16 +1,31 @@
 lib(function CoreHtml() {
     function RawHtmlContents(contents) {
-        this.contents = contents; 
+        this.contents = contents;
     }
 
     RawHtmlContents.prototype.toString = function() {
         return this.contents;
     };
 
+    RawHtmlContents.prototype.toElement = function(containerTag) {
+        var element = document.createElement(containerTag || 'div');
+        element.innerHTML = this.contents;
+        return element;
+    }
+
     this.html = {
-        _rawHtmlConstructor: RawHtmlContents,
-        toRawHtml: toRawHtml
+        isRawHtml: isRawHtml,
+        toRawHtml: toRawHtml,
+        toTextNode: toTextNode
     };
+
+    function toTextNode(text) {
+        return document.createTextNode(text);
+    }
+
+    function isRawHtml(object) {
+        return object instanceof RawHtmlContents;
+    }
 
     function toRawHtml(contents) {
         return new RawHtmlContents(contents);

@@ -1,8 +1,8 @@
 // @import: events
 
-lib(['compiler', 'config', 'inspect', 'assert', 'io'], 
-function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager) {
-    
+lib(['compiler', 'config', 'inspect', 'assert', 'io', 'component'],
+function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager, componentManager) {
+
     var config = configManager.component.binding = {
         defaultWriteIo: '_:~html',
         defaultEventIo: '_:_'
@@ -21,8 +21,11 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
             regex: /(@|#)/
         },
         {
-            name: 'prop',
-            regex: /[^\ ]+\s*/
+            name: 'name',
+            regex: /[^\ ]+\s*/,
+            parse: function(match, result) {
+                return match[0].trim();
+            }
         },
         {
             name: 'ioString',
@@ -42,34 +45,45 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
     function handleComponent(line, element) {
         var result = tokenizer.consume(line);
 
-        var component = getParentComponent(element);
+        var component = componentManager.getParent(element);
         var elementObject = inspect.getElementObject(element);
 
         assert.isTrue(component !== null, 'Parent component not found.');
 
-        var props = component.props.$manager;
+        var props = component.propManager;
 
-        elementObject.io = ioManager.resolve(result.ioString, {
+        var io = elementObject.io = ioManager.resolve(result.ioString, {
             element: element
         });
 
-        props.changed.register(function() {
-            renderer.render(element, props.get(result.prop));
+        var handlers = result.eventType === '@' ? component.props : component.methods;
+
+        var pipeline = component.pipeline.branch();
+
+        var output = outputResult.bind(io.output);
+
+        props.addChangeListener(result.name, function() {
+            pipeline.pushOnce(output);
         });
 
-        renderer.render(element, props.get(result.prop));
-    }
-
-    function getParentComponent(element) {
-        var parent = element;
-
-        while((parent = parent.parentElement) !== null) {
-            var ob = inspect.getElementObject(parent);
-            if (ob && ob.component) {
-                return ob.component;
-            }
+        if (!result.event) {
+            return;
         }
 
-        return null;
+        element.addEventListener(result.event, function() {
+            // TODO: we will implement function calls and argument passing in bindings... props will be implemented for now.
+            if (inspect.isFunction(handlers[result.name])) {
+                handlers[result.name]();
+                return;
+            }
+
+              // console.log(io.input.read());
+            handlers[result.name] = io.input.read();
+        });
+
+        function outputResult() {
+            io.output.write(handlers[result.name]);
+            parser.parseAll(element);
+        }
     }
 });

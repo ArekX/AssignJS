@@ -1,8 +1,7 @@
 // @import: core/base.js
-// @import: core/html.js
 
-lib(['config', 'html'], function CoreInspect(config, html) {
-    
+lib(['config'], function CoreInspect(config) {
+
     var plainObjectConstructor = ({}).constructor;
 
     this.inspect = {
@@ -21,8 +20,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
         isElementList: isElementList,
         isCompiledElement: isCompiledElement,
         getElementObject: getElementObject,
-        isElementParent: isElementParent,
-        isRawHtml: isRawHtml
+        isElementParent: isElementParent
     };
 
     return;
@@ -67,7 +65,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
     }
 
     function isBoolean(value) {
-        return typeof value === "boolean";  
+        return typeof value === "boolean";
     }
 
     function isElement(value) {
@@ -76,7 +74,7 @@ lib(['config', 'html'], function CoreInspect(config, html) {
 
     function isInputElement(value) {
         return isElement(value) && (
-                (element instanceof HTMLInputElement) || 
+                (element instanceof HTMLInputElement) ||
                 (element instanceof HTMLSelectElement) ||
                 (element instanceof HTMLTextAreaElement)
         );
@@ -84,6 +82,10 @@ lib(['config', 'html'], function CoreInspect(config, html) {
 
     function isIterable(value) {
         if (!isDefined(value)) {
+            return false;
+        }
+
+        if (isString(value)) {
             return false;
         }
 
@@ -108,11 +110,11 @@ lib(['config', 'html'], function CoreInspect(config, html) {
 
     function isElementParent(elements, parent) {
         if (!isElementList(elements)) {
-            return elements.parentElement === parent;
+            return isElementParent(elements, parent);
         }
 
         for(var i = 0; i < elements.length; i++) {
-            if (elements[i].parentElement !== parent) {
+            if (isElementParent(elements[i], parent)) {
                 return false;
             }
         }
@@ -120,7 +122,12 @@ lib(['config', 'html'], function CoreInspect(config, html) {
         return true;
     }
 
-    function isRawHtml(contents) {
-        return contents instanceof html._rawHtmlConstructor;
+    function isElementParent(element, parent)
+    {
+       if (isRawHtml(element)) {
+          return element.toElement().parentElement === parent;
+       }
+
+       return element.parentElement === parent;
     }
 });

@@ -7,9 +7,14 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         _propVals: null,
         _propFunctions: null,
         _changeMode: false,
+        _changeListeners: null,
         changed: null,
         triggerChange: triggerChange,
-        initializeDefinition: initializeDefinition,
+        triggerChangeListeners: triggerChangeListeners,
+        addChangeListener: addChangeListener,
+        removeChangeListener: removeChangeListener,
+        update: update,
+        bindProps: bindProps,
         beginChangeMode: beginChangeMode,
         endChangeMode: endChangeMode,
         define: defineProperty,
@@ -21,20 +26,19 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     component.propsFactory.add('base', Props);
     component.propsFactory.setDefaultType('base');
 
-    function initializeDefinition(propDef, dataStructure) {
-        this._dataStructure = dataStructure;
+    function bindProps(props, dataStructure) {
+        this._dataStructure = dataStructure || {};
+        this._changeListeners = {};
         this._propVals = {};
         this._propFunctions = {};
 
         this.changed = events.factory.createDefault(this);
 
-        if (propDef) {
-            this.setMultiple(propDef);
+        if (props) {
+            this.setMultiple(props);
         }
 
-        dataStructure.$manager = this;
-
-        return dataStructure;
+        return this._dataStructure;
     }
 
     function setProp(name, value) {
@@ -65,6 +69,46 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
             oldValue: oldValue,
             value: newValue
         });
+
+        var changeListeners  = this._changeListeners;
+
+        if (inspect.isArray(name)) {
+            for(var i = 0; i < name.length; i++) {
+                this.triggerChangeListeners(name[i], oldValue[i], newValue[i]);
+            }
+        } else {
+            this.triggerChangeListeners(name, oldValue, newValue);
+        }
+    }
+
+    function triggerChangeListeners(name, oldValue, newValue) {
+      if (!this._changeListeners[name]) {
+          return;
+      }
+
+      for(var i = 0; i < this._changeListeners[name].length; i++) {
+         this._changeListeners[name][i](oldValue, newValue);
+      }
+    }
+
+    function addChangeListener(name, listener) {
+        if (!this._changeListeners[name]) {
+            this._changeListeners[name] = [];
+        }
+
+        this._changeListeners[name].push(listener);
+    }
+
+    function removeChangeListener(name, listener) {
+        var index = this._changeListeners[name].indexOf(listener);
+        if (index !== -1) {
+            this._changeListeners[name].splice(index, 1);
+        }
+    }
+
+    function update(name) {
+        var value = this.get(name);
+        this.triggerChange(name, value, value);
     }
 
     function setMultiple(items) {
@@ -82,7 +126,7 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
                 oldValues.push(this._propVals[itemName]);
                 var value = items[itemName];
                 values.push(value);
-                
+
                 if (!(itemName in this._propVals)) {
                     propDefines[itemName] = {
                         get: getProp.bind(this, itemName),
