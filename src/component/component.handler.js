@@ -13,6 +13,7 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
     var ComponentHandler = {
         element: null,
         elementObject: null,
+        rendered: false,
         io: null,
         def: null,
         props: null,
@@ -54,8 +55,8 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
             component: this
         });
         this.pipeline = pipeline;
-        this.pipeline.afterRun = runAfterUpdate.bind(this);
         this.pipeline.beforeRun = runBeforeUpdate.bind(this);
+        this.pipeline.afterRun = runAfterUpdate.bind(this);
     }
 
     function initializeView() {
@@ -64,16 +65,16 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
 
         def.beforeViewInit && def.beforeViewInit.call(self);
 
-        if (def.template) {
-            var output = self.io.output;
-            self.pipeline.push(function() {
-              output.write(html.toRawHtml(def.template));
-              // runAfterInit();
-            });
-            self.pipeline.afterRunOnce(runAfterInit);
-        } else {
-            runAfterInit();
-        }
+        self.pipeline.push(function() {
+          if (def.template) {
+             var output = self.io.output;
+             output.write(html.toRawHtml(def.template));
+          }
+        }, runAfterInit);
+
+        self.pipeline.afterRunOnce(function() {
+            self.rendered = true;
+        });
 
         function runAfterInit() {
             parser.parseAll(self.element);
@@ -82,10 +83,16 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
     }
 
     function runBeforeUpdate() {
+        if (!this.rendered) {
+            return;
+        }
         this.def.beforeUpdate && this.def.beforeUpdate.call(this);
     }
 
     function runAfterUpdate() {
+        if (!this.rendered) {
+            return;
+        }
         this.def.afterUpdate && this.def.afterUpdate.call(this);
     }
 });
