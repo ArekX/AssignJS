@@ -19,9 +19,7 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
         pipeline: null,
         init: initialize,
         bind: bind,
-        initializeView: initializeView,
-        runBeforeUpdate: runBeforeUpdate,
-        runAfterUpdate: runAfterUpdate
+        initializeView: initializeView
     };
 
     component.handlerFactory.add('base', ComponentHandler);
@@ -56,8 +54,8 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
             component: this
         });
         this.pipeline = pipeline;
-        this.pipeline.afterRunOnce = runAfterUpdate.bind(this);
-        this.pipeline.beforeRunOnce = runBeforeUpdate.bind(this);
+        this.pipeline.afterRun = runAfterUpdate.bind(this);
+        this.pipeline.beforeRun = runBeforeUpdate.bind(this);
     }
 
     function initializeView() {
@@ -70,8 +68,9 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
             var output = self.io.output;
             self.pipeline.push(function() {
               output.write(html.toRawHtml(def.template));
-              runAfterInit();
+              // runAfterInit();
             });
+            self.pipeline.afterRunOnce(runAfterInit);
         } else {
             runAfterInit();
         }

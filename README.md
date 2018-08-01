@@ -11,10 +11,9 @@ Minimal setup for usage is as follows:
 <div data-assign="app.hello"></div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.do.defineComponent("app.hello", function() {
-      this.template = "Hello world.";
-  });
-  AssignJS.run();
+  var vm = AssignJS.create();
+  vm.component.add("app.hello", {template: 'Hello world'});
+  vm.run();
 </script>
 ```
 
@@ -28,16 +27,20 @@ Properties can be defined inside the component and it will be tracked for change
 <div data-assign="app.hello"></div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.do.defineComponent("app.hello", function() {
-      this.template = `Hello world at <span data-assign="@date"></span>`;
-      this.initialize = function() {
-          this.props.set("date", new Date());
-          setInterval(() => {
-              this.props.set("date", new Date());
-          }, 1000);
-      };
+  var vm = AssignJS.create();
+  vm.component.add("app.hello", {
+      template:  `Hello world at <span data-assign="@date"></span>`,
+      props: {
+         date: null
+      },
+      afterViewInit: function() {
+         this.props.date = new Date();
+         setInterval(() => {
+             this.props.set("date", new Date());
+         }, 1000);
+      }
   });
-  AssignJS.run();
+  vm.run();
 </script>
 ```
 
@@ -46,20 +49,24 @@ Properties can be defined inside the component and it will be tracked for change
 AssignJS component doesn't require a template. You can just assign it to an element and that element will be controlled by that component.
 
 ```html
-<div data-assign="app.hello">
-   Hello world at <span data-assign="@date"></span>
+<div [as]="app.hello">
+   Hello world at <span [as]="@date"></span>
 </div>
 <script src="assignjs.js"></script>
 <script>
-  AssignJS.do.defineComponent("app.hello", function() {
-      this.initialize = function() {
-          this.props.set("date", new Date());
-          setInterval(() => {
-              this.props.set("date", new Date());
-          }, 1000);
-      };
+  var vm = AssignJS.create();
+  vm.component.add("app.hello", {
+      props: {
+         date: null
+      },
+      afterViewInit: function() {
+         this.props.date = new Date();
+         setInterval(() => {
+             this.props.set("date", new Date());
+         }, 1000);
+      }
   });
-  AssignJS.run();
+  vm.run();
 </script>
 ```
 

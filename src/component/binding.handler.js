@@ -58,12 +58,12 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
 
         var handlers = result.eventType === '@' ? component.props : component.methods;
 
-        var pipeline = component.pipeline.branch();
+        var pipeline = component.pipeline;
 
         var output = outputResult.bind(io.output);
 
         props.addChangeListener(result.name, function() {
-            pipeline.pushOnce(output);
+            pipeline.push(output, null, true);
         });
 
         output();

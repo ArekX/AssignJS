@@ -9,7 +9,7 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
 
     var componentDefs = {};
 
-    this.component = {
+    var module = this.component = {
         handlerFactory: createFactory(),
         propsFactory: createFactory(),
         add: addComponent,
@@ -24,6 +24,8 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
 
         assert.keyNotSet(name, componentDefs, 'This component already exists.');
         componentDefs[name] = def;
+
+        return module;
     }
 
     function createComponent(name) {
