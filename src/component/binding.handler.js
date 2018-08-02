@@ -77,15 +77,17 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
                 return;
             }
 
-              // console.log(io.input.read());
             handlers[result.name] = io.input.read();
         });
 
         function outputResult() {
-            if (!io.output.shouldWrite(handlers[result.name])) {
+            var value = result.name in handlers ? handlers[result.name] : '';
+
+            if (!io.output.shouldWrite(value)) {
                 return;
             }
-            io.output.write(handlers[result.name]);
+            
+            io.output.write(value);
             parser.parseAll(element);
         }
     }

@@ -7,8 +7,6 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
 
     var config = configManager.component;
 
-    var id = 0;
-
     var renderer = compiler.renderer;
     var parser = compiler.parser;
 
@@ -16,7 +14,7 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         element: null,
         elementObject: null,
         parent: null,
-        rendered: false,
+        stateless: false,
         io: null,
         def: null,
         props: null,
@@ -33,30 +31,28 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
     component.handlerFactory.setDefaultType('base');
 
     function initialize(componentDef) {
-        this.id = id++;
         this.def = componentDef;
+        this.context = Object.create(componentDef);
 
-        this.waitingChildComponents = [];
+        if (inspect.isFunction(componentDef)) {
+            this.stateless = true;
+        } else {
+            for(var name in componentDef) {
+                if (componentDef.hasOwnProperty(name) && inspect.isFunction(componentDef[name])) {
+                     this.context[name] = componentDef[name].bind(this.context);
+                }
+            }
+        }
 
         var propManager = component.propsFactory.create(config.propsType);
 
-        this.methods = {};
-        var defMethods = this.def.methods || {};
+        this.props = this.context.props = propManager.bind(this.def.props || {});
+        this.propManager = this.context.propManager = propManager;
 
-        for(var methodName in defMethods) {
-           if (defMethods.hasOwnProperty(methodName)) {
-               this.methods[methodName] = defMethods[methodName].bind(this);
-           }
-        }
-
-        this.props = propManager.bind(this.def.props || {});
-        this.propManager = propManager;
-
-        this.propManager.changed.register(this.propsChanged.bind(this));
         this._boundBeforeUpdate = runBeforeUpdate.bind(this);
         this._boundAfterUpdate = runAfterUpdate.bind(this);
 
-        this.def.init && this.def.init.call(this);
+        this.context.handler = this;
     }
 
     function bind(element, ioString) {
@@ -77,40 +73,70 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         var self = this;
         var def = self.def;
 
-        def.beforeViewInit && def.beforeViewInit.call(self);
+        this.context.beforeViewInit && this.context.beforeViewInit();
 
         task.push(function() {
-            if (def.template) {
-               var output = self.io.output;
-               output.write(html.toRawHtml(def.template));
-               parser.parseAll(self.element);
-            }
+            renderTemplate(self);
         });
 
         task.afterRunOnce(runAfterInit.bind(this));
     }
 
+    function renderTemplate(self) {
+        var def = self.def;
+
+        if (self.stateless) {
+            var output = self.io.output;
+            var result = def(self.context);
+
+            if (inspect.isString(result)) {
+                result = html.toRawHtml(result);
+            }
+
+            output.write(result);
+            parser.parseAll(self.element);
+            return;
+        }
+
+        if (def.template) {
+           var output = self.io.output;
+           output.write(html.toRawHtml(def.template));
+           parser.parseAll(self.element);
+        }
+    }
+
     function runAfterInit() {
-        this.def.afterViewInit && this.def.afterViewInit.call(this);
-        this.rendered = true;
+        this.context.afterViewInit && this.context.afterViewInit();
+
+        this.context.initialized = true;
+
+        if (this.stateless) {
+            var self = this;
+            this.propManager.changed.register(function() {
+                task.push(function() {
+                    renderTemplate(self);
+                });
+            });
+            return;
+        }
+
+        this.propManager.changed.register(this.propsChanged.bind(this));
     }
 
     function propsChanged() {
-        if (this.rendered) {
-            task.beforeRunOnce(this._boundBeforeUpdate);
-            task.afterRunOnce(this._boundAfterUpdate);
-        }
+        task.beforeRunOnce(this._boundBeforeUpdate);
+        task.afterRunOnce(this._boundAfterUpdate);
 
-        this.def.afterPropsChanged && this.def.afterPropsChanged.call(this);
+        this.context.afterPropsChanged && this.context.afterPropsChanged();
     }
 
     function runBeforeUpdate() {
         this.parent && this.parent._boundBeforeUpdate();
-        this.def.beforeUpdate && this.def.beforeUpdate.call(this);
+        this.context.beforeUpdate && this.context.beforeUpdate();
     }
 
     function runAfterUpdate() {
-        this.def.afterUpdate && this.def.afterUpdate.call(this);
+        this.context.afterUpdate && this.context.afterUpdate();
         this.parent && this.parent._boundAfterUpdate();
     }
 });

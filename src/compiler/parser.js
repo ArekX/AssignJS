@@ -21,12 +21,18 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
         events: eventList
     };
 
-    addRunner(function () {
+    var instanceConfig = this.instanceConfig;
+
+    addRunner(function (config) {
         if (!eventList.trigger('beforeRun')) {
             return;
         }
 
-        parseAll();
+        var container = instanceConfig.container ?
+            document.querySelector(instanceConfig.container) : null;
+
+        parseAll(container);
+
         eventList.trigger('afterRun');
     });
 
@@ -42,11 +48,6 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
     }
 
     function parse(node) {
-        // FIXME: Well damn... we need to do this in stages.
-        // Stage 1: Parse all and create objects
-        // Stage 2: Initialize all pending objects.
-        // Stage 3: Repeat while there are elements to parse.
-
         if (inspect.isCompiledElement(node)) {
             return;
         }

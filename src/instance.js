@@ -1,7 +1,8 @@
 var originalImplementors = ([]).concat(implementors);
 
-function makeNewInstance(original) {
-    var implementorList = original ? originalImplementors : implementors;
+function makeNewInstance(config) {
+    config = config || {};
+    var implementorList = config.pure ? originalImplementors : implementors;
 
     var core = Object.create({}, {
         versionCode: {
@@ -11,6 +12,8 @@ function makeNewInstance(original) {
             value: versionString
         }
     });
+
+    core.instanceConfig = config;
 
     for (var i = 0; i < implementorList.length; i++) {
         implementorList[i].apply(core);
