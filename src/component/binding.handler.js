@@ -1,7 +1,7 @@
 // @import: events
 
-lib(['compiler', 'config', 'inspect', 'assert', 'io', 'component'],
-function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager, componentManager) {
+lib(['compiler', 'config', 'inspect', 'assert', 'io', 'component', 'task'],
+function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager, componentManager, task) {
 
     var config = configManager.component.binding = {
         defaultWriteIo: '_:~html',
@@ -58,15 +58,13 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
 
         var handlers = result.eventType === '@' ? component.props : component.methods;
 
-        var pipeline = component.pipeline;
-
         var output = outputResult.bind(io.output);
 
         props.addChangeListener(result.name, function() {
-            pipeline.push(output, null, true);
+            task.push(output, null, true);
         });
 
-        output();
+        task.push(output, null, true);
 
         if (!result.event) {
             return;

@@ -4,3 +4,4 @@
 // @import: core/object.js
 // @import: core/createFactory.js
 // @import: core/html.js
+// @import: core/task.js

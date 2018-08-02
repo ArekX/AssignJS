@@ -1,7 +1,7 @@
 // @import: core
 
-lib(['inspect', 'throwError', 'assert', 'config'],
-    function CompilerBase(inspect, throwError, assert, configManager) {
+lib(['inspect', 'throwError', 'assert', 'config', 'task'],
+    function CompilerBase(inspect, throwError, assert, configManager, task) {
 
         var handlerList = {};
 
@@ -29,9 +29,17 @@ lib(['inspect', 'throwError', 'assert', 'config'],
             handlerList[namespace] = handler;
         }
 
-        function compileElement(element, lines) {
+        function compileElement(element, lines, afterCompile) {
             if (inspect.isCompiledElement(element)) {
+                afterCompile && afterCompile();
                 return;
+            }
+
+            var elementObject = inspect.getElementObject(element) || {};
+            var counter = 0;
+
+            if (lines.length === 0) {
+              afterCompile && afterCompile();
             }
 
             for (var i = 0; i < lines.length; i++) {
@@ -40,7 +48,7 @@ lib(['inspect', 'throwError', 'assert', 'config'],
 
                 for (var handlerName in handlerList) {
                     if (!handlerList.hasOwnProperty(handlerName)) {
-                        return;
+                        continue;
                     }
 
                     var runHandler = handlerList[handlerName];
@@ -50,18 +58,16 @@ lib(['inspect', 'throwError', 'assert', 'config'],
                     if (!isMatch) {
                         continue;
                     }
-                    
-                    compiled = true;
-                    element[configManager.assignParam] = {
-                        compiled: true
-                    };
+
+                    compiled = elementObject.compiled = true;
+                    element[configManager.assignParam] = elementObject;
 
                     runHandler(line, element);
                     break;
                 }
 
                 if (compiled || !config.strict) {
-                    return;
+                    continue;
                 }
 
                 throwError("Cannot parse assigment!", {

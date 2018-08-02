@@ -8,13 +8,14 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         _propFunctions: null,
         _changeMode: false,
         _changeListeners: null,
+        _component: null,
         changed: null,
         triggerChange: triggerChange,
         triggerChangeListeners: triggerChangeListeners,
         addChangeListener: addChangeListener,
         removeChangeListener: removeChangeListener,
         update: update,
-        bindProps: bindProps,
+        bind: bind,
         beginChangeMode: beginChangeMode,
         endChangeMode: endChangeMode,
         define: defineProperty,
@@ -26,8 +27,8 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     component.propsFactory.add('base', Props);
     component.propsFactory.setDefaultType('base');
 
-    function bindProps(props, dataStructure) {
-        this._dataStructure = dataStructure || {};
+    function bind(props) {
+        this._dataStructure = {};
         this._changeListeners = {};
         this._propVals = {};
         this._propFunctions = {};

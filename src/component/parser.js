@@ -47,9 +47,12 @@ lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(comp
 
         var parentComponent = componentManager.getParent(element);
 
-        var pipeline = (parentComponent ? parentComponent.pipeline : componentManager.pipeline.root).branch();
+        component.bind(element, result.ioString);
 
-        component.bind(element, result.ioString, pipeline);
+        if (parentComponent) {
+            component.setParent(parentComponent);
+        }
+
         component.initializeView();
     }
 });

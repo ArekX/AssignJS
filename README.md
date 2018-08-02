@@ -1,5 +1,5 @@
 # AssignJS
-AssignJS is a component framework which allows you to structure your DOM elements into separate component items which you can use to code more complex javascript apps more easily. It is made so it can be embedded into any kind of app. It allows you to rename the core library to any name you want. Also the way it was created allows you to write your own parsers and make it more smarter, and also you can use it to implement your own component systems.
+AssignJS is a component management library which allows you to structure your DOM elements into separate component items which you can use to code more complex javascript apps more easily. It is made so it can be embedded into any kind of app. It allows you to rename the core library to any name you want. Also the way it was created allows you to write your own parsers and make it more smarter, and also you can use it to implement your own component systems.
 
 ## Quick example usages
 

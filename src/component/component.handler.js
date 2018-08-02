@@ -2,10 +2,12 @@
 // @import: component/base.js
 // @import: component/props.js
 
-lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
-    function ComponentHandler(component, configManager, inspect, io, compiler, html) {
+lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
+    function ComponentHandler(component, configManager, inspect, io, compiler, html, task) {
 
     var config = configManager.component;
+
+    var id = 0;
 
     var renderer = compiler.renderer;
     var parser = compiler.parser;
@@ -13,21 +15,28 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
     var ComponentHandler = {
         element: null,
         elementObject: null,
+        parent: null,
         rendered: false,
         io: null,
         def: null,
         props: null,
-        pipeline: null,
         init: initialize,
         bind: bind,
-        initializeView: initializeView
+        initializeView: initializeView,
+        propsChanged: propsChanged,
+        setParent: setParent,
+        _boundBeforeUpdate: null,
+        _boundAfterUpdate: null
     };
 
     component.handlerFactory.add('base', ComponentHandler);
     component.handlerFactory.setDefaultType('base');
 
     function initialize(componentDef) {
+        this.id = id++;
         this.def = componentDef;
+
+        this.waitingChildComponents = [];
 
         var propManager = component.propsFactory.create(config.propsType);
 
@@ -40,13 +49,17 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
            }
         }
 
-        this.props = propManager.bindProps(this.def.props);
+        this.props = propManager.bind(this.def.props || {});
         this.propManager = propManager;
+
+        this.propManager.changed.register(this.propsChanged.bind(this));
+        this._boundBeforeUpdate = runBeforeUpdate.bind(this);
+        this._boundAfterUpdate = runAfterUpdate.bind(this);
 
         this.def.init && this.def.init.call(this);
     }
 
-    function bind(element, ioString, pipeline) {
+    function bind(element, ioString) {
         this.element = element;
         this.elementObject = inspect.getElementObject(element);
         this.elementObject.component = this;
@@ -54,9 +67,10 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
             element: element,
             component: this
         });
-        this.pipeline = pipeline;
-        this.pipeline.beforeRun = runBeforeUpdate.bind(this);
-        this.pipeline.afterRun = runAfterUpdate.bind(this);
+    }
+
+    function setParent(parent) {
+        this.parent = parent;
     }
 
     function initializeView() {
@@ -65,34 +79,38 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html'],
 
         def.beforeViewInit && def.beforeViewInit.call(self);
 
-        self.pipeline.push(function() {
-          if (def.template) {
-             var output = self.io.output;
-             output.write(html.toRawHtml(def.template));
-          }
-        }, runAfterInit);
-
-        self.pipeline.afterRunOnce(function() {
-            self.rendered = true;
+        task.push(function() {
+            if (def.template) {
+               var output = self.io.output;
+               output.write(html.toRawHtml(def.template));
+               parser.parseAll(self.element);
+            }
         });
 
-        function runAfterInit() {
-            parser.parseAll(self.element);
-            def.afterViewInit && def.afterViewInit.call(self);
+        task.afterRunOnce(runAfterInit.bind(this));
+    }
+
+    function runAfterInit() {
+        this.def.afterViewInit && this.def.afterViewInit.call(this);
+        this.rendered = true;
+    }
+
+    function propsChanged() {
+        if (this.rendered) {
+            task.beforeRunOnce(this._boundBeforeUpdate);
+            task.afterRunOnce(this._boundAfterUpdate);
         }
+
+        this.def.afterPropsChanged && this.def.afterPropsChanged.call(this);
     }
 
     function runBeforeUpdate() {
-        if (!this.rendered) {
-            return;
-        }
+        this.parent && this.parent._boundBeforeUpdate();
         this.def.beforeUpdate && this.def.beforeUpdate.call(this);
     }
 
     function runAfterUpdate() {
-        if (!this.rendered) {
-            return;
-        }
         this.def.afterUpdate && this.def.afterUpdate.call(this);
+        this.parent && this.parent._boundAfterUpdate();
     }
 });

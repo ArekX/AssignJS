@@ -1,4 +1,4 @@
-lib(['inspect', 'compiler', 'config', 'addRunner', 'events'], 
+lib(['inspect', 'compiler', 'config', 'addRunner', 'events'],
 function CompilerParser(inspect, compiler, configManager, addRunner, events) {
 
     var config = configManager.parser = {
@@ -31,7 +31,10 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
     });
 
     function parseAll(startContainer) {
-        parse(findActiveElements(startContainer || config.startContainer));
+        var activeElements = findActiveElements(startContainer || config.startContainer);
+        for (var i = 0; i < activeElements.length; i++) {
+            parse(activeElements[i]);
+        }
     }
 
     function findActiveElements(element) {
@@ -39,20 +42,17 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
     }
 
     function parse(node) {
-        
-        if (inspect.isIterable(node)) {
-            for (var i = 0; i < node.length; i++) {
-                processNode(node[i]);
-            }
+        // FIXME: Well damn... we need to do this in stages.
+        // Stage 1: Parse all and create objects
+        // Stage 2: Initialize all pending objects.
+        // Stage 3: Repeat while there are elements to parse.
+
+        if (inspect.isCompiledElement(node)) {
             return;
         }
 
-        processNode(node);
-
-        function processNode(node) {
-            compiler.compileElement(node, getParseLines(node));
-            node.setAttribute(config.initializedAttribute, true);
-        }
+        compiler.compileElement(node, getParseLines(node));
+        node.setAttribute(config.initializedAttribute, true);
     }
 
     function getParseLines(element) {
