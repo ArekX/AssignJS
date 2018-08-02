@@ -18,7 +18,7 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
     };
 
     function addComponent(name, def) {
-        def = inspect.isString(def) ? {template: def} : def;
+        def = !inspect.isPlainObject(def) ? {template: def} : def;
 
         if (!def.handler) {
             def.handler = config.handlerType;

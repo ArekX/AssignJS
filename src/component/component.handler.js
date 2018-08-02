@@ -14,7 +14,6 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         element: null,
         elementObject: null,
         parent: null,
-        stateless: false,
         io: null,
         def: null,
         props: null,
@@ -34,13 +33,9 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         this.def = componentDef;
         this.context = Object.create(componentDef);
 
-        if (inspect.isFunction(componentDef)) {
-            this.stateless = true;
-        } else {
-            for(var name in componentDef) {
-                if (componentDef.hasOwnProperty(name) && inspect.isFunction(componentDef[name])) {
-                     this.context[name] = componentDef[name].bind(this.context);
-                }
+        for(var name in componentDef) {
+            if (componentDef.hasOwnProperty(name) && inspect.isFunction(componentDef[name])) {
+                 this.context[name] = componentDef[name].bind(this.context);
             }
         }
 
@@ -85,24 +80,24 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
     function renderTemplate(self) {
         var def = self.def;
 
-        if (self.stateless) {
-            var output = self.io.output;
-            var result = def(self.context);
-
-            if (inspect.isString(result)) {
-                result = html.toRawHtml(result);
-            }
-
-            output.write(result);
-            parser.parseAll(self.element);
+        if (!def.template) {
             return;
         }
 
-        if (def.template) {
-           var output = self.io.output;
-           output.write(html.toRawHtml(def.template));
-           parser.parseAll(self.element);
+        var result = null;
+
+        if (inspect.isFunction(def.template)) {
+            result = def.template(this.context);
+        } else {
+            result = def.template;
         }
+
+        if (inspect.isString(result)) {
+            result = html.toRawHtml(result);
+        }
+
+        self.io.output.write(result !== null ? result : '');
+        parser.parseAll(self.element);
     }
 
     function runAfterInit() {
@@ -110,14 +105,13 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
 
         this.context.initialized = true;
 
-        if (this.stateless) {
+        if (inspect.isFunction(this.def.template)) {
             var self = this;
             this.propManager.changed.register(function() {
                 task.push(function() {
                     renderTemplate(self);
                 });
             });
-            return;
         }
 
         this.propManager.changed.register(this.propsChanged.bind(this));
