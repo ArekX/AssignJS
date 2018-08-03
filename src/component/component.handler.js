@@ -2,8 +2,8 @@
 // @import: component/base.js
 // @import: component/props.js
 
-lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
-    function ComponentHandler(component, configManager, inspect, io, compiler, html, task) {
+lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
+    function ComponentHandler(component, configManager, inspect, compiler, html, task) {
 
     var config = configManager.component;
 
@@ -11,6 +11,8 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
     var parser = compiler.parser;
 
     var ComponentHandler = {
+        _boundBeforeUpdate: null,
+        _boundAfterUpdate: null,
         element: null,
         elementObject: null,
         parent: null,
@@ -20,10 +22,7 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         init: initialize,
         bind: bind,
         initializeView: initializeView,
-        propsChanged: propsChanged,
-        setParent: setParent,
-        _boundBeforeUpdate: null,
-        _boundAfterUpdate: null
+        propsChanged: propsChanged
     };
 
     component.handlerFactory.add('base', ComponentHandler);
@@ -50,17 +49,11 @@ lib(['component', 'config', 'inspect', 'io', 'compiler', 'html', 'task'],
         this.context.handler = this;
     }
 
-    function bind(element, ioString) {
+    function bind(element, io, parent) {
         this.element = element;
         this.elementObject = inspect.getElementObject(element);
         this.elementObject.component = this;
-        this.io = this.elementObject.io = io.resolve(ioString, {
-            element: element,
-            component: this
-        });
-    }
-
-    function setParent(parent) {
+        this.io = this.elementObject.io = io;
         this.parent = parent;
     }
 

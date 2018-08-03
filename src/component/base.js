@@ -14,7 +14,7 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
         propsFactory: createFactory(),
         add: addComponent,
         create: createComponent,
-        getParent: getParentComponent
+        findParent: findParent
     };
 
     function addComponent(name, def) {
@@ -36,7 +36,7 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
         return this.handlerFactory.create(def.handler, [def]);
     }
 
-    function getParentComponent(element) {
+    function findParent(element) {
         var parent = element;
 
         while((parent = parent.parentElement) !== null) {

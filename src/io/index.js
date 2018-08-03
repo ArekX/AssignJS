@@ -1,5 +1,4 @@
 // @import: io/base.js
-// @import: io/base.io.js
 // @import: io/null.io.js
 // @import: io/property.io.js
 // @import: io/attribute.io.js

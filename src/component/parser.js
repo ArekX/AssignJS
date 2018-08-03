@@ -1,6 +1,8 @@
 // @import: compiler
+// @import: io
 
-lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(compiler, componentManager, assert, configManager) {
+lib(['compiler', 'component', 'assert', 'config', 'io', 'inspect'],
+function ComponentParser(compiler, componentManager, assert, configManager, io, inspect) {
 
     var config = configManager.component;
 
@@ -41,18 +43,18 @@ lib(['compiler', 'component', 'assert', 'config'], function ComponentParser(comp
     function handleComponent(line, element) {
         var result = tokenizer.consume(line);
 
+        var elementObject = inspect.getElementObject(element);
+
         assert.isString(result.name, 'Parsed name is not valid.');
 
         var component = componentManager.create(result.name);
+        elementObject.component = component;
 
-        var parentComponent = componentManager.getParent(element);
+        var parent = componentManager.findParent(element);
 
-        component.bind(element, result.ioString);
+        var ioHandler = io.resolve(element, result.ioString);
 
-        if (parentComponent) {
-            component.setParent(parentComponent);
-        }
-
+        component.bind(element, ioHandler, parent);
         component.initializeView();
     }
 });

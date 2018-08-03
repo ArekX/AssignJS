@@ -45,16 +45,14 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
     function handleComponent(line, element) {
         var result = tokenizer.consume(line);
 
-        var component = componentManager.getParent(element);
+        var component = componentManager.findParent(element);
         var elementObject = inspect.getElementObject(element);
 
         assert.isTrue(component !== null, 'Parent component not found.');
 
         var props = component.propManager;
 
-        var io = elementObject.io = ioManager.resolve(result.ioString, {
-            element: element
-        });
+        var io = elementObject.io = ioManager.resolve(element, result.ioString);
 
         var handlers = result.eventType === '@' ? component.props : component.methods;
 
@@ -86,7 +84,7 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
             if (!io.output.shouldWrite(value)) {
                 return;
             }
-            
+
             io.output.write(value);
             parser.parseAll(element);
         }

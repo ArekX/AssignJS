@@ -9,7 +9,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         addHandler: addHandler
     };
 
-    function resolve(ioString, context) {
+    function resolve(element, ioString) {
         var ioParts = ioString.split(':');
 
         assert.lessOrEqual(ioParts.length, 2, "IO string must have only one ':' character.");
@@ -36,11 +36,16 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                     continue;
                 }
 
-                if (runHandler.isSingleton) {
-                    partHandler = runHandler.init(part, context);
-                } else {
-                    partHandler = object.create(runHandler.handler, [part, context]);
-                }
+                var handler = runHandler.handler
+                var config = handler.init ? handler.init(element, part) : {};
+
+                config.element = element;
+
+                partHandler = config.handler = {
+                    read: handler.read.bind(config),
+                    write: handler.write.bind(config),
+                    shouldWrite: handler.shouldWrite.bind(config),
+                };
             }
 
             assert.isTrue(partHandler !== null, 'No matching handler found for this IO.', {

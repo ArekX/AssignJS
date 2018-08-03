@@ -1,27 +1,28 @@
 // @import: core
 
-lib(['io', 'object'], function IoBase(io, object) {
-
-    var AttributeIo = object.extend({
-        _element: null,
-        _attributeName: null,
+lib(['io'], function IoAttributeParam(io) {
+    io.addHandler('io.attribute.param', /\%(.+)/, {
         init: init,
         read: read,
-        write: write
-    }, io.BaseIo);
+        write: write,
+        shouldWrite: shouldWrite
+    });
 
-    io.addHandler('io.attribute.param', /\%(.+)/, AttributeIo);
-
-    function init(part, config) {
-        this._element = config.element;
-        this._attributeName = part.substring(1);
+    function init(element, ioPart) {
+        return {
+          attributeName: ioPart.substring(1)
+        };
     }
 
     function read() {
-        return this._element[this._attributeName];
+        return this.element[this.attributeName];
     }
 
     function write(value) {
-        this._element[this._attributeName] = value;
+        this.element[this.attributeName] = value;
+    }
+
+    function shouldWrite(value) {
+        return this.handler.read() !== value;
     }
 });

@@ -1,22 +1,21 @@
 // @import: core
 
-lib(['io', 'object'], function IoBase(io, object) {
-
-    var LiteralIo = object.extend({
-        _value: null,
+lib(['io', 'object'], function IoLiteral(io, object) {
+    io.addHandler('io.literal', /\(.+\)/, {
         init: init,
         read: read,
-        write: write
-    }, io.BaseIo);
+        write: write,
+        shouldWrite: shouldWrite
+    });
 
-    io.addHandler('io.literal', /\(.+\)/, LiteralIo);
-
-    function init(part) {
-        this._value = object.parseJson(part, null);
+    function init(element, ioPart) {
+        return {
+            value: object.parseJson(ioPart.substring(1, ioPart.length - 1), null)
+        };
     }
 
     function read() {
-        return this._value;
+        return this.value;
     }
 
     function write() {}

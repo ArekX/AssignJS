@@ -1,20 +1,14 @@
 // @import: core
 
-lib(['io', 'object'], function IoBase(io, object) {
+lib(['io'], function IoBase(io) {
 
-    var NullIo = object.extend({
-        init: init,
-        read: nullFunction,
-        write: nullFunction
-    }, io.BaseIo);
-
-    io.addHandler('io.null', /_/, NullIo, true);
-
-    function init() {
-        return NullIo;
-    }
+    io.addHandler('io.null', /_/, {
+      read: nullFunction,
+      write: nullFunction,
+      shouldWrite: nullFunction
+    });
 
     function nullFunction() {
-        return null;
+        return false;
     }
 });

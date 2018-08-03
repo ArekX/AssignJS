@@ -1,29 +1,30 @@
 // @import: core
 
 lib(['io'], function IoBase(io) {
-
-    var PropertyIo = {
-        _element: null,
-        _component: null,
-        _property: null,
+    io.addHandler('io.property', /\@[^\ ]+\s*/, {
         init: init,
         read: read,
-        write: write
-    };
+        write: write,
+        shouldWrite: shouldWrite
+    });
 
-    io.addHandler('io.property', /\@[a-zA-Z][a-zA-Z0-9_]+/, PropertyIo);
-
-    function init(part, config) {
-        this._property = part;
-        this._element = config.element;
-        this._component = config.component;
+    function init(element, ioPart) {
+        var component = imspect.getElementObject(element).component;
+        return {
+            prop: ioPart.substring(1),
+            propManager: component.context.propManager
+        };
     }
 
     function read() {
-        return this._component.props.get(this._property);
+        return this.propManager.get(this.prop);
     }
 
     function write(value) {
-        return this._component.props.set(this._property, value);
+        this.propManager.set(this.prop, value);
+    }
+
+    function shouldWrite(value) {
+        return this.handler.read() !== value;
     }
 });
