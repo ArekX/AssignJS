@@ -36,16 +36,9 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                     continue;
                 }
 
-                var handler = runHandler.handler
-                var config = handler.init ? handler.init(element, part) : {};
-
-                config.element = element;
-
-                partHandler = config.handler = {
-                    read: handler.read.bind(config),
-                    write: handler.write.bind(config),
-                    shouldWrite: handler.shouldWrite.bind(config),
-                };
+                partHandler = i === 0 ?
+                      getInputHandler(runHandler.handler, element, part) :
+                      getOutputHandler(runHandler.handler, element, part);
             }
 
             assert.isTrue(partHandler !== null, 'No matching handler found for this IO.', {
@@ -57,6 +50,27 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         }
 
         return results;
+    }
+
+    function getInputHandler(ioHandler, element, ioPart) {
+        var config = ioHandler.init ? ioHandler.init(element, ioPart) : {};
+
+        config.element = element;
+
+        return config.handler = {
+            read: ioHandler.read.bind(config)
+        };
+    }
+
+    function getOutputHandler(ioHandler, element, ioPart) {
+        var config = ioHandler.init ? ioHandler.init(element, ioPart) : {};
+
+        config.element = element;
+
+        return config.handler = {
+          write: ioHandler.write.bind(config),
+          shouldWrite: ioHandler.shouldWrite.bind(config),
+        };
     }
 
     function addHandler(namespace, checker, ioHandler, isStatic) {
