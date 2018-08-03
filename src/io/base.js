@@ -19,6 +19,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         for(var i = 0; i < ioParts.length; i++) {
             var part = ioParts[i];
             var type = i === 0 ? 'input' : 'output';
+            var resolver = i == 0 ? getInputResolver : getOutputResolver;
             var partHandler = null;
 
             for (var handlerName in handlerList) {
@@ -36,9 +37,8 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
                     continue;
                 }
 
-                partHandler = i === 0 ?
-                      getInputHandler(runHandler.handler, element, part) :
-                      getOutputHandler(runHandler.handler, element, part);
+                partHandler = resolver(runHandler.handler, element, part);
+                break;
             }
 
             assert.isTrue(partHandler !== null, 'No matching handler found for this IO.', {
@@ -52,7 +52,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         return results;
     }
 
-    function getInputHandler(ioHandler, element, ioPart) {
+    function getInputResolver(ioHandler, element, ioPart) {
         var config = ioHandler.init ? ioHandler.init(element, ioPart) : {};
 
         config.element = element;
@@ -62,7 +62,7 @@ lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
         };
     }
 
-    function getOutputHandler(ioHandler, element, ioPart) {
+    function getOutputResolver(ioHandler, element, ioPart) {
         var config = ioHandler.init ? ioHandler.init(element, ioPart) : {};
 
         config.element = element;
