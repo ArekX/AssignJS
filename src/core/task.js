@@ -1,8 +1,6 @@
 lib(function CoreTask() {
     var beforeOnceCalls = [];
     var afterOnceCalls = [];
-    var onceActions = [];
-    var onceActionObjects = [];
     var actions = [];
     var processId = null;
 
@@ -35,39 +33,24 @@ lib(function CoreTask() {
         (afterOnceCalls.indexOf(callback) === -1) && afterOnceCalls.push(callback);
     }
 
-    function push(action, onAllDone, once) {
+    function push(action, once) {
         tickHandler();
-        actions.push(makeActionObject(action, onAllDone, once));
+        once && removeOldAction(action);
+        actions.push(action);
     }
 
-    function unshift(action, onAllDone) {
+    function unshift(action, once) {
        tickHandler();
-       actions.unshift(makeActionObject(action, onAllDone, once));
+       once && removeOldAction(action);
+       actions.unshift(action);
     }
 
-    function makeActionObject(action, onAllDone, once) {
-      if (!once) {
-          return {
-              action: action,
-              onAllDone: onAllDone
-          };
-      }
+    function removeOldAction(action) {
+        var currentIndex = actions.indexOf(action);
 
-      var actionIndex = onceActions.indexOf(action);
-      var actionObject = null;
-
-      if (actionIndex !== -1) {
-          actionObject = onceActionObjects[actionIndex];
-      } else {
-          actionIndex = onceActions.length;
-          actionObject = {
-              onceIndex: actionIndex,
-              action: action,
-              onAllDone: onAllDone
-          };
-      }
-
-      return actionObject;
+        if (currentIndex !== -1) {
+            actions.splice(currentIndex, 1);
+        }
     }
 
     function run() {
@@ -80,34 +63,15 @@ lib(function CoreTask() {
                 return;
             }
 
-            var allDone = [];
-
             while(actions.length) {
-                var action = actions.pop();
-
-                if (action.onceIndex) {
-                    onceActions[action.onceIndex] = null;
-                    onceActionObjects[action.onceIndex] = null;
-                }
-
-                action.action();
-                action.onAllDone && allDone.push(action.onAllDone);
+                (actions.pop())();
             }
-
-            for (var i = 0; i < allDone.length; i++) {
-                allDone[i]();
-            }
-
-            onceActions = [];
-            onceActionObjects = [];
 
             while(afterOnceCalls.length) {
                 (afterOnceCalls.pop())();
             }
 
         } catch (e) {
-            onceActions = [];
-            onceActionObjects = [];
             actions = [];
             beforeRunOnceCalls = [];
             afterRunOnceCalls = [];
