@@ -13,6 +13,7 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
 
         this.compiler = {
             addHandler: addHandler,
+            compileTemplate: compileTemplate,
             compileElement: compileElement,
             writeElementObject: writeElementObject
         };
@@ -30,19 +31,23 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
             handlerList[namespace] = handler;
         }
 
+        function compileTemplate(element) {
+            var elementObject = inspect.getElementObject(element) || {};
+
+            elementObject.template = element.innerHTML;
+            element.innerHTML = '';
+
+            writeElementObject(element, elementObject);
+        }
+
         function compileElement(element, lines, afterCompile) {
             if (inspect.isCompiledElement(element)) {
                 afterCompile && afterCompile();
                 return;
             }
 
-            var elementObject = inspect.getElementObject(element) || null;
-
-            if (elementObject === null) {
-                elementObject = {};
-                writeElementObject(element, elementObject);
-            }
-
+            var elementObject = inspect.getElementObject(element) || {};
+            writeElementObject(element, elementObject);
 
             var counter = 0;
 

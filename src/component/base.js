@@ -28,7 +28,7 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
 
           element.innerHTML = string;
 
-          compiler.parser.parseAll(element);
+          compiler.parser.parse(element);
 
           return element;
     }

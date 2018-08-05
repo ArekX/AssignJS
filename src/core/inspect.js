@@ -19,6 +19,7 @@ lib(['config'], function CoreInspect(config) {
         isInputElement: isInputElement,
         isElementList: isElementList,
         isCompiledElement: isCompiledElement,
+        isCompiledTemplate: isCompiledTemplate,
         getElementObject: getElementObject,
         isElementParent: isElementParent
     };
@@ -94,6 +95,10 @@ lib(['config'], function CoreInspect(config) {
 
     function isCompiledElement(element) {
         return (element[config.assignParam] || {}).compiled || false;
+    }
+
+    function isCompiledTemplate(element) {
+        return (element[config.assignParam] || {}).template || false;
     }
 
     function getElementObject(element) {

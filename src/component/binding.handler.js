@@ -86,7 +86,7 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
             }
 
             io.output.write(value);
-            parser.parseAll(element);
+            parser.parse(element);
         }
     }
 });

@@ -117,7 +117,7 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
         }
 
         self.io.output.write(result !== null ? result : '');
-        parser.parseAll(self.element);
+        parser.parse(self.element);
     }
 
     function runAfterInit() {
