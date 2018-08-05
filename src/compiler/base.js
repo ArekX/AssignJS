@@ -13,7 +13,8 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
 
         this.compiler = {
             addHandler: addHandler,
-            compileElement: compileElement
+            compileElement: compileElement,
+            writeElementObject: writeElementObject
         };
 
         return;
@@ -35,7 +36,14 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
                 return;
             }
 
-            var elementObject = inspect.getElementObject(element) || {};
+            var elementObject = inspect.getElementObject(element) || null;
+
+            if (elementObject === null) {
+                elementObject = {};
+                writeElementObject(element, elementObject);
+            }
+
+
             var counter = 0;
 
             if (lines.length === 0) {
@@ -60,7 +68,6 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
                     }
 
                     compiled = elementObject.compiled = true;
-                    element[configManager.assignParam] = elementObject;
 
                     runHandler(line, element);
                     break;
@@ -75,5 +82,9 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
                     element: element
                 });
             }
+        }
+
+        function writeElementObject(element, object) {
+            element[configManager.assignParam] = object;
         }
     });

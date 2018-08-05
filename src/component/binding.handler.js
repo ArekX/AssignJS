@@ -54,7 +54,7 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
 
         var io = elementObject.io = ioManager.resolve(element, result.ioString);
 
-        var handlers = result.eventType === '@' ? component.props : component.methods;
+        var handlers = result.eventType === '@' ? component.context.props : component.context;
 
         var output = outputResult.bind(io.output);
 

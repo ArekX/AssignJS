@@ -2,8 +2,8 @@
 // @import: component/base.js
 // @import: component/props.js
 
-lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
-    function ComponentHandler(component, configManager, inspect, compiler, html, task) {
+lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
+    function ComponentHandler(component, configManager, inspect, compiler, html, task, assert) {
 
     var config = configManager.component;
 
@@ -13,14 +13,18 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
     var ComponentHandler = {
         _boundBeforeUpdate: null,
         _boundAfterUpdate: null,
+        _childIdCounter: 0,
+        _bindChild: bindChild,
         element: null,
         elementObject: null,
         parent: null,
         io: null,
         def: null,
         props: null,
+        children: null,
         init: initialize,
         bind: bind,
+        bindInputProp: bindInputProp,
         initializeView: initializeView,
         propsChanged: propsChanged
     };
@@ -30,6 +34,9 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
 
     function initialize(componentDef) {
         this.def = componentDef;
+        this.children = {};
+        this._childIdCounter = 0;
+
         this.context = Object.create(componentDef);
 
         for(var name in componentDef) {
@@ -49,12 +56,32 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
         this.context.handler = this;
     }
 
-    function bind(element, io, parent) {
-        this.element = element;
-        this.elementObject = inspect.getElementObject(element);
+    function bind(config) {
+        this.element = config.element;
+        this.elementObject = inspect.getElementObject(config.element);
         this.elementObject.component = this;
-        this.io = this.elementObject.io = io;
-        this.parent = parent;
+
+        this.io = this.elementObject.io = config.io;
+
+        this.parent = config.parent;
+        this.elementObject.parentComponent = config.parent;
+        this.parent && this.parent._bindChild(this, config.ref);
+
+        this.context.parent = this.parent;
+        this.context.children = this.children;
+        this.context.element = this.element;
+
+        resolveProps(this, config.inputProps);
+    }
+
+    function bindChild(child, refName) {
+        assert.keyNotSet(refName, this.children, 'This child reference is already set.', {
+          ref: refName,
+          element: this.element,
+          childElement: child.element
+        });
+
+        this.children[refName || this._childIdCounter++] = child.context;
     }
 
     function initializeView() {
@@ -110,6 +137,55 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
         this.propManager.changed.register(this.propsChanged.bind(this));
     }
 
+    function bindInputProp(propName, type, initialValue) {
+        var inputProps = this.def.inputProps || [];
+
+        var assertResult = false;
+        var bindAs = propName;
+
+        if (inspect.isArray(inputProps)) {
+            assertResult = inputProps.indexOf(propName) !== -1;
+        } else {
+            assertResult = propName in inputProps;
+            bindAs = inputProps[propName];
+        }
+
+        assert.isTrue(
+          assertResult,
+          'Prop name is not defined in input props.',
+          {
+              propName: propName,
+              inputProps: inputProps,
+              element: this.element
+          }
+        );
+
+        var propManager = this.propManager;
+
+        if (type === 'literal') {
+            propManager.set(bindAs, initialValue);
+            return;
+        }
+
+        assert.isTrue(
+          this.parent !== null,
+          'This component has no parent to bind property from.',
+          {
+             property: propName,
+             element: this.element
+          }
+        );
+
+        this.parent.propManager.addChangeListener(
+            initialValue,
+            function(oldValue, newValue) {
+              propManager.set(bindAs, newValue);
+            }
+        );
+
+        propManager.set(bindAs, this.parent.propManager.get(initialValue));
+    }
+
     function propsChanged() {
         task.beforeRunOnce(this._boundBeforeUpdate);
         task.afterRunOnce(this._boundAfterUpdate);
@@ -125,5 +201,12 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task'],
     function runAfterUpdate() {
         this.context.afterUpdate && this.context.afterUpdate();
         this.parent && this.parent._boundAfterUpdate();
+    }
+
+    function resolveProps(component, props) {
+          for(var i = 0; i < props.length; i++) {
+              var prop = props[i];
+              component.bindInputProp.apply(component, prop);
+          }
     }
 });

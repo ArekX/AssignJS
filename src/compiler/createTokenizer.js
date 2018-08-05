@@ -21,7 +21,7 @@ lib(['compiler', 'object'], function CompilerTokens(compiler, object) {
         this.fullMatch = new RegExp(fullSource);
     }
 
-    function consume(line) {
+    function consume(line, data) {
         var result = {};
 
         for(var i = 0; i < this.tokens.length; i++) {
@@ -32,7 +32,7 @@ lib(['compiler', 'object'], function CompilerTokens(compiler, object) {
             }
 
             if (match.index === 0) {
-                result[part.name] = part.parse ? part.parse(match, result) : match[0];
+                result[part.name] = part.parse ? part.parse(match, result, data) : match[0];
             }
 
             line = line.substring(match[0].length);

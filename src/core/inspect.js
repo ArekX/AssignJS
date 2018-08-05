@@ -97,10 +97,6 @@ lib(['config'], function CoreInspect(config) {
     }
 
     function getElementObject(element) {
-        if (!isCompiledElement(element)) {
-            return null;
-        }
-
         return element[config.assignParam];
     }
 

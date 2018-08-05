@@ -4,7 +4,8 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
 
     var config = configManager.component = {
         handlerType: 'base',
-        propsType: 'base'
+        propsType: 'base',
+        nameRegex:  /^\s*[a-zA-Z_][_a-zA-Z0-9]+(\.[a-zA-Z_][_a-zA-Z0-9]*)*/
     };
 
     var componentDefs = {};
@@ -14,10 +15,31 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
         propsFactory: createFactory(),
         add: addComponent,
         create: createComponent,
-        findParent: findParent
+        findParent: findParent,
+        compile: compile
     };
 
+    function compile(string, parent, container) {
+          var element = container || document.createElement('compiled');
+
+          compiler.writeElementObject(element, {
+             parentComponent: parent.handler
+          });
+
+          element.innerHTML = string;
+
+          compiler.parser.parseAll(element);
+
+          return element;
+    }
+
     function addComponent(name, def) {
+        assert.isTrue(
+          name.match(config.nameRegex) !== null,
+          'Component name is invalid.',
+          {name: name, def: def}
+        );
+
         def = !inspect.isPlainObject(def) ? {template: def} : def;
 
         if (!def.handler) {
@@ -37,12 +59,27 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
     }
 
     function findParent(element) {
+        var ob = inspect.getElementObject(element);
+
+        if (ob.parentComponent) {
+           return ob.parentComponent;
+        }
+
         var parent = element;
 
         while((parent = parent.parentElement) !== null) {
-            var ob = inspect.getElementObject(parent);
-            if (ob && ob.component) {
+            ob = inspect.getElementObject(parent);
+
+            if (!ob) {
+               continue;
+            }
+
+            if (ob.component) {
                 return ob.component;
+            }
+
+            if (ob.parentComponent) {
+               return ob.parentComponent;
             }
         }
 
