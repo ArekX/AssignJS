@@ -5,3 +5,4 @@
 // @import: core/createFactory.js
 // @import: core/html.js
 // @import: core/task.js
+// @import: core/events.js

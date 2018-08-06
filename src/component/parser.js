@@ -57,6 +57,10 @@ function ComponentParser(compiler, componentManager, assert, configManager, io, 
             ref: result.ref
         });
 
+        elementObject.parentChanged = function(oldParent, newParent) {
+            newParent === null && component.destroy();
+        };
+
         component.initializeView();
     }
 

@@ -1,4 +1,3 @@
-// @import: events
 
 lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component, events, inspect, assert) {
 
@@ -26,11 +25,11 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     component.propsFactory.add('base', Props);
     component.propsFactory.setDefaultType('base');
 
-    function bind(propInitializer) {
+    function bind(propInitializer, context) {
         this._changeListeners = {};
         this._dataStructure = {};
         this._propVals = {};
-        this.changed = events.factory.createDefault(this);
+        this.changed = events.create(context);
 
         if (propInitializer) {
             this.setMultiple(propInitializer());
@@ -90,11 +89,19 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     }
 
     function addChangeListener(name, listener) {
-        if (!this._changeListeners[name]) {
-            this._changeListeners[name] = [];
+        var changeListeners = this._changeListeners;
+        if (!changeListeners[name]) {
+            changeListeners[name] = [];
         }
 
-        this._changeListeners[name].push(listener);
+        changeListeners[name].push(listener);
+
+        return function() {
+            changeListeners[name].splice(
+              changeListeners[name].indexOf(listener),
+              1
+            );
+        }
     }
 
     function removeChangeListener(name, listener) {

@@ -21,18 +21,46 @@ lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, obje
 
     function write(contents) {
         this.oldContents = null;
-        this.element.innerHTML = '';
+        var element = this.element;
+
+        var oldChildrenParents = [];
+        var oldChildren = [];
+        for(var i = 0; i < element.children.length; i++) {
+           oldChildren.push(element.children[i]);
+           oldChildrenParents.push(element.children[i].parentElement);
+        }
+
+        element.innerHTML = '';
 
         if (contents && inspect.isIterable(contents)) {
             for (var i = 0; i < contents.length; i++) {
-                writeItem(this.element, contents[i]);
+                writeItem(element, contents[i]);
             }
 
+            checkRemovedChildren();
             return;
         }
 
         this.oldContents = contents;
-        writeItem(this.element, contents);
+        writeItem(element, contents);
+        checkRemovedChildren();
+
+        function checkRemovedChildren() {
+            while(oldChildren.length) {
+                var child = oldChildren.shift();
+                var oldChildParent = oldChildrenParents.shift();
+
+                var r = inspect.getElementObject(child);
+
+                if (r === null) {
+                   continue;
+                }
+
+                if (oldChildParent !== child.parentElement) {
+                    r.parentChanged && r.parentChanged(oldChildParent, child.parentElement);
+                }
+            }
+        }
     }
 
     function writeItem(element, contents) {

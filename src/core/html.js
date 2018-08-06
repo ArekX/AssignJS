@@ -10,7 +10,7 @@ lib(function CoreHtml() {
     RawHtmlContents.prototype.toElement = function(containerTag) {
         var element = document.createElement(containerTag || 'div');
         element.innerHTML = this.contents;
-        return element;
+        return element.children.length === 1 ? element.children[0] : element;
     }
 
     this.html = {

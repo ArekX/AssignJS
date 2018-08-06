@@ -102,7 +102,7 @@ lib(['config'], function CoreInspect(config) {
     }
 
     function getElementObject(element) {
-        return element[config.assignParam];
+        return element[config.assignParam] || null;
     }
 
     function isElementList(element) {

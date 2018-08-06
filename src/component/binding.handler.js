@@ -1,4 +1,3 @@
-// @import: events
 
 lib(['compiler', 'config', 'inspect', 'assert', 'io', 'component', 'task'],
 function ComponentBindingHandler(compiler, configManager, inspect, assert, ioManager, componentManager, task) {
@@ -80,10 +79,6 @@ function ComponentBindingHandler(compiler, configManager, inspect, assert, ioMan
 
         function outputResult() {
             var value = result.name in handlers ? handlers[result.name] : '';
-
-            if (!io.output.shouldWrite(value)) {
-                return;
-            }
 
             io.output.write(value);
             parser.parse(element);

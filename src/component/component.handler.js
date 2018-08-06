@@ -15,6 +15,9 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
         _boundAfterUpdate: null,
         _childIdCounter: 0,
         _bindChild: bindChild,
+        _unbindChild: unbindChild,
+        _childRef: null,
+        _subscriptions: null,
         element: null,
         elementObject: null,
         parent: null,
@@ -23,6 +26,7 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
         props: null,
         children: null,
         init: initialize,
+        destroy: destroy,
         bind: bind,
         bindInputProp: bindInputProp,
         initializeView: initializeView,
@@ -35,6 +39,7 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
     function initialize(componentDef) {
         this.def = componentDef;
         this.children = {};
+        this._subscriptions = [];
         this._childIdCounter = 0;
 
         this.context = Object.create(componentDef);
@@ -47,7 +52,11 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
 
         var propManager = component.propsFactory.create(config.propsType);
 
-        this.props = this.context.props = propManager.bind(this.def.initialProps);
+        this.props = this.context.props = propManager.bind(
+          this.def.initialProps,
+          this.context
+        );
+
         this.propManager = this.context.propManager = propManager;
 
         this._boundBeforeUpdate = runBeforeUpdate.bind(this);
@@ -65,7 +74,8 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
 
         this.parent = config.parent;
         this.elementObject.parentComponent = config.parent;
-        this.parent && this.parent._bindChild(this, config.ref);
+        this._childRef = this.parent ?
+              this.parent._bindChild(this, config.ref) : null;
 
         this.context.parent = this.parent;
         this.context.children = this.children;
@@ -81,7 +91,17 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
           childElement: child.element
         });
 
-        this.children[refName || this._childIdCounter++] = child.context;
+        var childRef = refName || this._childIdCounter++;
+
+        this.children[childRef] = child.context;
+
+        return childRef;
+    }
+
+    function unbindChild(child) {
+        if (child._childRef in this.children) {
+            delete this.children[child._childRef];
+        }
     }
 
     function initializeView() {
@@ -176,14 +196,32 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
           }
         );
 
-        this.parent.propManager.addChangeListener(
+        var unsubscribe = this.parent.propManager.addChangeListener(
             initialValue,
             function(oldValue, newValue) {
               propManager.set(bindAs, newValue);
             }
         );
 
+        this._subscriptions.push(unsubscribe);
+
         propManager.set(bindAs, this.parent.propManager.get(initialValue));
+    }
+
+    function destroy() {
+        for(var childName in this.children) {
+            if (this.children.hasOwnProperty(childName)) {
+                this.children[childName].handler.destroy();
+            }
+        }
+
+        this.parent._unbindChild(this);
+
+        for(var i = 0; i < this._subscriptions.length; i++) {
+            this._subscriptions[i]();
+        }
+
+        this.context.afterDestroy && this.context.afterDestroy();
     }
 
     function propsChanged() {

@@ -3,7 +3,6 @@
 // @import: lib.js
 
 // @import: core
-// @import: events
 // @import: compiler
 // @import: io
 // @import: component

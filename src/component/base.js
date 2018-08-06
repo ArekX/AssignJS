@@ -19,14 +19,18 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
         compile: compile
     };
 
-    function compile(string, parent, container) {
-          var element = container || document.createElement('compiled');
+    function compile(string, parent, containerTag) {
+          var element = document.createElement(containerTag || 'compiled');
 
           compiler.writeElementObject(element, {
              parentComponent: parent.handler
           });
 
           element.innerHTML = string;
+
+          if (element.children.length === 1) {
+             element = element.children[0];
+          }
 
           compiler.parser.parse(element);
 
