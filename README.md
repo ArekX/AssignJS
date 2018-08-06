@@ -30,8 +30,8 @@ Properties can be defined inside the component and it will be tracked for change
   var vm = AssignJS.create();
   vm.component.add("app.hello", {
       template:  `Hello world at <span data-assign="@date"></span>`,
-      props: {
-         date: null
+      initialProps: function() {
+        return {date: null};
       },
       afterViewInit: function() {
          this.props.date = new Date();
@@ -56,8 +56,8 @@ AssignJS component doesn't require a template. You can just assign it to an elem
 <script>
   var vm = AssignJS.create();
   vm.component.add("app.hello", {
-      props: {
-         date: null
+      initialProps: function() {
+        return {date: null};
       },
       afterViewInit: function() {
          this.props.date = new Date();

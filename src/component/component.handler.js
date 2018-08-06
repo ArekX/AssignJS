@@ -47,7 +47,7 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
 
         var propManager = component.propsFactory.create(config.propsType);
 
-        this.props = this.context.props = propManager.bind(this.def.props || {});
+        this.props = this.context.props = propManager.bind(this.def.initialProps);
         this.propManager = this.context.propManager = propManager;
 
         this._boundBeforeUpdate = runBeforeUpdate.bind(this);

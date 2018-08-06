@@ -34,20 +34,27 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
     }
 
     function addComponent(name, def) {
-        assert.isTrue(
-          name.match(config.nameRegex) !== null,
-          'Component name is invalid.',
-          {name: name, def: def}
-        );
+        if (!def) {
+            def = name;
+        } else {
+            def.name = name;
+            def = !inspect.isPlainObject(def) ? {template: def, name: name} : def;
+        }
 
-        def = !inspect.isPlainObject(def) ? {template: def} : def;
+        assert.isString(def.name, 'Component name must be defined', {def: def});
+
+        assert.isTrue(
+          def.name.match(config.nameRegex) !== null,
+          'Component name is invalid.',
+          {def: def}
+        );
 
         if (!def.handler) {
             def.handler = config.handlerType;
         }
 
         assert.keyNotSet(name, componentDefs, 'This component already exists.');
-        componentDefs[name] = def;
+        componentDefs[def.name] = def;
 
         return module;
     }

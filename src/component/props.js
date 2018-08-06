@@ -18,7 +18,6 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
         bind: bind,
         beginChangeMode: beginChangeMode,
         endChangeMode: endChangeMode,
-        define: defineProperty,
         set: setProp,
         get: getProp,
         setMultiple: setMultiple
@@ -27,16 +26,14 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
     component.propsFactory.add('base', Props);
     component.propsFactory.setDefaultType('base');
 
-    function bind(props) {
-        this._dataStructure = {};
+    function bind(propInitializer) {
         this._changeListeners = {};
+        this._dataStructure = {};
         this._propVals = {};
-        this._propFunctions = {};
-
         this.changed = events.factory.createDefault(this);
 
-        if (props) {
-            this.setMultiple(props);
+        if (propInitializer) {
+            this.setMultiple(propInitializer());
         }
 
         return this._dataStructure;
@@ -145,25 +142,6 @@ lib(['component', 'events', 'inspect', 'assert'], function EventsGroup(component
 
         this.endChangeMode();
         this.triggerChange(names, oldValues, values);
-    }
-
-    function defineProperty(name, getter, setter) {
-        assert.keyNotSet(name, this._propFunctions, 'This property is already defined.');
-
-        this._propFunctions[name] = {
-            getter: getter,
-            setter: setter
-        };
-
-        var self = this;
-
-        Object.defineProperty(this._dataStructure, name, {
-            get: getter,
-            set: function(value) {
-                setter(value);
-                self.triggerChange(name, null, value);
-            }
-        });
     }
 
     function beginChangeMode() {
