@@ -49,8 +49,8 @@ Properties can be defined inside the component and it will be tracked for change
 AssignJS component doesn't require a template. You can just assign it to an element and that element will be controlled by that component.
 
 ```html
-<div [as]="app.hello">
-   Hello world at <span [as]="@date"></span>
+<div as="app.hello">
+   Hello world at <span as="@date"></span>
 </div>
 <script src="assignjs.js"></script>
 <script>

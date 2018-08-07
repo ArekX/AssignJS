@@ -1,20 +1,17 @@
 lib(['inspect', 'compiler', 'config', 'addRunner', 'events'],
 function CompilerParser(inspect, compiler, configManager, addRunner, events) {
+    var processors = [];
 
     var config = configManager.parser = {
         startContainer: document,
-        parseLineRegex: /(\[assign(-[^\]]+)?\]|\[as(-[^\]]+)?\]|data-assign(-[^\=]+)?)/,
-        selector: '[data-assign]:not([data-assignjs-parsed]), [\\[assign\\]]:not([data-assignjs-parsed]), [\\[as\\]]:not([data-assignjs-parsed])',
-        templateSelector: '[data-template]:not([data-template-parsed]), [\\[template\\]]:not([data-template-parsed])',
-        initializedAttribute: 'data-assignjs-parsed',
-        initializedTemplateAttribute: 'data-template-parsed',
+        parseLineRegex: /^(assign|as|data-assign|data-as)(-[^-]+)*/
     };
 
-
     compiler.parser = {
-        findActiveElements: findActiveElements,
+        processors: processors,
         getParseLines: getParseLines,
-        parse: parseAll
+        parse: parseAll,
+        addProcessor: addProcessor
     };
 
     var eventList = compiler.parser.events = events.createGroup([
@@ -37,63 +34,42 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
         eventList.afterFirstRun.trigger();
     });
 
+    function addProcessor(processor) {
+        processors.push(processor);
+        processors.sort(function(a, b) {
+            return b.priority - a.priority;
+        });
+    }
+
     function parseAll(startContainer) {
         var container = startContainer || config.startContainer;
-        parseTemplates(container);
-        parseElements(container);
-    }
-
-    function parseTemplates(container) {
-        var templates = findActiveTemplates(container);
-        for (var i = 0; i < templates.length; i++) {
-            parseTemplate(templates[i]);
+        for(var i = 0; i < processors.length; i++) {
+            processors[i].parseAll(container);
         }
-    }
-
-    function parseElements(container) {
-        var elements = findActiveElements(container);
-        for (var i = 0; i < elements.length; i++) {
-            parseElement(elements[i]);
-        }
-    }
-
-    function findActiveElements(element) {
-        return element.querySelectorAll(config.selector);
-    }
-
-    function findActiveTemplates(element) {
-        return element.querySelectorAll(config.templateSelector);
-    }
-
-    function parseTemplate(node) {
-        if (inspect.isCompiledTemplate(node)) {
-            return;
-        }
-
-        if (node.parentElement === null) {
-            return;
-        }
-
-        compiler.compileTemplate(node);
-        node.setAttribute(config.initializedTemplateAttribute, true);
-    }
-
-    function parseElement(node) {
-        if (inspect.isCompiledElement(node)) {
-            return;
-        }
-
-        compiler.compileElement(node, getParseLines(node));
-        node.setAttribute(config.initializedAttribute, true);
     }
 
     function getParseLines(element) {
-        var lines = [];
+        var lines = [], i, j;
         var attributes = element.attributes;
 
-        for(var i = 0; i < attributes.length; i++) {
-            if (!attributes[i].name.match(config.parseLineRegex)) {
+        for(i = 0; i < attributes.length; i++) {
+            var match = attributes[i].name.match(config.parseLineRegex);
+            if (!match) {
                continue;
+            }
+
+            if (match[2]) {
+              var skip = false;
+              for(j = 0; j < processors.length; j++) {
+                  if (processors[j].lines && processors[j].lines.indexOf(match[2]) !== -1) {
+                     skip = true;
+                     break;
+                  }
+              }
+
+              if (skip) {
+                 continue;
+              }
             }
 
             lines.push(attributes[i].value);

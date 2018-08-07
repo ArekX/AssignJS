@@ -209,6 +209,8 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
     }
 
     function destroy() {
+        this.context.beforeDestroy && this.context.beforeDestroy();
+
         for(var childName in this.children) {
             if (this.children.hasOwnProperty(childName)) {
                 this.children[childName].handler.destroy();

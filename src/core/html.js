@@ -16,7 +16,8 @@ lib(function CoreHtml() {
     this.html = {
         isRawHtml: isRawHtml,
         toRawHtml: toRawHtml,
-        toTextNode: toTextNode
+        toTextNode: toTextNode,
+        create: create
     };
 
     function toTextNode(text) {
@@ -29,5 +30,27 @@ lib(function CoreHtml() {
 
     function toRawHtml(contents) {
         return new RawHtmlContents(contents);
+    }
+
+    function create(tag, attributes, events) {
+        var el = document.createElement(tag);
+
+        if (attributes) {
+          for(var attr in attributes) {
+              if (attributes.hasOwnProperty(attr)) {
+                 el.setAttribute(attr, attributes[attr]);
+              }
+          }
+        }
+
+        if (events) {
+          for(var eventName in events) {
+              if (events.hasOwnProperty(eventName)) {
+                 el.addEventListener(eventName, events[eventName]);
+              }
+          }
+        }
+
+        return el;
     }
 });
