@@ -36,9 +36,11 @@ function CompilerParser(inspect, compiler, configManager, addRunner, events) {
 
     function addProcessor(processor) {
         processors.push(processor);
-        processors.sort(function(a, b) {
+        processors.sort(compareProcessors);
+
+        function compareProcessors(a, b) {
             return b.priority - a.priority;
-        });
+        }
     }
 
     function parseAll(startContainer) {
