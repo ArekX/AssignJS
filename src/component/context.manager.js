@@ -30,11 +30,11 @@ lib(['component', 'object'], function(component, object) {
         this._values = {};
     }
 
-    function listen(name, callback) {
+    function listen(name, callback, defaultValue) {
         var self = this;
         var oldValue = self.getValue(name);
         var subscription = this._manager.changed.register(function() {
-            var newValue = self.getValue(name);
+            var newValue = self.getValue(name, defaultValue);
             if (oldValue !== newValue) {
                 callback(newValue);
                 oldValue = newValue;
@@ -43,14 +43,14 @@ lib(['component', 'object'], function(component, object) {
         this._subscriptions.push(subscription);
     }
 
-    function getValue(propName) {
+    function getValue(propName, defaultValue) {
         propName = this.resolveName(propName);
 
         if (propName in this._values) {
             return this._values[propName];
         }
 
-        return this._manager.get(propName);
+        return this._manager.get(propName, defaultValue);
     }
 
     function resolveName(propName) {

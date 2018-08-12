@@ -34,9 +34,9 @@ Properties can be defined inside the component and it will be tracked for change
         return {date: null};
       },
       afterViewInit: function() {
-         this.props.date = new Date();
+         this.props.set('date', new Date());
          setInterval(() => {
-             this.props.date = new Date();
+             this.props.set('date', new Date());
          }, 1000);
       }
   });
@@ -60,9 +60,9 @@ AssignJS component doesn't require a template. You can just assign it to an elem
         return {date: null};
       },
       afterViewInit: function() {
-         this.props.date = new Date();
+         this.props.set('date', new Date());
          setInterval(() => {
-             this.props.date = new Date();
+             this.props.set('date', new Date());
          }, 1000);
       }
   });

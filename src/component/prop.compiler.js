@@ -33,6 +33,8 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
 
   compiler.addHandler('prop.compiler', tokenizer.fullMatch, handleComponent);
 
+  function UnsetValue() {}
+
   function handleComponent(line, element) {
       var result = tokenizer.consume(line);
       var ob = inspect.getElementObject(element);
@@ -44,9 +46,9 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       var currentValue = context.getValue(result.name);
 
       context.listen(result.name, function(newValue) {
-          currentValue = newValue;
+          currentValue = newValue instanceof UnsetValue ? '' : newValue;
           task.push(output, null, true);
-      });
+      }, UnsetValue);
 
       task.push(output, null, true);
 
