@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['io'], function IoAttribute(io) {
+lib(['io'], function(io) {
     io.addHandler('io.attribute', /\[.+\]/, {
         init: init,
         read: read,

@@ -1,4 +1,6 @@
 // @import: component/base.js
-// @import: component/component.handler.js
-// @import: component/parser.js
-// @import: component/binding.handler.js
+// @import: component/context.manager.js
+// @import: component/prop.manager.js
+// @import: component/prop.compiler.js
+// @import: component/component.manager.js
+// @import: component/component.compiler.js

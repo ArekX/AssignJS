@@ -1,6 +1,6 @@
 // @import: throwError.js
 
-lib(function CoreBase() {
+lib(function() {
     var core = this;
 
     var runners = [];

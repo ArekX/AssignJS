@@ -1,5 +1,5 @@
 
-lib(['compiler', 'object'], function CompilerTokens(compiler, object) {
+lib(['compiler', 'object'], function(compiler, object) {
     var TokenConsumer = {
         init: init,
         consume: consume,

@@ -2,42 +2,42 @@
 // @import: io
 
 lib(['compiler', 'component', 'assert', 'config', 'io', 'inspect', 'object'],
-function ComponentParser(compiler, componentManager, assert, configManager, io, inspect, object) {
+function(compiler, componentManager, assert, configManager, io, inspect, object) {
 
-    var config = configManager.component;
+    var config = configManager.component.compiler = {
+        defaultIO: '_:~html',
+        propRegex: /[^ ,:]+:(\(.+?\)|[^ ,]+)/g,
+        individualPropRegex: /([^ ,:]+):(\((.+?)\)|([^ ,]+))/,
+        propNameRegex: /(data-prop|\[prop)-([^\]]+)\]?/,
+        refNameRegex: /(data-ref|\[ref\])/,
+        tokenizerConfig: [
+            {
+                name: 'name',
+                regex: configManager.component.nameRegex
+            },
+            {
+                name: 'ref',
+                regex: /(:\s*[a-zA-Z_][_a-zA-Z0-9]+(\.[a-zA-Z_][_a-zA-Z0-9]*)*)?/,
+                parse: parseRef
+            },
+            {
+                name: 'ioString',
+                regex: /(\s+\|\s+([^:\ ]+)(:([^\ ]+))?)?/,
+                parse: parseIo
+            },
+            {
+                name: 'inputProps',
+                regex: /(\s+\<\-(.+))?\s*$/,
+                parse: parseProps
+            }
+        ]
+    };
 
-    config.defaultIO = '_:~html';
-    config.propRegex = /[^ ,:]+:(\(.+?\)|[^ ,]+)/g;
-    config.individualPropRegex = /([^ ,:]+):(\((.+?)\)|([^ ,]+))/;
-    config.propNameRegex = /(data-prop|\[prop)-([^\]]+)\]?/;
-    config.refNameRegex = /(data-ref|\[ref\])/;
-    config.tokenizerConfig = [
-        {
-            name: 'name',
-            regex: config.nameRegex
-        },
-        {
-            name: 'ref',
-            regex: /(:\s*[a-zA-Z_][_a-zA-Z0-9]+(\.[a-zA-Z_][_a-zA-Z0-9]*)*)?/,
-            parse: parseRef
-        },
-        {
-            name: 'ioString',
-            regex: /(\s+\|\s+([^:\ ]+)(:([^\ ]+))?)?/,
-            parse: parseIo
-        },
-        {
-            name: 'inputProps',
-            regex: /(\s+\<\-(.+))?\s*$/,
-            parse: parseProps
-        }
-    ];
-
-    function InvalidParmValue() {}
+    function InvalidParamValue() {}
 
     var tokenizer = compiler.createTokenizer(config.tokenizerConfig);
 
-    compiler.addHandler('component', tokenizer.fullMatch, handleComponent);
+    compiler.addHandler('component.compiler', tokenizer.fullMatch, handleComponent);
 
     function handleComponent(line, element) {
         var result = tokenizer.consume(line, element);
@@ -47,19 +47,23 @@ function ComponentParser(compiler, componentManager, assert, configManager, io, 
         assert.isString(result.name, 'Parsed name is not valid.');
 
         var component = componentManager.create(result.name);
-        elementObject.component = component;
+        var parentComponent = componentManager.findParent(element);
 
         component.bind({
             element: element,
             io: io.resolve(element, result.ioString),
-            parent: componentManager.findParent(element),
+            parent: parentComponent,
             inputProps: result.inputProps,
             ref: result.ref
         });
 
+        elementObject.parentComponent = parentComponent;
+
         elementObject.parentChanged = function(oldParent, newParent) {
             newParent === null && component.destroy();
         };
+
+        elementObject.context = componentManager.createContext(component.props);
 
         component.initializeView();
     }
@@ -110,10 +114,10 @@ function ComponentParser(compiler, componentManager, assert, configManager, io, 
     }
 
     function getLiteralValue(literalString, param, element) {
-        var value = object.parseJson(literalString, InvalidParmValue);
+        var value = object.parseJson(literalString, InvalidParamValue);
 
         assert.isFalse(
-          value === InvalidParmValue,
+          value === InvalidParamValue,
           "Cannot parse param. Invalid Value.", {
             param: param,
             valueToParse: literalString,

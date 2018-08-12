@@ -1,20 +1,24 @@
 // @import: core
 lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
-  function ComponentsBase(configManager, createFactory, assert, compiler, inspect) {
+function(configManager, createFactory, assert, compiler, inspect) {
 
     var config = configManager.component = {
         handlerType: 'base',
         propsType: 'base',
+        contextType: 'base',
         nameRegex:  /^\s*[a-zA-Z_][_a-zA-Z0-9]+(\.[a-zA-Z_][_a-zA-Z0-9]*)*/
     };
 
     var componentDefs = {};
 
     var module = this.component = {
-        handlerFactory: createFactory(),
+        componentFactory: createFactory(),
         propsFactory: createFactory(),
+        contextFactory: createFactory(),
         add: addComponent,
         create: createComponent,
+        createProps: createProps,
+        createContext: createContext,
         findParent: findParent,
         compile: compile
     };
@@ -66,7 +70,15 @@ lib(['config', 'createFactory', 'assert', 'compiler', 'inspect'],
     function createComponent(name) {
         assert.keySet(name, componentDefs, 'This component is not defined.');
         var def = componentDefs[name];
-        return this.handlerFactory.create(def.handler, [def]);
+        return this.componentFactory.create(def.handler, [def]);
+    }
+
+    function createProps(initializer, context) {
+        return this.propsFactory.create(config.propsType, [initializer, context]);
+    }
+
+    function createContext(props) {
+        return this.contextFactory.create(config.contextType, [props]);
     }
 
     function findParent(element) {

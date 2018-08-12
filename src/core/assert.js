@@ -1,7 +1,7 @@
 // @import: core/base.js
 // @import: core/inspect.js
 
-lib(['inspect', 'throwError'], function CoreAssert(inspect, throwCoreError) {
+lib(['inspect', 'throwError'], function(inspect, throwCoreError) {
 
     this.assert = {
         keyNotSet: assertKeyNotSet,
@@ -24,7 +24,7 @@ lib(['inspect', 'throwError'], function CoreAssert(inspect, throwCoreError) {
         isUndefined: assertIsUndefined,
         isArray: assertIsArray,
         contains: assertContains,
-        doesNotContain: assertDoesNotContains 
+        doesNotContain: assertDoesNotContains
     };
 
     return;

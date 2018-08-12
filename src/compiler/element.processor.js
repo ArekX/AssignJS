@@ -1,7 +1,7 @@
 // @import: compiler/parser.js
 
 lib(['inspect', 'compiler', 'config'],
-function CompilerTemplatePreProcessor(inspect, compiler, configManager) {
+function(inspect, compiler, configManager) {
     var preprocessors = [];
 
     var config = configManager.parser.element = {

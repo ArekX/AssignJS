@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['io'], function IoBase(io) {
+lib(['io'], function(io) {
 
     io.addHandler('io.null', /_/, {
       read: nullFunction,

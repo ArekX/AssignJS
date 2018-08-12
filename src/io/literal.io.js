@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['io', 'object'], function IoLiteral(io, object) {
+lib(['io', 'object'], function(io, object) {
     io.addHandler('io.literal', /\(.+\)/, {
         init: init,
         read: read,

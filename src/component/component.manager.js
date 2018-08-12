@@ -1,9 +1,7 @@
-// @import: core
-// @import: component/base.js
-// @import: component/props.js
+// @import: component/prop.manager.js
 
 lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
-    function ComponentHandler(component, configManager, inspect, compiler, html, task, assert) {
+function(component, configManager, inspect, compiler, html, task, assert) {
 
     var config = configManager.component;
 
@@ -33,8 +31,8 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
         propsChanged: propsChanged
     };
 
-    component.handlerFactory.add('base', ComponentHandler);
-    component.handlerFactory.setDefaultType('base');
+    component.componentFactory.add('base', ComponentHandler);
+    component.componentFactory.setDefaultType('base');
 
     function initialize(componentDef) {
         this.def = componentDef;
@@ -50,14 +48,12 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
             }
         }
 
-        var propManager = component.propsFactory.create(config.propsType);
-
-        this.props = this.context.props = propManager.bind(
-          this.def.initialProps,
-          this.context
+        var props = component.createProps(
+            this.def.initialProps,
+            this.context
         );
 
-        this.propManager = this.context.propManager = propManager;
+        this.props = this.context.props = props;
 
         this._boundBeforeUpdate = runBeforeUpdate.bind(this);
         this._boundAfterUpdate = runAfterUpdate.bind(this);
@@ -145,16 +141,18 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
 
         this.context.initialized = true;
 
+        var subscription = this.props.changed.register(this.propsChanged.bind(this));
+        this._subscriptions.push(subscription);
+
         if (inspect.isFunction(this.def.template)) {
             var self = this;
-            this.propManager.changed.register(function() {
+            subscription = this.props.changed.register(function() {
                 task.push(function() {
                     renderTemplate(self);
                 });
             });
+            this._subscriptions.push(subscription);
         }
-
-        this.propManager.changed.register(this.propsChanged.bind(this));
     }
 
     function bindInputProp(propName, type, initialValue) {
@@ -180,10 +178,10 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
           }
         );
 
-        var propManager = this.propManager;
+        var props = this.props;
 
         if (type === 'literal') {
-            propManager.set(bindAs, initialValue);
+            props.set(bindAs, initialValue);
             return;
         }
 
@@ -196,16 +194,16 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
           }
         );
 
-        var unsubscribe = this.parent.propManager.addChangeListener(
-            initialValue,
-            function(oldValue, newValue) {
-              propManager.set(bindAs, newValue);
+        var parentProps = this.parent.props;
+        var subscription = parentProps.changed.register(function() {
+            var newValue = parentProps.get(propName);
+            if (newValue !== props.get(bindAs)) {
+                props.set(bindAs, newValue);
             }
-        );
+        });
 
-        this._subscriptions.push(unsubscribe);
-
-        propManager.set(bindAs, this.parent.propManager.get(initialValue));
+        this._subscriptions.push(subscription);
+        props.set(bindAs, oldValue);
     }
 
     function destroy() {
@@ -220,7 +218,7 @@ lib(['component', 'config', 'inspect', 'compiler', 'html', 'task', 'assert'],
         this.parent._unbindChild(this);
 
         for(var i = 0; i < this._subscriptions.length; i++) {
-            this._subscriptions[i]();
+            this._subscriptions[i].remove();
         }
 
         this.context.afterDestroy && this.context.afterDestroy();

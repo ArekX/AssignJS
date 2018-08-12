@@ -1,12 +1,11 @@
-lib(['inspect'], function CoreObject(inspect) {
+lib(['inspect'], function(inspect) {
 
     this.object = {
         create: createObject,
-        extend: extendObject,
         merge: merge,
         clone: clone,
         parseJson: parseJson,
-        getValue: getValue
+        resolveValue: resolveValue
     };
 
     return;
@@ -16,11 +15,7 @@ lib(['inspect'], function CoreObject(inspect) {
         obItem.init && obItem.init.apply(obItem, params);
         return obItem;
     }
-
-    function extendObject(ob, parentObject) {
-        return merge(true, Object.create(parentObject), ob);
-    }
-
+    
     function merge() {
         var mergedConfig = {};
         var args = arguments;
@@ -49,21 +44,21 @@ lib(['inspect'], function CoreObject(inspect) {
 
         return mergedConfig;
 
-        function recursiveMerge(configA, configB) {
-            var merged = configA;
+        function recursiveMerge(objectA, objectB) {
+            var merged = objectA;
 
-            for(var configName in configB) {
-                if (!configB.hasOwnProperty(configName)) {
+            for(var configName in objectB) {
+                if (!objectB.hasOwnProperty(configName)) {
                     continue;
                 }
 
-                var itemB = configB[configName];
-                var itemA = configA[configName];
+                var itemB = objectB[configName];
+                var itemA = objectA[configName];
 
                 if (
+                    useRecursiveMerge &&
                     (typeof itemB === "object" && itemB !== null && itemB.constructor === mergedConfig.constructor) &&
-                    (typeof itemA === "object" && itemA !== null && itemA.constructor === mergedConfig.constructor) &&
-                    useRecursiveMerge
+                    (typeof itemA === "object" && itemA !== null && itemA.constructor === mergedConfig.constructor)
                     ) {
                     itemA = recursiveMerge(itemA, itemB);
                 } else {
@@ -108,7 +103,7 @@ lib(['inspect'], function CoreObject(inspect) {
             for (var key in object) {
                 if (object.hasOwnProperty(key)) {
                     var value = object[key];
-                    cloned[key] = isObject(value) ? process(value) : value; 
+                    cloned[key] = isObject(value) ? process(value) : value;
                 }
             }
 
@@ -116,8 +111,8 @@ lib(['inspect'], function CoreObject(inspect) {
         }
     }
 
-    
-    function getValue(object, propName, defaultValue) {
+
+    function resolveValue(object, propName, defaultValue) {
         if (propName in object) {
             return object[propName];
         }
@@ -126,7 +121,7 @@ lib(['inspect'], function CoreObject(inspect) {
 
         varparts = propName.split('.');
 
-        for(var i = 0; i < varparts.length; i++) {
+        for(var i = 0; i < varparts.length - 1; i++) {
             if (!(varparts[i] in walker)) {
                 return defaultValue;
             }
@@ -134,10 +129,12 @@ lib(['inspect'], function CoreObject(inspect) {
             walker = walker[varparts[i]];
         }
 
-        if (!isDefined(walker)) {
+        var lastName = varparts[varparts.length - 1];
+
+        if (!(lastName in walker)) {
             return defaultValue;
         }
 
-        return walker;
+        return walker[lastName];
     }
 });

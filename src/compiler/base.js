@@ -1,7 +1,7 @@
 // @import: core
 
 lib(['inspect', 'throwError', 'assert', 'config', 'task'],
-    function CompilerBase(inspect, throwError, assert, configManager, task) {
+    function(inspect, throwError, assert, configManager, task) {
 
         var handlerList = {};
 

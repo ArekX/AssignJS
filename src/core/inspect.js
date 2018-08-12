@@ -1,6 +1,6 @@
 // @import: core/base.js
 
-lib(['config'], function CoreInspect(config) {
+lib(['config'], function(config) {
 
     var plainObjectConstructor = ({}).constructor;
 
@@ -107,6 +107,30 @@ lib(['config'], function CoreInspect(config) {
 
     function isElementList(element) {
         return (element instanceof NodeList) || (element instanceof HTMLCollection);
+    }
+
+    function getValue(object, propName, defaultValue) {
+        if (propName in object) {
+            return object[propName];
+        }
+
+        var walker = object;
+
+        varparts = propName.split('.');
+
+        for(var i = 0; i < varparts.length; i++) {
+            if (!(varparts[i] in walker)) {
+                return defaultValue;
+            }
+
+            walker = walker[varparts[i]];
+        }
+
+        if (!isDefined(walker)) {
+            return defaultValue;
+        }
+
+        return walker;
     }
 
     function isElementParent(elements, parent) {

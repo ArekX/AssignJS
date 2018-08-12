@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['io', 'inspect', 'html', 'object'], function IoBase(io, inspect, html, object) {
+lib(['io', 'inspect', 'html', 'object'], function(io, inspect, html, object) {
 
     io.addHandler('io.html', /\~html/, {
          init: init,

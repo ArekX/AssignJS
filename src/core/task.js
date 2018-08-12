@@ -1,4 +1,4 @@
-lib(function CoreTask() {
+lib(function() {
     var beforeOnceCalls = [];
     var afterOnceCalls = [];
     var actions = [];

@@ -1,6 +1,6 @@
 // import: core/object.js
 
-lib(['object'], function EventsCore(object) {
+lib(['object'], function(object) {
     var Emitter = {
         _callId: null,
         _calls: {},
@@ -37,19 +37,24 @@ lib(['object'], function EventsCore(object) {
         var calls = this._calls;
         var callId = this._callId++;
 
-        calls[callId] = call.bind(this._context);
+        calls[callId] = call
 
-        return function() {
-            delete calls[callId];
+        return {
+            call: call.bind(this._context),
+            remove: function() {
+                delete calls[callId];
+            }
         };
     }
 
-    function triggerAll(data) {
+    function triggerAll() {
+        var args = arguments;
         for(var callId in this._calls) {
-            if (this._calls.hasOwnProperty(callId)) {
-               if (this._calls[callId](data) === false) {
-                  return false;
-               }
+            if (
+                this._calls.hasOwnProperty(callId)
+                && this._calls[callId].apply(this._context, args) === false
+              ) {
+                return false;
             }
         }
 

@@ -1,6 +1,6 @@
 // @import: core
 
-lib(['assert', 'inspect', 'object'], function IoBase(assert, inspect, object) {
+lib(['assert', 'inspect', 'object'], function(assert, inspect, object) {
 
     var handlerList = {};
 

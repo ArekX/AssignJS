@@ -2,7 +2,7 @@
 // @import: core/assert.js
 // @import: core/inspect.js
 
-lib(['object', 'assert', 'inspect'], function CoreFactory(object, assert, inspect) {
+lib(['object', 'assert', 'inspect'], function(object, assert, inspect) {
     var Factory = {
         _types: null,
         _conflictHandler: null,
@@ -65,7 +65,7 @@ lib(['object', 'assert', 'inspect'], function CoreFactory(object, assert, inspec
     function createType(type, args) {
         assert.keySet(type, this._types, 'This type is not set!', {type: type, types: this._types});
         var type = this._types[type];
-        
+
         if (inspect.isFunction(type)) {
             return type.apply(type, args);
         }

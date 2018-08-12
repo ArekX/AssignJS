@@ -1,4 +1,4 @@
-lib(function CoreHtml() {
+lib(function() {
     function RawHtmlContents(contents) {
         this.contents = contents;
     }

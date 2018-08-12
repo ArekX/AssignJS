@@ -1,10 +1,10 @@
 lib(['inspect', 'compiler', 'config', 'addRunner', 'events'],
-function CompilerParser(inspect, compiler, configManager, addRunner, events) {
+function(inspect, compiler, configManager, addRunner, events) {
     var processors = [];
 
     var config = configManager.parser = {
         startContainer: document,
-        parseLineRegex: /^(assign|as|data-assign|data-as)(-[^-]+)*/
+        parseLineRegex: /^(assign|as|data-assign|data-as)(-[^-]+)*$/
     };
 
     compiler.parser = {
