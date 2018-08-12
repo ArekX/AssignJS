@@ -3,7 +3,7 @@
 lib(['object'], function(object) {
     var Emitter = {
         _callId: null,
-        _calls: {},
+        _calls: null,
         _context: null,
         init: initEvent,
         register: registerCall,
@@ -30,6 +30,7 @@ lib(['object'], function(object) {
 
     function initEvent(context) {
         this._context = context;
+        this._calls = {};
         this._callId = 0;
     }
 

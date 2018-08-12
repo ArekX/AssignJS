@@ -49,7 +49,7 @@ function(component, configManager, inspect, compiler, html, task, assert) {
         }
 
         var props = component.createProps(
-            this.def.initialProps,
+            this.def.initializeProps,
             this.context
         );
 

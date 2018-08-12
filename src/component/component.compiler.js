@@ -63,7 +63,7 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
             newParent === null && component.destroy();
         };
 
-        elementObject.context = componentManager.createContext(component.props);
+        elementObject.context = component.props;
 
         component.initializeView();
     }

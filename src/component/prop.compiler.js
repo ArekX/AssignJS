@@ -39,11 +39,16 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       var result = tokenizer.consume(line);
       var ob = inspect.getElementObject(element);
 
-      var context = findContext(element);
+      var context = componentManager.findContext(element);
+
+      assert.isTrue(context !== null, 'Context for prop not found.', {
+         prop: result.name,
+         element: element
+      });
 
       var io = ob.io = ioManager.resolve(element, result.ioString);
       var output = outputResult.bind(io.output);
-      var currentValue = context.getValue(result.name);
+      var currentValue = context.get(result.name);
 
       context.listen(result.name, function(newValue) {
           currentValue = newValue instanceof UnsetValue ? '' : newValue;
@@ -70,29 +75,6 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
           this.write(currentValue);
           parser.parse(element);
       }
-  }
-
-  function findContext(element) {
-    var ob = inspect.getElementObject(element);
-
-    var parent = element;
-
-    while((parent = parent.parentElement) !== null) {
-        ob = inspect.getElementObject(parent);
-
-        if (!ob) {
-           continue;
-        }
-
-        if (ob.context) {
-            return ob.context;
-        }
-    }
-
-    assert.isTrue(false, 'Context for prop not found.', {
-       prop: result.name,
-       element: element
-    });
   }
 
   function parsePropName(match, result) {

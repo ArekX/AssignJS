@@ -1,42 +1,67 @@
 
 lib(['component', 'events', 'inspect', 'assert', 'object'],
 function(component, events, inspect, assert, object) {
+    var idCounter = 0;
 
     var PropManager = {
+        _id: 0,
         _props: null,
         _context: null,
         _changeModeStack: [],
         _changeMode: false,
         _setValue: setValue,
+        _initializer: null,
+        _parent: null,
+        _children: null,
         changed: null,
         init: init,
         set: setProp,
+        listen: listen,
         setMultiple: setMultiple,
         get: getProp,
         update: updateProps,
         beginChangeMode: beginChangeMode,
         endChangeMode: endChangeMode,
         triggerChanged: triggerChanged,
-        createProperty: createProperty,
-        remove: removeProperty
+        create: createProperty,
+        remove: removeProperty,
+        reset: resetProps,
+        createChild: createChild,
+        destroy: destroy
     };
 
     component.propsFactory.add('base', PropManager);
     component.propsFactory.setDefaultType('base');
+
+    function UnsetValue() {}
 
     function Property(propOptions) {
         this.getter = propOptions.get;
         this.setter = propOptions.set;
     }
 
-    function createProperty(propOptions) {
+    function createPropertyInstance(propOptions) {
         return new Property(propOptions);
     }
 
     function init(initializer, context) {
-        this._props = initializer(createProperty);
+        this._initializer = initializer;
         this._context = context;
+        this._id = idCounter++;
+        this._children = {};
         this.changed = events.create(context);
+        this.reset();
+    }
+
+    function resetProps() {
+        this._props = this._initializer ?
+                      this._initializer(createPropertyInstance) : {};
+        this.triggerChanged();
+    }
+
+    function createProperty(propName, options) {
+        var instance = createPropertyInstance(options);
+        this.set(propName, instance);
     }
 
     function setProp(propName, value, literal) {
@@ -53,7 +78,7 @@ function(component, events, inspect, assert, object) {
                 walker[nameParts[i]] = {};
             }
 
-            if (i < nameParts.length - 1 && !inspect.isPlainObject(walker[nameParts[i]])) {
+            if (i < nameParts.length - 1 && !inspect.isObject(walker[nameParts[i]])) {
                 var propName = nameParts.slice(0, i + 1).join('.');
                 throw new Error('Cannot traverse property of ' + propName + ' because its not an object.');
             }
@@ -61,7 +86,6 @@ function(component, events, inspect, assert, object) {
             walker = walker[nameParts[i]];
         }
 
-        walker[nameParts[nameParts.length - 1]] = value;
         this._setValue(walker || this._props, nameParts[nameParts.length - 1], value);
     }
 
@@ -71,7 +95,7 @@ function(component, events, inspect, assert, object) {
         } else {
             if (props[name] instanceof Property) {
                 if (props[name].setter) {
-                    props[name].setter.call(this._context);
+                    props[name].setter.call(this._context, value);
                 }
             }
         }
@@ -89,13 +113,17 @@ function(component, events, inspect, assert, object) {
     }
 
     function getProp(propName, defaultValue) {
-         var value = object.resolveValue(this._props, propName, defaultValue);
+         var value = object.resolveValue(this._props, propName, UnsetValue);
 
          if (value instanceof Property) {
-             return value.getter ? value.getter.call(this._context) : defaultValue;
+             value = value.getter ? value.getter.call(this._context) : UnsetValue;
          }
 
-         return value;
+         if (value === UnsetValue && this.parent) {
+              return this.parent.get(propName);
+         }
+
+         return value !== UnsetValue ? value : defaultValue;
     }
 
     function updateProps(updateCallback) {
@@ -142,5 +170,52 @@ function(component, events, inspect, assert, object) {
         }
 
         this.changed.trigger();
+        
+        for(var childId in this._children) {
+            if (this._children.hasOwnProperty(childId)) {
+                this._children[childId].triggerChanged();
+            }
+        }
     }
+
+    function createChild(initializer) {
+        var child = component.createProps(initializer, this._context);
+        child.parent = this;
+        this._children[child._id] = child;
+
+        return child;
+    }
+
+    function destroy() {
+        for(var childId in this._children) {
+            if (this._children.hasOwnProperty(childId)) {
+                this._children[childId].destroy();
+            }
+        }
+
+        if (this.parent) {
+            delete this.parent._children[this._id];
+        }
+
+        this._props = null;
+        this._context = null;
+        this._children = null;
+        this._initializer = null;
+        this.changed = null;
+    }
+
+
+    function listen(name, callback, defaultValue) {
+        var self = this;
+        var oldValue = self.get(name, defaultValue);
+
+        return this.changed.register(function() {
+            var newValue = self.get(name, defaultValue);
+            if (oldValue !== newValue) {
+                callback(newValue);
+                oldValue = newValue;
+            }
+        });
+    }
+
 });

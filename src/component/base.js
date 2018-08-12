@@ -14,12 +14,11 @@ function(configManager, createFactory, assert, compiler, inspect) {
     var module = this.component = {
         componentFactory: createFactory(),
         propsFactory: createFactory(),
-        contextFactory: createFactory(),
         add: addComponent,
         create: createComponent,
         createProps: createProps,
-        createContext: createContext,
         findParent: findParent,
+        findContext: findContext,
         compile: compile
     };
 
@@ -77,10 +76,6 @@ function(configManager, createFactory, assert, compiler, inspect) {
         return this.propsFactory.create(config.propsType, [initializer, context]);
     }
 
-    function createContext(props) {
-        return this.contextFactory.create(config.contextType, [props]);
-    }
-
     function findParent(element) {
         var ob = inspect.getElementObject(element);
 
@@ -107,5 +102,18 @@ function(configManager, createFactory, assert, compiler, inspect) {
         }
 
         return null;
+    }
+
+    function findContext(element) {
+      do {
+          var ob = inspect.getElementObject(element);
+
+          if (ob && ob.context) {
+              return ob.context;
+          }
+
+          element = element.parentElement;
+
+      } while(element !== null);
     }
 });
