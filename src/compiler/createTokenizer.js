@@ -4,6 +4,8 @@ lib(['compiler', 'object'], function(compiler, object) {
         init: init,
         consume: consume,
         match: match,
+        clearCache: clearCache,
+        cache: null,
         fullMatch: null,
         tokens: null
     };
@@ -20,14 +22,26 @@ lib(['compiler', 'object'], function(compiler, object) {
 
         this.tokens = tokens;
         this.fullMatch = new RegExp(fullSource);
+        this.clearCache();
+    }
+
+    function clearCache() {
+        this.cache = {};
     }
 
     function consume(line, data) {
+        if (line in this.cache) {
+            return object.merge({}, this.cache[line]);
+
+        }
+
+        var parseLine = line;
+
         var result = {};
 
         for(var i = 0; i < this.tokens.length; i++) {
             var part = this.tokens[i];
-            var match = line.match(part.regex);
+            var match = parseLine.match(part.regex);
             if (!match) {
                 continue;
             }
@@ -36,10 +50,10 @@ lib(['compiler', 'object'], function(compiler, object) {
                 result[part.name] = part.parse ? part.parse(match, result, data) : match[0];
             }
 
-            line = line.substring(match[0].length);
+            parseLine = parseLine.substring(match[0].length);
         }
 
-        return result;
+        return this.cache[line] = result;
     }
 
     function match(string) {

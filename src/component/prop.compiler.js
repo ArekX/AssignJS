@@ -4,6 +4,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   var config = configManager.component.propCompiler = {
       eventIo: '_:_',
       propIo: '_:~html',
+      paramRegex: /(\(.+?\)|[@~%][^\ \,]+|\[[^\]]+\]|_)/g,
       tokenizer: compiler.createTokenizer([
           {
               name: 'event',
@@ -15,8 +16,8 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
               regex: /(@@?|#)/
           },
           {
-              name: 'name',
-              regex: /([^\ \(\)]+)(\(([^\)]*)\))?\s*/,
+              name: 'prop',
+              regex: /([^\ \(\)]+)(\((.+)\))?\s*/,
               parse: parsePropName
           },
           {
@@ -41,7 +42,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       var context = componentManager.findContext(element);
 
       assert.isTrue(context !== null, 'Context for prop not found.', {
-         prop: tokens.name,
+         line: line,
          element: element
       });
 
@@ -56,14 +57,15 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       }
 
       function resolvePropBinding(tokens, context) {
-          var currentValue = context.get(tokens.name);
+          var propName = tokens.prop.name;
+          var currentValue = context.get(propName);
 
           var output = function() {
               io.output.write(currentValue);
               parser.parse(element);
           };
 
-          context.listen(tokens.name, function(newValue) {
+          context.listen(propName, function(newValue) {
               currentValue = newValue instanceof UnsetValue ? '' : newValue;
               pushWriteTask();
           }, UnsetValue);
@@ -77,7 +79,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
                   if (!io.input.canRead) {
                       context.update();
                   } else {
-                      context.set(tokens.name, io.input.read());
+                      context.set(propName, io.input.read());
                   }
               });
           }
@@ -88,13 +90,19 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       }
 
       function resolveMethodBinding(tokens, context) {
+        var propName = tokens.prop.name;
+        var propParams = tokens.prop.params.map(function(param) {
+            return ioManager.resolve(element, param);
+        });
         assert.isTrue(tokens.event !== null, 'Event must be defined for method binding.', {
-           method: tokens.name,
+           method: propName,
            element: element
         });
 
         element.addEventListener(tokens.event, function() {
-             context[tokens.name].call(context);
+             context[propName].apply(context, propParams.map(function(param) {
+                 return param.input.canRead ? param.input.read() : null
+             }));
         });
       }
   }
@@ -108,8 +116,15 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   }
 
   function parsePropName(match, result) {
-      console.log(match);
-      return match[0].trim();
+      var parsed = {
+          name: match[1]
+      };
+
+      if (match[3]) {
+          parsed.params = componentManager.compileProps(match[3]);
+      }
+
+      return parsed;
   }
 
   function parseIoString(match, result) {

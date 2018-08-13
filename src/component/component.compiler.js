@@ -40,6 +40,12 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
     function handleComponent(line, element) {
         var tokens = config.tokenizer.consume(line, element);
 
+        addElementProps(element, tokens.inputProps);
+
+        if (!tokens.ref) {
+           tokens.ref = getElementRef(element);
+        }
+
         var elementObject = inspect.getElementObject(element);
 
         assert.isString(tokens.name, 'Parsed name is not valid.');
@@ -69,6 +75,10 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
         component.initializeView();
     }
 
+    function matchComponentCompiler(line, element) {
+        return config.tokenizer.match(line);
+    }
+
     function parseIo(match) {
         if (!match[2] || !match[3]) {
             return config.defaultIO;
@@ -95,22 +105,6 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
                   return acc;
               }, []);
 
-       runForAttributes(element, config.propNameRegex, function(attribute) {
-           var value = attribute.value;
-
-           if (value.match(/^\s*\(.+\)\s*$/)) {
-                value = getLiteralValue(
-                  value.substring(1, value.length - 1),
-                  propMatch[2],
-                  element
-                );
-           } else {
-                 value = getParentPropValue(propMatch[2], value);
-           }
-
-           props.push(value);
-       });
-
         return props;
     }
 
@@ -132,22 +126,39 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
         return [param, 'parentProp', value];
     }
 
-    function matchComponentCompiler(line, element) {
-        return config.tokenizer.match(line);
-    }
-
     function parseRef(match, result, element) {
       if (match[0]) {
          return match[0].substring(1);
       }
 
-      var ref = null;
+      return null;
+    }
 
-      runForAttributes(element, config.refNameRegex, function(attribute) {
-          ref = attribute.value;
-      });
+    function addElementProps(element, toProps) {
+        runForAttributes(element, config.propNameRegex, function(attribute) {
+            var value = attribute.value;
 
-      return ref;
+            if (value.match(/^\s*\(.+\)\s*$/)) {
+                value = getLiteralValue(
+                   value.substring(1, value.length - 1),
+                   propMatch[2],
+                   element
+                 );
+            } else {
+                value = getParentPropValue(propMatch[2], value);
+            }
+
+            toProps.push(value);
+        });
+    }
+
+    function getElementRef(element) {
+        var ref = null;
+        runForAttributes(element, config.refNameRegex, function(attribute) {
+            ref = attribute.value;
+        });
+
+        return ref;
     }
 
     function runForAttributes(element, attributeRegex, run) {

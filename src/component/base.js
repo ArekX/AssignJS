@@ -9,6 +9,8 @@ function(configManager, createFactory, assert, compiler, inspect) {
         nameRegex:  /^\s*[a-zA-Z_][_a-zA-Z0-9]+(\.[a-zA-Z_][_a-zA-Z0-9]*)*/
     };
 
+    var propCompileCache = {};
+
     var componentDefs = {};
 
     var module = this.component = {
@@ -19,7 +21,8 @@ function(configManager, createFactory, assert, compiler, inspect) {
         createProps: createProps,
         findParent: findParent,
         findContext: findContext,
-        compile: compile
+        compile: compile,
+        compileProps: compileProps
     };
 
     function compile(string, parent, containerTag) {
@@ -115,5 +118,52 @@ function(configManager, createFactory, assert, compiler, inspect) {
           element = element.parentElement;
 
       } while(element !== null);
+    }
+
+    function compileProps(propString) {
+        if (propString in propCompileCache) {
+            return propCompileCache[propString];
+        }
+
+        var checkString = propString;
+        var i;
+        var tokenCounter = 0;
+
+        var tokenReplacements = [
+            {type: 'strings', regex: /\".+?\"/},
+            {type: 'json', regex: /\(.+?\)/},
+            {type: 'params', regex: /[@%~][^\ \,]+/}
+        ];
+
+        var tokens = {};
+        for(i = 0; i < tokenReplacements.length; i++) {
+           var tokenType = tokenReplacements[i];
+
+           var match = null;
+
+           while((match = checkString.match(tokenType.regex)) !== null) {
+               var tokenId = "<t-" + tokenType.type + ":" + (tokenCounter++) + ">";
+               tokens[tokenId] = match[0];
+               checkString = checkString.replace(match[0], tokenId);
+           }
+        }
+
+        var params = checkString.split(/,\ ?/);
+
+        for(i = 0; i < params.length; i++) {
+            do {
+               var continueNext = false;
+               for(var token in tokens) {
+                   if (!tokens.hasOwnProperty(token) || params[i].indexOf(token) === -1) {
+                       continue;
+                   }
+
+                   params[i] = params[i].replace(token, tokens[token]);
+                   continueNext = true;
+               }
+            } while(continueNext);
+        }
+
+        return propCompileCache[propString] = params;
     }
 });
