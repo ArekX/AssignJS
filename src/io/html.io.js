@@ -6,7 +6,9 @@ lib(['io', 'inspect', 'html', 'object'], function(io, inspect, html, object) {
          init: init,
          read: read,
          write: write,
-         shouldWrite: shouldWrite
+         shouldWrite: shouldWrite,
+         canRead: true,
+         canWrite: true
     });
 
     function init() {

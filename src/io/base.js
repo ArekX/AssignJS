@@ -58,7 +58,8 @@ lib(['assert', 'inspect', 'object'], function(assert, inspect, object) {
         config.element = element;
 
         return config.handler = {
-            read: ioHandler.read.bind(config)
+            read: ioHandler.read.bind(config),
+            canRead: ioHandler.canRead
         };
     }
 
@@ -70,6 +71,7 @@ lib(['assert', 'inspect', 'object'], function(assert, inspect, object) {
         return config.handler = {
           write: ioHandler.write.bind(config),
           shouldWrite: ioHandler.shouldWrite.bind(config),
+          canWrite: ioHandler.canWrite
         };
     }
 

@@ -6,7 +6,8 @@ function(inspect, compiler, configManager) {
 
     var config = configManager.parser.element = {
         selector: '[data-assign]:not([data-asjs-done]), [data-as]:not([data-asjs-done]), [assign]:not([data-asjs-done]), [as]:not([data-asjs-done])',
-        initializedAttribute: 'data-asjs-done'
+        initializedAttribute: 'data-asjs-done',
+        parseLineRegex: /^(assign|as|data-assign|data-as)(-[^-]+)*$/
     };
 
     compiler.parser.addProcessor({
@@ -32,7 +33,7 @@ function(inspect, compiler, configManager) {
             return;
         }
 
-        compiler.compileElement(node, compiler.parser.getParseLines(node));
+        compiler.compileElement(node, compiler.parser.getParseLines(node, config.parseLineRegex));
         node.setAttribute(config.initializedAttribute, true);
     }
 });

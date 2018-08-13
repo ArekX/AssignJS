@@ -3,8 +3,7 @@ function(inspect, compiler, configManager, addRunner, events) {
     var processors = [];
 
     var config = configManager.parser = {
-        startContainer: document,
-        parseLineRegex: /^(assign|as|data-assign|data-as)(-[^-]+)*$/
+        startContainer: document
     };
 
     compiler.parser = {
@@ -50,12 +49,12 @@ function(inspect, compiler, configManager, addRunner, events) {
         }
     }
 
-    function getParseLines(element) {
+    function getParseLines(element, regex) {
         var lines = [], i, j;
         var attributes = element.attributes;
 
         for(i = 0; i < attributes.length; i++) {
-            var match = attributes[i].name.match(config.parseLineRegex);
+            var match = attributes[i].name.match(regex);
             if (!match) {
                continue;
             }

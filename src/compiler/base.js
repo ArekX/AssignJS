@@ -5,6 +5,8 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
 
         var handlerList = {};
 
+        var templates = {};
+
         var config = {
             strict: false
         };
@@ -13,7 +15,8 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
 
         this.compiler = {
             addHandler: addHandler,
-            compileTemplate: compileTemplate,
+            setTemplate: setTemplate,
+            compileTemplate: compileElementTemplate,
             compileElement: compileElement,
             writeElementObject: writeElementObject
         };
@@ -31,13 +34,32 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
             handlerList[namespace] = handler;
         }
 
-        function compileTemplate(element) {
+        function compileElementTemplate(element, templateId) {
             var elementObject = inspect.getElementObject(element) || {};
 
-            elementObject.template = element.innerHTML;
+
+            if (templateId) {
+                assert.keySet(templateId, templates, 'Template ID not set.', {
+                    templateId: templateId,
+                    element: element
+                });
+                elementObject.template = templates[templateId];
+            } else {
+                elementObject.template = element.innerHTML;
+            }
+
             element.innerHTML = '';
 
             writeElementObject(element, elementObject);
+        }
+
+        function setTemplate(templateId, template) {
+          assert.keyNotSet(templateId, templates, 'Template ID already set.', {
+              templateId: templateId,
+              template: template
+          });
+
+          templates[templateId] = template;
         }
 
         function compileElement(element, lines, afterCompile) {
@@ -65,6 +87,7 @@ lib(['inspect', 'throwError', 'assert', 'config', 'task'],
                     }
 
                     var runHandler = handlerList[handlerName];
+
                     var isMatch = inspect.isFunction(runHandler.checker) ?
                         runHandler.checker(line, element) : line.match(runHandler.checker);
 

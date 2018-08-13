@@ -4,13 +4,14 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   var config = configManager.component.propCompiler = {
       eventIo: '_:_',
       propIo: '_:~html',
-      tokenizerConfig: [
+      tokenizer: compiler.createTokenizer([
           {
               name: 'event',
-              regex: /^\s*[^\#\@]*/
+              regex: /^\s*([^\#\@]*)/,
+              parse: parseEventName
           },
           {
-              name: 'eventType',
+              name: 'bindTo',
               regex: /(@|#)/
           },
           {
@@ -23,58 +24,84 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
               regex: /(\|\s+([^:\ ]+)(:([^\ ]+))?)?$/,
               parse: parseIoString
           }
-      ]
+      ])
   };
 
   var renderer = compiler.renderer;
   var parser = compiler.parser;
 
-  var tokenizer = compiler.createTokenizer(config.tokenizerConfig);
+  console.log(config.tokenizer.fullMatch);
 
-  compiler.addHandler('prop.compiler', tokenizer.fullMatch, handleComponent);
+  compiler.addHandler('prop.compiler', matchPropCompiler, handleComponent);
 
   function UnsetValue() {}
 
   function handleComponent(line, element) {
-      var result = tokenizer.consume(line);
+      var tokens = config.tokenizer.consume(line);
       var ob = inspect.getElementObject(element);
+      var io = ob.io = ioManager.resolve(element, tokens.ioString);
 
       var context = componentManager.findContext(element);
 
       assert.isTrue(context !== null, 'Context for prop not found.', {
-         prop: result.name,
+         prop: tokens.name,
          element: element
       });
 
-      var io = ob.io = ioManager.resolve(element, result.ioString);
-      var output = outputResult.bind(io.output);
-      var currentValue = context.get(result.name);
-
-      context.listen(result.name, function(newValue) {
-          currentValue = newValue instanceof UnsetValue ? '' : newValue;
-          task.push(output, null, true);
-      }, UnsetValue);
-
-      task.push(output, null, true);
-
-      if (!result.event) {
-          return;
+      if (tokens.bindTo === '@') {
+          resolvePropBinding(tokens, context.props);
+      } else {
+          resolveMethodBinding(tokens, context.methods);
       }
 
-      element.addEventListener(result.event, function() {
-          // TODO: we will implement function calls and argument passing in bindings... props will be implemented for now.
-          if (inspect.isFunction(handlers[result.name])) {
-              handlers[result.name]();
-              return;
+      function resolvePropBinding(tokens, context) {
+          var currentValue = context.get(tokens.name);
+
+          var output = function() {
+              io.output.write(currentValue);
+              parser.parse(element);
+          };
+
+          context.listen(tokens.name, function(newValue) {
+              currentValue = newValue instanceof UnsetValue ? '' : newValue;
+              pushWriteTask();
+          }, UnsetValue);
+
+          pushWriteTask();
+
+          if (tokens.event) {
+              element.addEventListener(tokens.event, function() {
+                  if (!io.input.canRead) {
+                      context.set(tokens.name, currentValue);
+                  } else {
+                      context.set(tokens.name, io.input.read());
+                  }
+              });
           }
 
-          handlers[result.name] = io.input.read();
-      });
-
-      function outputResult() {
-          this.write(currentValue);
-          parser.parse(element);
+          function pushWriteTask() {
+              io.output.canWrite && task.push(output, null, true);
+          }
       }
+
+      function resolveMethodBinding(tokens, context) {
+        assert.isTrue(tokens.event !== null, 'Event must be defined for method binding.', {
+           method: tokens.name,
+           element: element
+        });
+
+        element.addEventListener(tokens.event, function() {
+             context[tokens.name].call(context);
+        });
+      }
+  }
+
+  function matchPropCompiler(line, element) {
+      return config.tokenizer.match(line);
+  }
+
+  function parseEventName(match) {
+      return match[0] ? match[0] : null;
   }
 
   function parsePropName(match, result) {
@@ -83,7 +110,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
 
   function parseIoString(match, result) {
       if (!match[2] || !match[3]) {
-          return result.eventType === '@' ? config.propIo : config.eventIo;
+          return result.bindTo === '@' ? config.propIo : config.eventIo;
       }
 
       return match[2] + match[3];

@@ -3,7 +3,8 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
 
   var config = configManager.component.eachCompiler = {
       io: '_:~html',
-      tokenizerConfig: [
+      tplElementName: 'item-tpl',
+      tokenizer: compiler.createTokenizer([
           {
               name: 'eachType',
               regex: /^\s*~each\:/
@@ -22,29 +23,30 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
               regex: /(([^\ \,]+)\s*\,)?\s*([^\ ]+)$/,
               parse: parseValues
           }
-      ]
+      ])
   };
 
   var renderer = compiler.renderer;
   var parser = compiler.parser;
 
-  var tokenizer = compiler.createTokenizer(config.tokenizerConfig);
-
-  compiler.addHandler('each.compiler', tokenizer.fullMatch, handleComponent);
+  compiler.addHandler('each.compiler', matchEachCompiler, handleComponent);
 
   function UnsetValue() {}
 
   function handleComponent(line, element) {
-      var result = tokenizer.consume(line);
-      var propName = result.name;
-      var keyName = result.values.key;
-      var valueName = result.values.value;
+      var tokens = config.tokenizer.consume(line);
+      var propName = tokens.name;
+      var keyName = tokens.values.key;
+      var valueName = tokens.values.value;
       var ob = inspect.getElementObject(element);
 
       var context = componentManager.findContext(element);
 
+      var contextMethods = context.methods;
+      context = context.props;
+
       assert.isTrue(context !== null, 'Context for prop not found.', {
-         prop: result.name,
+         prop: tokens.name,
          element: element
       });
 
@@ -55,10 +57,10 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       var currentValue = [];
       var resultItems = [];
 
-      handleValue(context.get(result.name));
+      handleValue(context.get(tokens.name));
 
       context.changed.register(function() {
-          handleValue(context.get(result.name));
+          handleValue(context.get(tokens.name));
           task.push(output, null, true);
       }, UnsetValue);
 
@@ -91,10 +93,15 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
       }
 
       function renderItem(item, index) {
-         var el = document.createElement('item-tpl');
+         var el = document.createElement(config.tplElementName);
          el.innerHTML = template;
 
          el = el.children.length === 1 ? el.children[0] : el;
+
+         var pName = propName + '.' + index;
+
+         var bindProps = {};
+         bindProps[pName] = valueName;
 
          var childContext = context.createChild(function() {
              var props = {};
@@ -103,23 +110,23 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
                  props[keyName] = index;
              }
 
-             props[valueName] = item;
+             props[valueName] = context.get(pName);
 
              return props;
-         });
+         }, bindProps);
 
-         compiler.writeElementObject(el, {context: childContext});
-         var pName = propName + '.' + index;
-
-         context.changed.register(function() {
-             currentValue[index] = context.get(pName);
-             childContext.set(valueName, currentValue[index]);
-         }, UnsetValue);
+         compiler.writeElementObject(el, {context: {
+            props: childContext,
+            methods: contextMethods
+         }});
 
          return el;
       }
   }
 
+  function matchEachCompiler(line, element) {
+      return config.tokenizer.match(line);
+  }
 
     function parsePropName(match, result) {
         return match[0].trim();

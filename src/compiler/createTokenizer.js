@@ -3,6 +3,7 @@ lib(['compiler', 'object'], function(compiler, object) {
     var TokenConsumer = {
         init: init,
         consume: consume,
+        match: match,
         fullMatch: null,
         tokens: null
     };
@@ -39,5 +40,9 @@ lib(['compiler', 'object'], function(compiler, object) {
         }
 
         return result;
+    }
+
+    function match(string) {
+        return string.match(this.fullMatch);
     }
 });

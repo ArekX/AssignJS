@@ -10,7 +10,7 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
         individualPropRegex: /([^ ,:]+):(\((.+?)\)|([^ ,]+))/,
         propNameRegex: /(data-prop|\[prop)-([^\]]+)\]?/,
         refNameRegex: /(data-ref|\[ref\])/,
-        tokenizerConfig: [
+        tokenizer: compiler.createTokenizer([
             {
                 name: 'name',
                 regex: configManager.component.nameRegex
@@ -30,31 +30,29 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
                 regex: /(\s+\<\-(.+))?\s*$/,
                 parse: parseProps
             }
-        ]
+        ])
     };
 
     function InvalidParamValue() {}
 
-    var tokenizer = compiler.createTokenizer(config.tokenizerConfig);
-
-    compiler.addHandler('component.compiler', tokenizer.fullMatch, handleComponent);
+    compiler.addHandler('component.compiler', matchComponentCompiler, handleComponent);
 
     function handleComponent(line, element) {
-        var result = tokenizer.consume(line, element);
+        var tokens = config.tokenizer.consume(line, element);
 
         var elementObject = inspect.getElementObject(element);
 
-        assert.isString(result.name, 'Parsed name is not valid.');
+        assert.isString(tokens.name, 'Parsed name is not valid.');
 
-        var component = componentManager.create(result.name);
+        var component = componentManager.create(tokens.name);
         var parentComponent = componentManager.findParent(element);
 
         component.bind({
             element: element,
-            io: io.resolve(element, result.ioString),
+            io: io.resolve(element, tokens.ioString),
             parent: parentComponent,
-            inputProps: result.inputProps,
-            ref: result.ref
+            inputProps: tokens.inputProps,
+            ref: tokens.ref
         });
 
         elementObject.parentComponent = parentComponent;
@@ -63,7 +61,10 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
             newParent === null && component.destroy();
         };
 
-        elementObject.context = component.props;
+        elementObject.context = {
+            props: component.props,
+            methods: component.context
+        };
 
         component.initializeView();
     }
@@ -129,6 +130,10 @@ function(compiler, componentManager, assert, configManager, io, inspect, object)
 
     function getParentPropValue(param, value) {
         return [param, 'parentProp', value];
+    }
+
+    function matchComponentCompiler(line, element) {
+        return config.tokenizer.match(line);
     }
 
     function parseRef(match, result, element) {

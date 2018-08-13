@@ -90,15 +90,12 @@ function(component, events, inspect, assert, object) {
     }
 
     function setValue(props, name, value) {
-        if (!(name in props)) {
-            props[name] = value;
+        if ((props[name] instanceof Property) && props[name].setter) {
+            props[name].setter.call(this._context, value);
         } else {
-            if (props[name] instanceof Property) {
-                if (props[name].setter) {
-                    props[name].setter.call(this._context, value);
-                }
-            }
+            props[name] = value;
         }
+
         this.triggerChanged();
     }
 
@@ -159,9 +156,9 @@ function(component, events, inspect, assert, object) {
         this._changeMode = true;
     }
 
-    function endChangeMode() {
+    function endChangeMode(skipEvent) {
         this._changeMode = this._changeModeStack.pop();
-        this.triggerChanged();
+        !skipEvent && this.triggerChanged();
     }
 
     function triggerChanged() {
@@ -170,18 +167,24 @@ function(component, events, inspect, assert, object) {
         }
 
         this.changed.trigger();
-        
-        for(var childId in this._children) {
-            if (this._children.hasOwnProperty(childId)) {
-                this._children[childId].triggerChanged();
-            }
-        }
     }
 
-    function createChild(initializer) {
+    function createChild(initializer, passProps) {
         var child = component.createProps(initializer, this._context);
         child.parent = this;
         this._children[child._id] = child;
+
+        if (passProps) {
+            this.changed.register(function() {
+                child.beginChangeMode();
+                for (var prop in passProps) {
+                    if (passProps.hasOwnProperty(prop)) {
+                        child.set(passProps[prop], child.parent.get(prop));
+                    }
+                }
+                child.endChangeMode();
+            });
+        }
 
         return child;
     }
@@ -196,6 +199,8 @@ function(component, events, inspect, assert, object) {
         if (this.parent) {
             delete this.parent._children[this._id];
         }
+
+        this.parent = null;
 
         this._props = null;
         this._context = null;

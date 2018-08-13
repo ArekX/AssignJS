@@ -6,7 +6,8 @@ function(inspect, compiler, configManager) {
 
     var config = configManager.parser.template = {
         selector: '[data-assign-template]:not([data-asjs-t-done]), [data-as-template]:not([data-asjs-t-done]), [assign-template]:not([data-asjs-t-done]), [as-template]:not([data-asjs-t-done])',
-        initializedAttribute: 'data-asjs-t-done'
+        initializedAttribute: 'data-asjs-t-done',
+        parseLineRegex: /^(assign-template|as-template|data-assign-template|data-as-template)$/
     };
 
     compiler.parser.addProcessor({
@@ -37,7 +38,9 @@ function(inspect, compiler, configManager) {
             return;
         }
 
-        compiler.compileTemplate(node);
+        var lines = compiler.parser.getParseLines(node, config.parseLineRegex);
+
+        compiler.compileTemplate(node, lines[0]);
         node.setAttribute(config.initializedAttribute, true);
     }
 });
