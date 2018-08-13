@@ -15,7 +15,7 @@ lib(['inspect'], function(inspect) {
         obItem.init && obItem.init.apply(obItem, params);
         return obItem;
     }
-    
+
     function merge() {
         var mergedConfig = {};
         var args = arguments;
@@ -103,7 +103,7 @@ lib(['inspect'], function(inspect) {
             for (var key in object) {
                 if (object.hasOwnProperty(key)) {
                     var value = object[key];
-                    cloned[key] = isObject(value) ? process(value) : value;
+                    cloned[key] = inspect.isObject(value) ? process(value) : value;
                 }
             }
 
@@ -131,7 +131,7 @@ lib(['inspect'], function(inspect) {
 
         var lastName = varparts[varparts.length - 1];
 
-        if (!(lastName in walker)) {
+        if (!inspect.isObject(walker) || !(lastName in walker)) {
             return defaultValue;
         }
 

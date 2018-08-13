@@ -6,8 +6,7 @@ lib(['io', 'object'], function(io, object) {
         read: read,
         write: write,
         shouldWrite: shouldWrite,
-        canRead: true,
-        canWrite: false
+        canRead: true
     });
 
     function init(element, ioPart) {

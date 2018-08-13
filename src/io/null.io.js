@@ -6,8 +6,7 @@ lib(['io'], function(io) {
       read: nullFunction,
       write: nullFunction,
       shouldWrite: nullFunction,
-      canRead: false,
-      canWrite: false
+      canRead: false
     });
 
     function nullFunction() {

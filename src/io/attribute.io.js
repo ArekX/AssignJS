@@ -6,8 +6,7 @@ lib(['io'], function(io) {
         read: read,
         write: write,
         shouldWrite: shouldWrite,
-        canRead: true,
-        canWrite: true
+        canRead: true
     });
 
     function init(element, ioPart) {
@@ -25,6 +24,6 @@ lib(['io'], function(io) {
     }
 
     function shouldWrite(value) {
-        return this.handler.read(this.element) !== value;
+        return this.element.getAttribute(this.attributeName) !== value;
     }
 });

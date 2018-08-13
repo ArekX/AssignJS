@@ -113,7 +113,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
              props[valueName] = context.get(pName);
 
              return props;
-         }, bindProps);
+         }, bindProps, true);
 
          compiler.writeElementObject(el, {context: {
             props: childContext,

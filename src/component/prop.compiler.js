@@ -12,11 +12,11 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
           },
           {
               name: 'bindTo',
-              regex: /(@|#)/
+              regex: /(@@?|#)/
           },
           {
               name: 'name',
-              regex: /[^\ ]+\s*/,
+              regex: /([^\ \(\)]+)(\(([^\)]*)\))?\s*/,
               parse: parsePropName
           },
           {
@@ -30,8 +30,6 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   var renderer = compiler.renderer;
   var parser = compiler.parser;
 
-  console.log(config.tokenizer.fullMatch);
-
   compiler.addHandler('prop.compiler', matchPropCompiler, handleComponent);
 
   function UnsetValue() {}
@@ -39,7 +37,6 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   function handleComponent(line, element) {
       var tokens = config.tokenizer.consume(line);
       var ob = inspect.getElementObject(element);
-      var io = ob.io = ioManager.resolve(element, tokens.ioString);
 
       var context = componentManager.findContext(element);
 
@@ -48,7 +45,11 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
          element: element
       });
 
-      if (tokens.bindTo === '@') {
+      ob.context = context;
+
+      var io = ob.io = ioManager.resolve(element, tokens.ioString);
+
+      if (tokens.bindTo === '@' || tokens.bindTo === '@@') {
           resolvePropBinding(tokens, context.props);
       } else {
           resolveMethodBinding(tokens, context.methods);
@@ -67,12 +68,14 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
               pushWriteTask();
           }, UnsetValue);
 
-          pushWriteTask();
+          if (tokens.bindTo === '@') {
+              pushWriteTask();
+          }
 
           if (tokens.event) {
               element.addEventListener(tokens.event, function() {
                   if (!io.input.canRead) {
-                      context.set(tokens.name, currentValue);
+                      context.update();
                   } else {
                       context.set(tokens.name, io.input.read());
                   }
@@ -80,7 +83,7 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
           }
 
           function pushWriteTask() {
-              io.output.canWrite && task.push(output, null, true);
+              io.output.shouldWrite(currentValue) && task.push(output, null, true);
           }
       }
 
@@ -105,12 +108,14 @@ function (compiler, configManager, inspect, assert, ioManager, componentManager,
   }
 
   function parsePropName(match, result) {
+      console.log(match);
       return match[0].trim();
   }
 
   function parseIoString(match, result) {
       if (!match[2] || !match[3]) {
-          return result.bindTo === '@' ? config.propIo : config.eventIo;
+          return result.bindTo === '@' || result.bindTo === '@@' ?
+                 config.propIo : config.eventIo;
       }
 
       return match[2] + match[3];

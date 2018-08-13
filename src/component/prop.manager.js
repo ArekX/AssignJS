@@ -13,6 +13,8 @@ function(component, events, inspect, assert, object) {
         _initializer: null,
         _parent: null,
         _children: null,
+        _passthrough: false,
+        _setPassthroughProp: setPassthroughProp,
         changed: null,
         init: init,
         set: setProp,
@@ -49,6 +51,7 @@ function(component, events, inspect, assert, object) {
         this._context = context;
         this._id = idCounter++;
         this._children = {};
+        this._passthrough = false;
         this.changed = events.create(context);
         this.reset();
     }
@@ -60,11 +63,20 @@ function(component, events, inspect, assert, object) {
     }
 
     function createProperty(propName, options) {
+        if (this._parent && this._passthrough) {
+            this.parent.create(propName, options);
+            return;
+        }
+
         var instance = createPropertyInstance(options);
         this.set(propName, instance);
     }
 
     function setProp(propName, value, literal) {
+        if (this._setPassthroughProp(propName, value, literal)) {
+            return;
+        }
+
         if (literal || (propName in this._props)) {
             this._setValue(this._props, propName, value);
             return;
@@ -74,7 +86,7 @@ function(component, events, inspect, assert, object) {
         var walker = this._props;
 
         for(var i = 0; i < nameParts.length - 1; i++) {
-            if (!nameParts[i] in walker) {
+            if (!(nameParts[i] in walker)) {
                 walker[nameParts[i]] = {};
             }
 
@@ -87,6 +99,22 @@ function(component, events, inspect, assert, object) {
         }
 
         this._setValue(walker || this._props, nameParts[nameParts.length - 1], value);
+    }
+
+    function setPassthroughProp(propName, value, literal) {
+      if (!this._passthrough || !this.parent) {
+          return false;
+      }
+
+      var dotIndex = propName.indexOf('.');
+      var prop = propName.substring(0, dotIndex !== -1 ? dotIndex : propName.length - 1);
+
+      if (prop in this.parent._props) {
+          this.parent.set(propName, value, literal);
+          return true;
+      }
+
+      return false;
     }
 
     function setValue(props, name, value) {
@@ -125,7 +153,7 @@ function(component, events, inspect, assert, object) {
 
     function updateProps(updateCallback) {
         this.beginChangeMode();
-        updateCallback.call(this._context, this._props);
+        updateCallback && updateCallback.call(this._context, this._props);
         this.endChangeMode();
     }
 
@@ -169,9 +197,10 @@ function(component, events, inspect, assert, object) {
         this.changed.trigger();
     }
 
-    function createChild(initializer, passProps) {
+    function createChild(initializer, passProps, passThrough) {
         var child = component.createProps(initializer, this._context);
         child.parent = this;
+        child._passthrough = passThrough || false;
         this._children[child._id] = child;
 
         if (passProps) {

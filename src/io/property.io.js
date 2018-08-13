@@ -1,32 +1,31 @@
 // @import: core
 
-lib(['io'], function(io) {
+lib(['io', 'inspect'], function(io, inspect) {
     io.addHandler('io.property', /\@[^\ ]+\s*/, {
         init: init,
         read: read,
         write: write,
         shouldWrite: shouldWrite,
-        canRead: true,
-        canWrite: true
+        canRead: true
     });
 
     function init(element, ioPart) {
-        var component = imspect.getElementObject(element).component;
+        var ob = inspect.getElementObject(element);
         return {
             prop: ioPart.substring(1),
-            propManager: component.context.propManager
+            ob: ob
         };
     }
 
     function read() {
-        return this.propManager.get(this.prop);
+        return this.ob.context.props.get(this.prop);
     }
 
     function write(value) {
-        this.propManager.set(this.prop, value);
+        this.ob.context.props.set(this.prop, value);
     }
 
     function shouldWrite(value) {
-        return this.handler.read() !== value;
+        return true;
     }
 });
